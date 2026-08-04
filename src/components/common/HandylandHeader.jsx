@@ -5,18 +5,18 @@ import { DEFAULT_SUBTITLE } from '../../constants/defaults';
 
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
 
-export const HandylandHeader = ({ title, icon: Icon, customLogo, headerSubtitle, cityName, lang, isOffline }) => (
+export const HandylandHeader = ({ title, icon: Icon, customLogo, headerSubtitle, cityName, lang, isOffline, systemName = "HANDYLAND" }) => (
   <header className="relative w-full px-6 lg:px-10 py-3.5 bg-black/80 border-b border-yellow-500/30 flex justify-between items-center z-40 backdrop-blur-md pl-16 lg:pl-20 pr-16 lg:pr-24 shadow-2xl h-20 lg:h-24 shrink-0">
     <div className="flex items-center gap-3 lg:gap-5 z-10 min-w-0 flex-1">
       <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         {customLogo ? (
           <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 border-yellow-400 p-0.5 bg-white flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)]">
-            <img src={customLogo} alt="HANDYLAND Logo" className="w-full h-full object-contain rounded-full" />
+            <img src={customLogo} alt={`${systemName} Logo`} className="w-full h-full object-contain rounded-full" />
           </div>
         ) : (
           <Globe className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
         )}
-        <span className={`text-2xl lg:text-4xl font-black tracking-widest ${goldTextGradient} drop-shadow-md`}>HANDYLAND</span>
+        <span className={`text-2xl lg:text-4xl font-black tracking-widest ${goldTextGradient} drop-shadow-md`}>{systemName}</span>
       </div>
       <div className="h-8 w-0.5 bg-yellow-500/40 shrink-0"></div>
       <h1 className="text-base lg:text-xl font-extrabold text-white flex items-center gap-2 tracking-wide truncate shrink-0">

@@ -12,7 +12,8 @@ const darkBg = "bg-[#050505]";
 export const ImageSlideshowScreen = ({ 
   items, title, icon, showNewsTicker = false, customLogo, 
   tickerText, tickerSpeed = DEFAULT_TICKER_SPEED, headerSubtitle, 
-  slideInterval = 6, cityName, onBack, t, lang, isOffline 
+  slideInterval = 6, cityName, onBack, t, lang, isOffline,
+  systemName = "HANDYLAND" 
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -73,7 +74,7 @@ export const ImageSlideshowScreen = ({
       <div className="flex flex-col h-screen items-center justify-center bg-[#050505] text-white font-sans relative overflow-hidden" dir="ltr">
         <TVScreenControls />
         <TVBackControl onBack={onBack} t={t} />
-        <span className={`text-6xl lg:text-8xl font-black tracking-widest mb-6 ${goldTextGradient} animate-pulse`}>HANDYLAND</span>
+        <span className={`text-6xl lg:text-8xl font-black tracking-widest mb-6 ${goldTextGradient} animate-pulse`}>{systemName}</span>
         <div className="text-2xl lg:text-4xl text-gray-400 font-light bg-black/60 px-10 py-5 rounded-3xl border border-yellow-500/20 backdrop-blur-md">
           Warten auf Medien... (Keine Plakate/Videos hochgeladen)
         </div>
@@ -85,7 +86,7 @@ export const ImageSlideshowScreen = ({
     <div className={`flex flex-col h-screen max-h-screen w-full ${darkBg} text-white overflow-hidden font-sans relative`} dir="ltr">
       <TVScreenControls />
       <TVBackControl onBack={onBack} t={t} />
-      <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} />
+      <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} systemName={systemName} />
 
       <main className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0">
         
@@ -99,7 +100,7 @@ export const ImageSlideshowScreen = ({
           return (
             <div 
               key={item.id} 
-              className={`absolute inset-0 transition-all duration-1000 transform flex items-center justify-center w-full h-full p-2 lg:p-4 ${
+              className={`absolute inset-0 transition-all duration-1000 transform flex items-center justify-center w-full h-full ${
                 isCurrent ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0 pointer-events-none'
               }`}
             >
@@ -137,13 +138,13 @@ export const ImageSlideshowScreen = ({
                         muted
                         playsInline
                         onEnded={handleNextSlide}
-                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl"
+                        className="absolute inset-0 w-full h-full object-fill z-10"
                       />
                     ) : (
                       <img 
                         src={mediaSrc} 
                         alt="Poster" 
-                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl" 
+                        className="absolute inset-0 w-full h-full object-fill z-10" 
                       />
                     )}
                  </div>

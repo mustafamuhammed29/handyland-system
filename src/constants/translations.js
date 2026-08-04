@@ -1,9 +1,10 @@
 export const translations = {
   de: {
-    systemTitle: "HANDYLAND Steuerungssystem",
+    systemTitle: "JansaTech Smart Signage System",
     adminTitle: "HANDYLAND Verwaltungskonsole",
     backToMenu: "Hauptmenü",
     returnToMenuBtn: "Zurück zum Hauptmenü",
+    logoutBtn: "Abmelden",
     screen1Title: "Bildschirm 1",
     screen1Sub: "Smartphones & Plakate",
     screen2Title: "Bildschirm 2",
@@ -95,10 +96,11 @@ export const translations = {
     systemControlTitle: "Systemsteuerung (Wartung & Reload)",
   },
   ar: {
-    systemTitle: "نظام التحكم بالشاشات المصورة والخبر المتحرك",
+    systemTitle: "نظام JansaTech الشامل لإدارة الشاشات",
     adminTitle: "لوحة تحكم شاشات HANDYLAND",
     backToMenu: "القائمة الرئيسية",
     returnToMenuBtn: "العودة للقائمة",
+    logoutBtn: "تسجيل خروج",
     screen1Title: "شاشة 1",
     screen1Sub: "Smartphones (بوسترات وفيديو)",
     screen2Title: "شاشة 2",

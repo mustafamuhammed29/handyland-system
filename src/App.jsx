@@ -1,38 +1,41 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Smartphone, Tag, Wrench } from 'lucide-react';
+import { Smartphone, Tag, Wrench, Utensils, Coffee, Percent } from 'lucide-react';
 import { translations } from './constants/translations';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
-  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE 
+  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
+  ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE
 } from './constants/defaults';
 import { supabase } from './services/supabase';
 import { offlineCache } from './services/offlineCache';
 
 import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
+import { AdminGateway } from './components/admin/AdminGateway';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
+import { PinProtectionModal } from './components/common/PinProtectionModal';
 
 export default function App() {
   const [initialLoadTime] = useState(Date.now());
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const screenParam = urlParams.get('screen');
-    if (screenParam) {
-      if (screenParam === '1') return 'screen1';
-      if (screenParam === '2') return 'screen2';
-      if (screenParam === '3') return 'screen3';
-      if (screenParam === 'admin') return 'admin';
+    const validViews = ['screen1', 'screen2', 'screen3', 'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'admin-gateway', 'admin-handyland', 'admin-alsafi', 'menu'];
+    
+    if (screenParam && validViews.includes(screenParam)) {
+      return screenParam;
     }
 
     const hash = window.location.hash.replace('#', '');
-    if (['screen1', 'screen2', 'screen3', 'admin', 'menu'].includes(hash)) {
+    if (validViews.includes(hash)) {
       return hash;
     }
 
     const savedScreen = localStorage.getItem('handyland_active_screen');
-    if (savedScreen && ['screen1', 'screen2', 'screen3', 'admin', 'menu'].includes(savedScreen)) {
+    if (savedScreen && validViews.includes(savedScreen)) {
       return savedScreen;
     }
 
@@ -48,23 +51,46 @@ export default function App() {
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
   const [offers, setOffers] = useState(() => offlineCache.getOffers());
 
+  const [alsafiMenu, setAlsafiMenu] = useState(() => offlineCache.getAlsafiMenu());
+  const [alsafiDrinks, setAlsafiDrinks] = useState(() => offlineCache.getAlsafiDrinks());
+  const [alsafiOffers, setAlsafiOffers] = useState(() => offlineCache.getAlsafiOffers());
+
+  // Handyland Settings
   const [customLogo, setCustomLogo] = useState(null);
   const [customFavicon, setCustomFavicon] = useState(null);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
   const [tickerSpeed, setTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [headerSubtitle, setHeaderSubtitle] = useState(DEFAULT_SUBTITLE);
-  
   const [intervalScreen1, setIntervalScreen1] = useState(6);
   const [intervalScreen2, setIntervalScreen2] = useState(6);
   const [intervalScreen3, setIntervalScreen3] = useState(6);
-
   const [adminPin, setAdminPin] = useState(DEFAULT_PIN);
   const [cityName, setCityName] = useState(DEFAULT_CITY);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [storeStatusMode, setStoreStatusMode] = useState('active');
   const [statusTimerTarget, setStatusTimerTarget] = useState('');
+
+  // Alsafi Settings
+  const [alsafiLogo, setAlsafiLogo] = useState(null);
+  const [alsafiFavicon, setAlsafiFavicon] = useState(null);
+  const [alsafiTicker, setAlsafiTicker] = useState(ALSAFI_DEFAULT_TICKER);
+  const [alsafiTickerSpeed, setAlsafiTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
+  const [alsafiFontSize, setAlsafiFontSize] = useState(DEFAULT_FONT_SIZE);
+  const [alsafiSubtitle, setAlsafiSubtitle] = useState(ALSAFI_DEFAULT_SUBTITLE);
+  const [alsafiInt1, setAlsafiInt1] = useState(6);
+  const [alsafiInt2, setAlsafiInt2] = useState(6);
+  const [alsafiInt3, setAlsafiInt3] = useState(6);
+  const [alsafiPin, setAlsafiPin] = useState('0000');
+  const [alsafiCity, setAlsafiCity] = useState(DEFAULT_CITY);
+  const [alsafiMaint, setAlsafiMaint] = useState(false);
+  const [alsafiMaintMsg, setAlsafiMaintMsg] = useState('');
+  const [alsafiStatusMode, setAlsafiStatusMode] = useState('active');
+  const [alsafiTimerTarget, setAlsafiTimerTarget] = useState('');
+
+  // Pin Protection State (Tracks which branch they are trying to access)
+  const [pendingAdminBranch, setPendingAdminBranch] = useState(null);
 
   const t = translations[lang] || translations.de;
 
@@ -75,7 +101,7 @@ export default function App() {
   };
 
   const navigateBack = () => {
-    window.history.back();
+    navigateTo('menu');
   };
 
   const handleSetLang = (newLang) => {
@@ -117,28 +143,63 @@ export default function App() {
         offlineCache.saveOffers(offData);
       }
 
-      const { data: settingsData, error: setErr } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
-      if (!setErr && settingsData) {
-        offlineCache.saveSettings(settingsData);
-        setCustomLogo(settingsData.logoData || null);
-        setCustomFavicon(settingsData.faviconData || null);
-        updateFavicon(settingsData.faviconData);
-        setTickerText(settingsData.tickerText || DEFAULT_TICKER);
-        setTickerSpeed(settingsData.tickerSpeed || DEFAULT_TICKER_SPEED);
-        setFontSize(settingsData.fontSize || DEFAULT_FONT_SIZE);
-        setHeaderSubtitle(settingsData.headerSubtitle || DEFAULT_SUBTITLE);
-        setIntervalScreen1(settingsData.intervalScreen1 || 6);
-        setIntervalScreen2(settingsData.intervalScreen2 || 6);
-        setIntervalScreen3(settingsData.intervalScreen3 || 6);
-        setAdminPin(settingsData.adminPin || DEFAULT_PIN);
-        setCityName(settingsData.cityName || DEFAULT_CITY);
-        setMaintenanceMode(settingsData.maintenanceMode || false);
-        setMaintenanceMessage(settingsData.maintenanceMessage || '');
-        setStoreStatusMode(settingsData.storeStatusMode || 'active');
-        setStatusTimerTarget(settingsData.statusTimerTarget || '');
+      const { data: setErrData, error: setErr } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
+      if (!setErr && setErrData) {
+        offlineCache.saveSettings(setErrData);
+        setCustomLogo(setErrData.logoData || null);
+        setCustomFavicon(setErrData.faviconData || null);
+        if (['screen1', 'screen2', 'screen3', 'menu'].includes(view) || view.startsWith('admin')) updateFavicon(setErrData.faviconData);
+        setTickerText(setErrData.tickerText || DEFAULT_TICKER);
+        setTickerSpeed(setErrData.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setFontSize(setErrData.fontSize || DEFAULT_FONT_SIZE);
+        setHeaderSubtitle(setErrData.headerSubtitle || DEFAULT_SUBTITLE);
+        setIntervalScreen1(setErrData.intervalScreen1 || 6);
+        setIntervalScreen2(setErrData.intervalScreen2 || 6);
+        setIntervalScreen3(setErrData.intervalScreen3 || 6);
+        setAdminPin(setErrData.adminPin || DEFAULT_PIN);
+        setCityName(setErrData.cityName || DEFAULT_CITY);
+        setMaintenanceMode(setErrData.maintenanceMode || false);
+        setMaintenanceMessage(setErrData.maintenanceMessage || '');
+        setStoreStatusMode(setErrData.storeStatusMode || 'active');
+        setStatusTimerTarget(setErrData.statusTimerTarget || '');
         
-        if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
-          window.location.reload();
+        if (setErrData.forceReload && setErrData.forceReload > initialLoadTime && !view.startsWith('alsafi')) {
+          window.location.reload(true);
+        }
+      }
+
+      // Fetch Alsafi Data
+      const { data: alsMenu } = await supabase.from('alsafi_menu').select('*').order('created_at', { ascending: false });
+      if (alsMenu) { setAlsafiMenu(alsMenu); offlineCache.saveAlsafiMenu(alsMenu); }
+
+      const { data: alsDrinks } = await supabase.from('alsafi_drinks').select('*').order('created_at', { ascending: false });
+      if (alsDrinks) { setAlsafiDrinks(alsDrinks); offlineCache.saveAlsafiDrinks(alsDrinks); }
+
+      const { data: alsOffers } = await supabase.from('alsafi_offers').select('*').order('created_at', { ascending: false });
+      if (alsOffers) { setAlsafiOffers(alsOffers); offlineCache.saveAlsafiOffers(alsOffers); }
+
+      const { data: alsSettings } = await supabase.from('alsafi_settings').select('*').eq('id', 'config').single();
+      if (alsSettings) {
+        offlineCache.saveAlsafiSettings(alsSettings);
+        setAlsafiLogo(alsSettings.logoData || null);
+        setAlsafiFavicon(alsSettings.faviconData || null);
+        if (view.startsWith('alsafi')) updateFavicon(alsSettings.faviconData);
+        setAlsafiTicker(alsSettings.tickerText || DEFAULT_TICKER);
+        setAlsafiTickerSpeed(alsSettings.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setAlsafiFontSize(alsSettings.fontSize || DEFAULT_FONT_SIZE);
+        setAlsafiSubtitle(alsSettings.headerSubtitle || DEFAULT_SUBTITLE);
+        setAlsafiInt1(alsSettings.intervalScreen1 || 6);
+        setAlsafiInt2(alsSettings.intervalScreen2 || 6);
+        setAlsafiInt3(alsSettings.intervalScreen3 || 6);
+        setAlsafiPin(alsSettings.adminPin || '0000');
+        setAlsafiCity(alsSettings.cityName || DEFAULT_CITY);
+        setAlsafiMaint(alsSettings.maintenanceMode || false);
+        setAlsafiMaintMsg(alsSettings.maintenanceMessage || '');
+        setAlsafiStatusMode(alsSettings.storeStatusMode || 'active');
+        setAlsafiTimerTarget(alsSettings.statusTimerTarget || '');
+
+        if (alsSettings.forceReload && alsSettings.forceReload > initialLoadTime && view.startsWith('alsafi')) {
+          window.location.reload(true);
         }
       }
 
@@ -149,10 +210,6 @@ export default function App() {
       const cachedSettings = offlineCache.getSettings();
       if (cachedSettings) {
         if (cachedSettings.logoData) setCustomLogo(cachedSettings.logoData);
-        if (cachedSettings.faviconData) {
-          setCustomFavicon(cachedSettings.faviconData);
-          updateFavicon(cachedSettings.faviconData);
-        }
         if (cachedSettings.tickerText) setTickerText(cachedSettings.tickerText);
         if (cachedSettings.tickerSpeed) setTickerSpeed(cachedSettings.tickerSpeed);
         if (cachedSettings.fontSize) setFontSize(cachedSettings.fontSize);
@@ -162,10 +219,19 @@ export default function App() {
         if (cachedSettings.intervalScreen3) setIntervalScreen3(cachedSettings.intervalScreen3);
         if (cachedSettings.adminPin) setAdminPin(cachedSettings.adminPin);
         if (cachedSettings.cityName) setCityName(cachedSettings.cityName);
-        if (cachedSettings.maintenanceMode !== undefined) setMaintenanceMode(cachedSettings.maintenanceMode);
-        if (cachedSettings.maintenanceMessage !== undefined) setMaintenanceMessage(cachedSettings.maintenanceMessage);
-        if (cachedSettings.storeStatusMode !== undefined) setStoreStatusMode(cachedSettings.storeStatusMode);
-        if (cachedSettings.statusTimerTarget !== undefined) setStatusTimerTarget(cachedSettings.statusTimerTarget);
+      }
+      const alsCacheSet = offlineCache.getAlsafiSettings();
+      if (alsCacheSet) {
+        if (alsCacheSet.logoData) setAlsafiLogo(alsCacheSet.logoData);
+        if (alsCacheSet.tickerText) setAlsafiTicker(alsCacheSet.tickerText);
+        if (alsCacheSet.tickerSpeed) setAlsafiTickerSpeed(alsCacheSet.tickerSpeed);
+        if (alsCacheSet.fontSize) setAlsafiFontSize(alsCacheSet.fontSize);
+        if (alsCacheSet.headerSubtitle) setAlsafiSubtitle(alsCacheSet.headerSubtitle);
+        if (alsCacheSet.intervalScreen1) setAlsafiInt1(alsCacheSet.intervalScreen1);
+        if (alsCacheSet.intervalScreen2) setAlsafiInt2(alsCacheSet.intervalScreen2);
+        if (alsCacheSet.intervalScreen3) setAlsafiInt3(alsCacheSet.intervalScreen3);
+        if (alsCacheSet.adminPin) setAlsafiPin(alsCacheSet.adminPin);
+        if (alsCacheSet.cityName) setAlsafiCity(alsCacheSet.cityName);
       }
     }
   }, [initialLoadTime]);
@@ -187,43 +253,16 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
 
-    const handleSettingsPayload = (payload) => {
-      if (payload.new && payload.new.id === 'config') {
-        const settingsData = payload.new;
-        offlineCache.saveSettings(settingsData);
-        if (settingsData.logoData !== undefined) setCustomLogo(settingsData.logoData);
-        if (settingsData.faviconData !== undefined) {
-          setCustomFavicon(settingsData.faviconData);
-          updateFavicon(settingsData.faviconData);
-        }
-        if (settingsData.tickerText !== undefined) setTickerText(settingsData.tickerText);
-        if (settingsData.tickerSpeed !== undefined) setTickerSpeed(settingsData.tickerSpeed);
-        if (settingsData.fontSize !== undefined) setFontSize(settingsData.fontSize);
-        if (settingsData.headerSubtitle !== undefined) setHeaderSubtitle(settingsData.headerSubtitle);
-        if (settingsData.intervalScreen1 !== undefined) setIntervalScreen1(settingsData.intervalScreen1);
-        if (settingsData.intervalScreen2 !== undefined) setIntervalScreen2(settingsData.intervalScreen2);
-        if (settingsData.intervalScreen3 !== undefined) setIntervalScreen3(settingsData.intervalScreen3);
-        if (settingsData.adminPin !== undefined) setAdminPin(settingsData.adminPin);
-        if (settingsData.cityName !== undefined) setCityName(settingsData.cityName);
-        if (settingsData.maintenanceMode !== undefined) setMaintenanceMode(settingsData.maintenanceMode);
-        if (settingsData.maintenanceMessage !== undefined) setMaintenanceMessage(settingsData.maintenanceMessage);
-        if (settingsData.storeStatusMode !== undefined) setStoreStatusMode(settingsData.storeStatusMode);
-        if (settingsData.statusTimerTarget !== undefined) setStatusTimerTarget(settingsData.statusTimerTarget);
-        
-        if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
-          window.location.reload();
-        }
-      } else {
-        fetchAllData();
-      }
-    };
-
     const channel = supabase
       .channel('public:handyland_tv_signage_v5')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, handleSettingsPayload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_menu' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_drinks' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_offers' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAllData)
       .subscribe();
 
     return () => {
@@ -235,38 +274,70 @@ export default function App() {
   }, [fetchAllData]);
 
   const handleVerifyPin = (inputPin) => {
-    if (inputPin === (adminPin || DEFAULT_PIN)) {
+    const targetPin = pendingAdminBranch === 'alsafi' ? (alsafiPin || '0000') : (adminPin || DEFAULT_PIN);
+    if (inputPin === targetPin) {
       setShowPinModal(false);
-      navigateTo('admin');
+      if (pendingAdminBranch) {
+        navigateTo(`admin-${pendingAdminBranch}`);
+      } else {
+        navigateTo('admin-gateway');
+      }
       return true;
     }
     return false;
   };
 
+  const initiateAdminLogin = (branch) => {
+    setPendingAdminBranch(branch);
+    setShowPinModal(true);
+  };
+
   const renderActiveView = () => {
-    if (view === 'admin') return (
+    if (view === 'admin-gateway') return (
+      <AdminGateway onBranchSelect={initiateAdminLogin} onBack={navigateBack} lang={lang} />
+    );
+
+    if (view === 'admin-handyland') return (
       <AdminPanel 
         devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} customFavicon={customFavicon}
         tickerText={tickerText} tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
-        onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+        onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
         storeStatusMode={storeStatusMode} statusTimerTarget={statusTimerTarget}
       />
     );
 
-    if (maintenanceMode || (storeStatusMode && storeStatusMode !== 'active')) return (
+    if (view === 'admin-alsafi') return (
+      <AdminPanelAlsafi 
+        devices={alsafiMenu} repairs={alsafiDrinks} offers={alsafiOffers} customLogo={alsafiLogo} customFavicon={alsafiFavicon}
+        tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} fontSize={alsafiFontSize} headerSubtitle={alsafiSubtitle} intervalScreen1={alsafiInt1} 
+        intervalScreen2={alsafiInt2} intervalScreen3={alsafiInt3} adminPin={alsafiPin} cityName={alsafiCity}
+        onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+        maintenanceMode={alsafiMaint} maintenanceMessage={alsafiMaintMsg}
+        storeStatusMode={alsafiStatusMode} statusTimerTarget={alsafiTimerTarget}
+      />
+    );
+
+    const isHandylandView = ['screen1', 'screen2', 'screen3'].includes(view);
+    const activeStoreStatus = isHandylandView ? storeStatusMode : alsafiStatusMode;
+    const activeMaint = isHandylandView ? maintenanceMode : alsafiMaint;
+    const activeMaintMsg = isHandylandView ? maintenanceMessage : alsafiMaintMsg;
+    const activeTimer = isHandylandView ? statusTimerTarget : alsafiTimerTarget;
+    const activeLogo = isHandylandView ? customLogo : alsafiLogo;
+
+    if (activeMaint || (activeStoreStatus && activeStoreStatus !== 'active')) return (
       <StoreStatusScreen 
-        t={t} lang={lang} customLogo={customLogo} 
-        storeStatusMode={maintenanceMode && storeStatusMode === 'active' ? 'maintenance' : storeStatusMode}
-        maintenanceMessage={maintenanceMessage} 
-        statusTimerTarget={statusTimerTarget}
+        t={t} lang={lang} customLogo={activeLogo} 
+        storeStatusMode={activeMaint && activeStoreStatus === 'active' ? 'maintenance' : activeStoreStatus}
+        maintenanceMessage={activeMaintMsg} 
+        statusTimerTarget={activeTimer}
       />
     );
 
     if (view === 'screen1') return (
       <ImageSlideshowScreen 
-        items={devices} title="Top Angebote & Smartphones" icon={Smartphone} 
+        items={devices} title="Top Angebote & Smartphones" icon={Smartphone} systemName="HANDYLAND"
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
@@ -275,7 +346,7 @@ export default function App() {
 
     if (view === 'screen2') return (
       <ImageSlideshowScreen 
-        items={repairs} title="Reparaturzentrum & Preise" icon={Wrench} 
+        items={repairs} title="Reparaturzentrum & Preise" icon={Wrench} systemName="HANDYLAND"
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
@@ -284,9 +355,36 @@ export default function App() {
 
     if (view === 'screen3') return (
       <ImageSlideshowScreen 
-        items={offers} title="Angebote & News" icon={Tag} showNewsTicker={true} 
+        items={offers} title="Spezielle Angebote" icon={Tag} systemName="HANDYLAND" 
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
+
+    if (view === 'alsafi-screen1') return (
+      <ImageSlideshowScreen 
+        items={alsafiMenu} title={lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü'} icon={Utensils} systemName="ALSAFI" 
+        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
+
+    if (view === 'alsafi-screen2') return (
+      <ImageSlideshowScreen 
+        items={alsafiDrinks} title={lang === 'ar' ? 'المشروبات' : 'Getränke'} icon={Coffee} systemName="ALSAFI" 
+        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
+
+    if (view === 'alsafi-screen3') return (
+      <ImageSlideshowScreen 
+        items={alsafiOffers} title={lang === 'ar' ? 'العروض المميزة' : 'Sonderangebote'} icon={Percent} systemName="ALSAFI" 
+        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
       />
     );
@@ -294,8 +392,7 @@ export default function App() {
     return (
       <MainMenu 
         navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
-        setLang={handleSetLang} t={t} showPinModal={showPinModal} 
-        setShowPinModal={setShowPinModal} handleVerifyPin={handleVerifyPin} 
+        setLang={handleSetLang} t={t}
       />
     );
   };
@@ -304,6 +401,14 @@ export default function App() {
     <>
       <AutoMemoryRefresh />
       {renderActiveView()}
+      {showPinModal && (
+        <PinProtectionModal 
+          onClose={() => setShowPinModal(false)}
+          onVerify={handleVerifyPin}
+          t={t}
+          lang={lang}
+        />
+      )}
     </>
   );
 }

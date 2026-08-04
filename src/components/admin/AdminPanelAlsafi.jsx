@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Settings, Smartphone, Wrench, Tag, Plus, Trash2,
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
-  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut
+  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut,
+  Utensils, Coffee, Percent
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -13,12 +14,12 @@ import {
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE
 } from '../../constants/defaults';
 
-export const AdminPanel = ({
+export const AdminPanelAlsafi = ({
   devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t
 }) => {
-  const [activeTab, setActiveTab] = useState('devices');
+  const [activeTab, setActiveTab] = useState('menu');
   const [loading, setLoading] = useState(false);
 
   const [imageFiles, setImageFiles] = useState([]);
@@ -183,7 +184,7 @@ export const AdminPanel = ({
     try {
       const compressedLogo = await compressImage(logoFile, 500, 500, 0.85);
       const base64Logo = await convertToBase64(compressedLogo);
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', logoData: base64Logo });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', logoData: base64Logo });
       if (error) throw error;
       setLogoFile(null);
       alert(t.saveSuccess);
@@ -199,7 +200,7 @@ export const AdminPanel = ({
     if (!window.confirm(t.confirmResetLogo)) return;
     setLoading(true);
     try {
-      await supabase.from('shop_settings').update({ logoData: null }).eq('id', 'config');
+      await supabase.from('alsafi_settings').update({ logoData: null }).eq('id', 'config');
       alert(t.resetSuccess);
       onRefresh();
     } catch (err) { console.error(err); }
@@ -212,7 +213,7 @@ export const AdminPanel = ({
     try {
       const compressedFavicon = await compressImage(faviconFile, 200, 200, 0.9);
       const base64Favicon = await convertToBase64(compressedFavicon);
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', faviconData: base64Favicon });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', faviconData: base64Favicon });
       if (error) throw error;
       setFaviconFile(null);
       alert(t.saveSuccess);
@@ -228,7 +229,7 @@ export const AdminPanel = ({
     if (!window.confirm(lang === 'ar' ? 'هل أنت متأكد من استعادة الأيقونة الافتراضية؟' : 'Standardsymbol wiederherstellen?')) return;
     setLoading(true);
     try {
-      await supabase.from('shop_settings').update({ faviconData: null }).eq('id', 'config');
+      await supabase.from('alsafi_settings').update({ faviconData: null }).eq('id', 'config');
       alert(t.resetSuccess);
       onRefresh();
     } catch (err) { console.error(err); }
@@ -238,7 +239,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', tickerText: editableTicker });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', tickerText: editableTicker });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -253,7 +254,7 @@ export const AdminPanel = ({
     if (!window.confirm(t.confirmResetTicker)) return;
     setLoading(true);
     try {
-      await supabase.from('shop_settings').upsert({ id: 'config', tickerText: DEFAULT_TICKER });
+      await supabase.from('alsafi_settings').upsert({ id: 'config', tickerText: DEFAULT_TICKER });
       setEditableTicker(DEFAULT_TICKER);
       alert(t.resetSuccess);
       onRefresh();
@@ -265,7 +266,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({
+      const { error } = await supabase.from('alsafi_settings').upsert({
         id: 'config',
         tickerSpeed: parseInt(editableTickerSpeed) || DEFAULT_TICKER_SPEED
       });
@@ -283,7 +284,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', fontSize: editableFontSize });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', fontSize: editableFontSize });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -298,7 +299,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', headerSubtitle: editableSubtitle });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', headerSubtitle: editableSubtitle });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -313,7 +314,7 @@ export const AdminPanel = ({
     if (!window.confirm(t.confirmResetSubtitle)) return;
     setLoading(true);
     try {
-      await supabase.from('shop_settings').upsert({ id: 'config', headerSubtitle: DEFAULT_SUBTITLE });
+      await supabase.from('alsafi_settings').upsert({ id: 'config', headerSubtitle: DEFAULT_SUBTITLE });
       setEditableSubtitle(DEFAULT_SUBTITLE);
       alert(t.resetSuccess);
       onRefresh();
@@ -325,7 +326,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({
+      const { error } = await supabase.from('alsafi_settings').upsert({
         id: 'config',
         intervalScreen1: parseInt(editableTimer1) || 6,
         intervalScreen2: parseInt(editableTimer2) || 6,
@@ -346,7 +347,7 @@ export const AdminPanel = ({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', adminPin: editablePin });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', adminPin: editablePin });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -358,7 +359,7 @@ export const AdminPanel = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', cityName: editableCity });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', cityName: editableCity });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -377,7 +378,7 @@ export const AdminPanel = ({
   const handleSaveStoreStatus = async () => {
     setLoading(true);
     try {
-      let finalTarget = statusTimerTarget; // keep existing if unchanged
+      let finalTarget = statusTimerTarget;
       if (timerDuration === 'clear') {
         finalTarget = '';
       } else if (timerDuration === 'until20') {
@@ -391,7 +392,7 @@ export const AdminPanel = ({
         finalTarget = new Date(Date.now() + parseInt(timerDuration) * 60000).toISOString();
       }
 
-      const { error } = await supabase.from('shop_settings').upsert({
+      const { error } = await supabase.from('alsafi_settings').upsert({
         id: 'config',
         storeStatusMode: editableStoreStatusMode,
         statusTimerTarget: finalTarget,
@@ -411,21 +412,21 @@ export const AdminPanel = ({
     if (!window.confirm(confirmMessage)) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', forceReload: Date.now() });
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', forceReload: Date.now() });
       if (error) throw error;
       alert(t.saveSuccess);
     } catch (err) { console.error(err); alert(t.uploadError); }
     setLoading(false);
   };
 
-  const getTabInfo = () => {
-    if (activeTab === 'devices') return { name: t.tabDevices, table: 'shop_devices', items: devices };
-    if (activeTab === 'repairs') return { name: t.tabRepairs, table: 'shop_repairs', items: repairs };
-    if (activeTab === 'offers') return { name: t.tabOffers, table: 'shop_offers', items: offers };
-    return { name: t.tabSettings, table: 'shop_settings', items: [] };
-  };
+  const tabs = [
+    { id: 'menu', name: lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü', icon: Utensils, table: 'alsafi_menu', items: devices || [] },
+    { id: 'drinks', name: lang === 'ar' ? 'المشروبات' : 'Getränke', icon: Coffee, table: 'alsafi_drinks', items: repairs || [] },
+    { id: 'offers', name: lang === 'ar' ? 'العروض' : 'Angebote', icon: Percent, table: 'alsafi_offers', items: offers || [] },
+    { id: 'settings', name: t.settingsTab, icon: Settings, table: null, items: [] }
+  ];
 
-  const currentTab = getTabInfo();
+  const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   return (
@@ -435,10 +436,11 @@ export const AdminPanel = ({
 
         <div className="bg-black text-white p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-yellow-500">
           <div className="flex items-center gap-4">
-            <Settings className="w-10 h-10 text-yellow-500" />
-            <h2 className="text-2xl md:text-3xl font-black text-yellow-500">
-              {t.adminTitle}
-            </h2>
+            <Utensils className="w-10 h-10 text-orange-500" />
+            <div>
+              <h2 className="text-3xl font-black uppercase tracking-wider">{lang === 'ar' ? 'إدارة مطعم الصافي' : 'Alsafi Verwaltung'}</h2>
+              <p className="text-orange-400 font-bold">{lang === 'ar' ? 'تحكم في شاشات المطعم بسهولة' : 'Restaurant-Bildschirme steuern'}</p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -451,18 +453,22 @@ export const AdminPanel = ({
         </div>
 
         <div className="flex flex-col md:flex-row border-b border-gray-200">
-          <button onClick={() => { setActiveTab('devices'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'devices' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
-            <Smartphone className="w-6 h-6" /> {t.tabDevices}
-          </button>
-          <button onClick={() => { setActiveTab('repairs'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'repairs' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
-            <Wrench className="w-6 h-6" /> {t.tabRepairs}
-          </button>
-          <button onClick={() => { setActiveTab('offers'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'offers' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
-            <Tag className="w-6 h-6" /> {t.tabOffers}
-          </button>
-          <button onClick={() => setActiveTab('settings')} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'settings' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
-            <Globe className="w-6 h-6" /> {t.tabSettings}
-          </button>
+          {tabs.map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => { 
+                setActiveTab(tab.id); 
+                if (tab.id !== 'settings') {
+                  setImageFiles([]); 
+                  setImagePreviews([]); 
+                  setIsPreviewVideo(false); 
+                }
+              }} 
+              className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === tab.id ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              <tab.icon className="w-6 h-6" /> {tab.name}
+            </button>
+          ))}
         </div>
 
         <div className="p-8 md:p-10">
@@ -618,7 +624,7 @@ export const AdminPanel = ({
 
                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                       <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-yellow-600" /> {t.timerScreen1Label}
+                        <Utensils className="w-4 h-4 text-yellow-600" /> {lang === 'ar' ? 'شاشة 1 (المنيو الرئيسي):' : 'Bildschirm 1 (Hauptmenü):'}
                       </label>
                       <div className="flex items-center gap-2">
                         <input
@@ -635,7 +641,7 @@ export const AdminPanel = ({
 
                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                       <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Wrench className="w-4 h-4 text-yellow-600" /> {t.timerScreen2Label}
+                        <Coffee className="w-4 h-4 text-yellow-600" /> {lang === 'ar' ? 'شاشة 2 (المشروبات):' : 'Bildschirm 2 (Getränke):'}
                       </label>
                       <div className="flex items-center gap-2">
                         <input
@@ -652,7 +658,7 @@ export const AdminPanel = ({
 
                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                       <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-yellow-600" /> {t.timerScreen3Label}
+                        <Percent className="w-4 h-4 text-yellow-600" /> {lang === 'ar' ? 'شاشة 3 (العروض):' : 'Bildschirm 3 (Angebote):'}
                       </label>
                       <div className="flex items-center gap-2">
                         <input
@@ -815,7 +821,7 @@ export const AdminPanel = ({
                   <div>
                     <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
                       <Type className="w-6 h-6 text-yellow-600" />
-                      {t.tickerControlTitle}
+                      {lang === 'ar' ? 'التحكم بالشريط الإخباري (أخبار المطعم)' : 'Lauftext-Steuerung (ALSAFI News)'}
                     </h3>
 
                     <div className="bg-yellow-400 text-black py-2 px-3 rounded-xl mb-4 font-black text-xs overflow-hidden border border-yellow-500 flex items-center gap-2">
@@ -847,8 +853,8 @@ export const AdminPanel = ({
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between gap-6">
                   <div>
                     <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
-                      <Globe className="w-6 h-6 text-yellow-600" />
-                      {t.logoControlTitle}
+                      <Utensils className="w-6 h-6 text-yellow-600" />
+                      {lang === 'ar' ? 'تغيير شعار المطعم (ALSAFI Logo)' : 'Geschäftslogo ändern (ALSAFI Logo)'}
                     </h3>
 
                     <div className="mb-4 text-center">
@@ -857,7 +863,7 @@ export const AdminPanel = ({
                           <img src={customLogo} alt="Current Logo" className="w-full h-full object-contain rounded-full p-1" />
                         ) : (
                           <div className="relative w-full h-full flex items-center justify-center bg-black rounded-full">
-                            <Smartphone className="w-10 h-10 text-yellow-400" />
+                            <Utensils className="w-10 h-10 text-yellow-400" />
                           </div>
                         )}
                       </div>
