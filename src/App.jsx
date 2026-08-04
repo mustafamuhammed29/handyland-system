@@ -274,8 +274,9 @@ const TVScreenControls = () => {
   return (
     <button 
       onClick={toggleFullscreen}
-      className="fixed top-4 right-4 z-50 bg-black/70 hover:bg-yellow-500 text-yellow-400 hover:text-black p-3 rounded-2xl border-2 border-yellow-500/60 hover:border-yellow-400 backdrop-blur-md transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:shadow-[0_0_25px_rgba(234,179,8,0.6)] opacity-90 hover:opacity-100 group"
+      className="fixed top-4 right-4 z-50 bg-gray-900 hover:bg-yellow-500 text-yellow-400 hover:text-black p-3 rounded-2xl border-2 border-yellow-500 hover:border-yellow-400 transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_30px_rgba(234,179,8,0.7)] group"
       title="Vollbild / Fullscreen"
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {isFullscreen ? <Minimize className="w-7 h-7" /> : <Maximize className="w-7 h-7 group-hover:scale-110 transition-transform" />}
     </button>
