@@ -42,6 +42,7 @@ CREATE TABLE public.shop_repair_prices (
 CREATE TABLE public.shop_settings (
     id TEXT PRIMARY KEY DEFAULT 'config',
     "logoData" TEXT,
+    "faviconData" TEXT,
     "tickerText" TEXT,
     "headerSubtitle" TEXT,
     "slideInterval" INTEGER DEFAULT 6,

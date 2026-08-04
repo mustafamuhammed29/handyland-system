@@ -14,9 +14,9 @@ import {
 } from '../../constants/defaults';
 
 export const AdminPanel = ({ 
-  devices, repairs, offers, customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
+  devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  maintenanceMode = false, maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t 
+  maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t 
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,7 @@ export const AdminPanel = ({
   const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
+  const [faviconFile, setFaviconFile] = useState(null);
   const [imageDimensions, setImageDimensions] = useState(null);
   const [autoCrop169, setAutoCrop169] = useState(false);
 
@@ -53,6 +54,17 @@ export const AdminPanel = ({
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
+
+  const handleFaviconSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2097152) { // 2MB limit for favicon
+        alert(lang === 'ar' ? 'حجم أيقونة الموقع كبير جداً. الحد الأقصى 2MB' : 'Favicon ist zu groß. Max 2MB.');
+        return;
+      }
+      setFaviconFile(file);
+    }
+  };
 
   const handleMediaSelect = (e) => {
     const file = e.target.files[0];
@@ -153,7 +165,35 @@ export const AdminPanel = ({
     } catch (err) { console.error(err); }
     setLoading(false);
   };
+  const handleSaveFavicon = async (e) => {
+    e.preventDefault();
+    if (!faviconFile) return;
+    setLoading(true);
+    try {
+      const compressedFavicon = await compressImage(faviconFile, 200, 200, 0.9);
+      const base64Favicon = await convertToBase64(compressedFavicon);
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', faviconData: base64Favicon });
+      if (error) throw error;
+      setFaviconFile(null);
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
 
+  const handleResetFavicon = async () => {
+    if (!window.confirm(lang === 'ar' ? 'هل أنت متأكد من استعادة الأيقونة الافتراضية؟' : 'Standardsymbol wiederherstellen?')) return;
+    setLoading(true);
+    try {
+      await supabase.from('shop_settings').update({ faviconData: null }).eq('id', 'config');
+      alert(t.resetSuccess);
+      onRefresh();
+    } catch (err) { console.error(err); }
+    setLoading(false);
+  };
   const handleSaveTicker = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -748,43 +788,74 @@ export const AdminPanel = ({
                   </button>
                 </div>
 
-                {/* التحكم بشعار المحل */}
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
-                      <Globe className="w-6 h-6 text-yellow-600" />
-                      {t.logoControlTitle}
-                    </h3>
-                    
-                    <div className="mb-4 text-center">
-                      <div className="bg-white p-1 rounded-full inline-flex items-center justify-center border-2 border-yellow-400 shadow-md w-24 h-24 overflow-hidden">
-                        {customLogo ? (
-                          <img src={customLogo} alt="Current Logo" className="w-full h-full object-contain rounded-full p-1" />
-                        ) : (
-                          <div className="relative w-full h-full flex items-center justify-center bg-black rounded-full">
-                            <Smartphone className="w-10 h-10 text-yellow-400" />
-                          </div>
-                        )}
-                      </div>
+              {/* التحكم بشعار المحل وأيقونة الموقع */}
+              <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between gap-6">
+                <div>
+                  <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                    <Globe className="w-6 h-6 text-yellow-600" />
+                    {t.logoControlTitle}
+                  </h3>
+                  
+                  <div className="mb-4 text-center">
+                    <div className="bg-white p-1 rounded-full inline-flex items-center justify-center border-2 border-yellow-400 shadow-md w-24 h-24 overflow-hidden">
+                      {customLogo ? (
+                        <img src={customLogo} alt="Current Logo" className="w-full h-full object-contain rounded-full p-1" />
+                      ) : (
+                        <div className="relative w-full h-full flex items-center justify-center bg-black rounded-full">
+                          <Smartphone className="w-10 h-10 text-yellow-400" />
+                        </div>
+                      )}
                     </div>
-
-                    <form onSubmit={handleSaveLogo} className="space-y-3">
-                      <div className="border-2 border-dashed border-yellow-500 bg-yellow-50/50 p-3 rounded-xl text-center relative hover:bg-yellow-50 transition cursor-pointer">
-                        <input type="file" accept="image/*" onChange={handleLogoSelect} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                        <p className="font-bold text-xs text-gray-800">{t.selectLogoPrompt}</p>
-                      </div>
-                      <button type="submit" disabled={loading || !logoFile} className={`w-full py-3 rounded-xl text-base font-bold border cursor-pointer ${loading || !logoFile ? 'bg-gray-300 text-gray-500' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}>
-                        {t.saveLogoBtn}
-                      </button>
-                    </form>
                   </div>
 
+                  <form onSubmit={handleSaveLogo} className="space-y-3">
+                    <div className="border-2 border-dashed border-yellow-500 bg-yellow-50/50 p-3 rounded-xl text-center relative hover:bg-yellow-50 transition cursor-pointer">
+                      <input type="file" accept="image/*" onChange={handleLogoSelect} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <p className="font-bold text-xs text-gray-800">{t.selectLogoPrompt}</p>
+                    </div>
+                    <button type="submit" disabled={loading || !logoFile} className={`w-full py-3 rounded-xl text-base font-bold border cursor-pointer ${loading || !logoFile ? 'bg-gray-300 text-gray-500' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}>
+                      {t.saveLogoBtn}
+                    </button>
+                  </form>
                   {customLogo && (
-                    <button onClick={handleResetToDefaultLogo} className="mt-4 text-xs font-bold text-red-600 hover:text-red-800 underline text-center cursor-pointer">
+                    <button onClick={handleResetToDefaultLogo} className="mt-4 w-full text-xs font-bold text-red-600 hover:text-red-800 underline text-center cursor-pointer">
                       {t.resetLogoBtn}
                     </button>
                   )}
                 </div>
+
+                <div className="border-t pt-6 mt-2">
+                  <h3 className="text-lg font-black mb-3 text-gray-800 flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-blue-600" />
+                    {lang === 'ar' ? 'أيقونة المتصفح (Favicon)' : 'Browser-Symbol (Favicon)'}
+                  </h3>
+                  
+                  <div className="mb-4 text-center">
+                    <div className="bg-white p-1 rounded-lg inline-flex items-center justify-center border border-gray-300 shadow-sm w-12 h-12 overflow-hidden">
+                      {customFavicon ? (
+                        <img src={customFavicon} alt="Favicon" className="w-full h-full object-contain" />
+                      ) : (
+                        <Globe className="w-6 h-6 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSaveFavicon} className="space-y-3">
+                    <div className="border-2 border-dashed border-blue-500 bg-blue-50/50 p-2 rounded-xl text-center relative hover:bg-blue-50 transition cursor-pointer">
+                      <input type="file" accept="image/*" onChange={handleFaviconSelect} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <p className="font-bold text-xs text-gray-800">{lang === 'ar' ? 'اختر أيقونة' : 'Symbol auswählen'}</p>
+                    </div>
+                    <button type="submit" disabled={loading || !faviconFile} className={`w-full py-2 rounded-xl text-sm font-bold border cursor-pointer ${loading || !faviconFile ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                      {lang === 'ar' ? 'حفظ الأيقونة' : 'Symbol speichern'}
+                    </button>
+                  </form>
+                  {customFavicon && (
+                    <button onClick={handleResetFavicon} className="mt-3 w-full text-xs font-bold text-red-600 hover:text-red-800 underline text-center cursor-pointer">
+                      {lang === 'ar' ? 'استعادة الأيقونة الافتراضية' : 'Standard wiederherstellen'}
+                    </button>
+                  )}
+                </div>
+              </div>
 
               </div>
               

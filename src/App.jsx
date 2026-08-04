@@ -49,6 +49,7 @@ export default function App() {
   const [offers, setOffers] = useState(() => offlineCache.getOffers());
 
   const [customLogo, setCustomLogo] = useState(null);
+  const [customFavicon, setCustomFavicon] = useState(null);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
   const [tickerSpeed, setTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -82,6 +83,20 @@ export default function App() {
     localStorage.setItem('handyland_lang', newLang);
   };
 
+  const updateFavicon = (faviconBase64) => {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    if (faviconBase64) {
+      link.href = faviconBase64;
+    } else {
+      link.href = '/favicon.svg'; // Default
+    }
+  };
+
   const fetchAllData = useCallback(async () => {
     try {
       const { data: devData, error: devErr } = await supabase.from('shop_devices').select('*').order('created_at', { ascending: false });
@@ -106,6 +121,8 @@ export default function App() {
       if (!setErr && settingsData) {
         offlineCache.saveSettings(settingsData);
         setCustomLogo(settingsData.logoData || null);
+        setCustomFavicon(settingsData.faviconData || null);
+        updateFavicon(settingsData.faviconData);
         setTickerText(settingsData.tickerText || DEFAULT_TICKER);
         setTickerSpeed(settingsData.tickerSpeed || DEFAULT_TICKER_SPEED);
         setFontSize(settingsData.fontSize || DEFAULT_FONT_SIZE);
@@ -132,6 +149,10 @@ export default function App() {
       const cachedSettings = offlineCache.getSettings();
       if (cachedSettings) {
         if (cachedSettings.logoData) setCustomLogo(cachedSettings.logoData);
+        if (cachedSettings.faviconData) {
+          setCustomFavicon(cachedSettings.faviconData);
+          updateFavicon(cachedSettings.faviconData);
+        }
         if (cachedSettings.tickerText) setTickerText(cachedSettings.tickerText);
         if (cachedSettings.tickerSpeed) setTickerSpeed(cachedSettings.tickerSpeed);
         if (cachedSettings.fontSize) setFontSize(cachedSettings.fontSize);
@@ -171,6 +192,10 @@ export default function App() {
         const settingsData = payload.new;
         offlineCache.saveSettings(settingsData);
         if (settingsData.logoData !== undefined) setCustomLogo(settingsData.logoData);
+        if (settingsData.faviconData !== undefined) {
+          setCustomFavicon(settingsData.faviconData);
+          updateFavicon(settingsData.faviconData);
+        }
         if (settingsData.tickerText !== undefined) setTickerText(settingsData.tickerText);
         if (settingsData.tickerSpeed !== undefined) setTickerSpeed(settingsData.tickerSpeed);
         if (settingsData.fontSize !== undefined) setFontSize(settingsData.fontSize);
@@ -221,8 +246,8 @@ export default function App() {
   const renderActiveView = () => {
     if (view === 'admin') return (
       <AdminPanel 
-        devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} tickerText={tickerText} 
-        tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
+        devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} customFavicon={customFavicon}
+        tickerText={tickerText} tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
         onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
