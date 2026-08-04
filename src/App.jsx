@@ -883,6 +883,7 @@ const AdminPanel = ({
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 md:p-10 font-sans" dir={dir}>
+      <TVScreenControls />
       <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
         
         <div className="bg-black text-white p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-yellow-500">
