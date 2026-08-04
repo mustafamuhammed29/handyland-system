@@ -66,6 +66,28 @@ export const AdminPanel = ({
     }
   };
 
+  const handleRemovePreview = (index, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newFiles = [...imageFiles];
+    newFiles.splice(index, 1);
+    const newPreviews = [...imagePreviews];
+    newPreviews.splice(index, 1);
+    
+    setImageFiles(newFiles);
+    setImagePreviews(newPreviews);
+    
+    if (newFiles.length === 0) {
+      setIsPreviewVideo(false);
+      setImageDimensions(null);
+      const fileInput = document.getElementById('posterUpload');
+      if (fileInput) fileInput.value = '';
+    } else {
+      const hasVideo = newFiles.some(f => f.type.startsWith('video/'));
+      setIsPreviewVideo(hasVideo);
+    }
+  };
+
   const handleMediaSelect = (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
@@ -457,7 +479,7 @@ export const AdminPanel = ({
                         id="posterUpload"
                         accept="image/*,video/mp4,video/webm" 
                         onChange={handleMediaSelect} 
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0" 
                         multiple
                       />
                       {imagePreviews.length === 0 ? (
@@ -470,23 +492,28 @@ export const AdminPanel = ({
                           <p className="text-sm text-gray-500 mt-2">{t.noCropNote}</p>
                         </div>
                       ) : (
-                        <div className="relative">
-                          <div className="grid gap-3 justify-center" style={{ gridTemplateColumns: `repeat(${Math.min(imagePreviews.length, 3)}, minmax(0, 1fr))` }}>
-                            {imagePreviews.slice(0, 3).map((preview, i) => (
-                              imageFiles[i]?.type.startsWith('video/') ? (
-                                <video key={i} src={preview} autoPlay loop muted className="h-40 mx-auto rounded-xl shadow-md object-cover w-full" />
-                              ) : (
-                                <img key={i} src={preview} alt="Preview" className="h-40 mx-auto rounded-xl shadow-md object-cover w-full" />
-                              )
+                        <div className="relative z-10 pointer-events-none max-h-80 overflow-y-auto">
+                          <div className="grid gap-3 justify-center p-2" style={{ gridTemplateColumns: `repeat(${Math.min(imagePreviews.length, 3)}, minmax(0, 1fr))` }}>
+                            {imagePreviews.map((preview, i) => (
+                              <div key={i} className="relative group pointer-events-auto">
+                                {imageFiles[i]?.type.startsWith('video/') ? (
+                                  <video src={preview} autoPlay loop muted className="h-40 mx-auto rounded-xl shadow-md object-cover w-full border-2 border-transparent group-hover:border-red-500 transition-colors" />
+                                ) : (
+                                  <img src={preview} alt="Preview" className="h-40 mx-auto rounded-xl shadow-md object-cover w-full border-2 border-transparent group-hover:border-red-500 transition-colors" />
+                                )}
+                                <button 
+                                  type="button"
+                                  onClick={(e) => handleRemovePreview(i, e)} 
+                                  className="absolute -top-3 -right-3 bg-red-600 hover:bg-red-700 text-white p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-[0_0_15px_rgba(220,38,38,0.5)] cursor-pointer z-50"
+                                  title={lang === 'ar' ? 'حذف هذا الاختيار' : 'Auswahl löschen'}
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </div>
                             ))}
-                            {imagePreviews.length > 3 && (
-                               <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-black/80 text-white rounded-r-xl font-bold text-2xl z-20 shadow-[-10px_0_15px_rgba(0,0,0,0.5)]">
-                                 +{imagePreviews.length - 3}
-                               </div>
-                            )}
                           </div>
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition rounded-xl pointer-events-none z-30">
-                            <p className="text-white font-bold text-lg">{t.changeImage}</p>
+                          <div className="mt-4 pointer-events-none text-gray-500 text-sm font-bold bg-white/80 inline-block px-4 py-2 rounded-full">
+                            {lang === 'ar' ? 'اضغط على أي مساحة فارغة لاختيار صور أخرى' : 'Klicken Sie in den leeren Bereich, um andere Bilder auszuwählen'}
                           </div>
                         </div>
                       )}
