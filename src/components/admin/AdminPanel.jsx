@@ -40,7 +40,7 @@ export const AdminPanel = ({
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
-  const [editableStatusTimerTarget, setEditableStatusTimerTarget] = useState(statusTimerTarget || '');
+  const [timerDuration, setTimerDuration] = useState('none');
 
   useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
@@ -53,7 +53,6 @@ export const AdminPanel = ({
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
-  useEffect(() => { setEditableStatusTimerTarget(statusTimerTarget || ''); }, [statusTimerTarget]);
 
   const handleMediaSelect = (e) => {
     const file = e.target.files[0];
@@ -298,10 +297,17 @@ export const AdminPanel = ({
   const handleSaveStoreStatus = async () => {
     setLoading(true);
     try {
+      let finalTarget = statusTimerTarget; // keep existing if unchanged
+      if (timerDuration === 'clear') {
+        finalTarget = '';
+      } else if (timerDuration !== 'none') {
+        finalTarget = new Date(Date.now() + parseInt(timerDuration) * 60000).toISOString();
+      }
+
       const { error } = await supabase.from('shop_settings').upsert({ 
         id: 'config', 
         storeStatusMode: editableStoreStatusMode,
-        statusTimerTarget: editableStatusTimerTarget,
+        statusTimerTarget: finalTarget,
         maintenanceMessage: editableMaintenanceMsg
       });
       if (error) throw error;
@@ -815,14 +821,23 @@ export const AdminPanel = ({
                           </div>
                           <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">
-                              {lang === 'ar' ? 'وقت العودة (العداد التنازلي) اختياري:' : 'Rückkehrzeit (Countdown) optional:'}
+                              {lang === 'ar' ? 'وقت العودة (العداد التنازلي):' : 'Rückkehrzeit (Countdown):'}
                             </label>
-                            <input 
-                              type="datetime-local" 
-                              value={editableStatusTimerTarget}
-                              onChange={(e) => setEditableStatusTimerTarget(e.target.value)}
+                            <select 
+                              value={timerDuration}
+                              onChange={(e) => setTimerDuration(e.target.value)}
                               className="w-full p-3 border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-800 focus:border-yellow-500"
-                            />
+                            >
+                              <option value="none">{lang === 'ar' ? 'بدون مؤقت' : 'Kein Timer'}</option>
+                              <option value="15">{lang === 'ar' ? 'بعد 15 دقيقة' : 'In 15 Minuten'}</option>
+                              <option value="30">{lang === 'ar' ? 'بعد 30 دقيقة' : 'In 30 Minuten'}</option>
+                              <option value="60">{lang === 'ar' ? 'بعد ساعة' : 'In 1 Stunde'}</option>
+                              <option value="120">{lang === 'ar' ? 'بعد ساعتين' : 'In 2 Stunden'}</option>
+                              <option value="clear">{lang === 'ar' ? 'إلغاء المؤقت الحالي' : 'Aktuellen Timer löschen'}</option>
+                            </select>
+                            {statusTimerTarget && timerDuration === 'none' && (
+                               <p className="text-xs text-yellow-600 mt-1">{lang === 'ar' ? 'هناك مؤقت يعمل حالياً.' : 'Es läuft bereits ein Timer.'}</p>
+                            )}
                           </div>
                         </div>
                       )}
