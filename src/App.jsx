@@ -1313,6 +1313,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 md:p-12 text-white font-sans relative overflow-hidden" dir={dir}>
       
+      <TVScreenControls />
+
       {showPinModal && (
         <PinProtectionModal 
           onVerify={handleVerifyPin} 
