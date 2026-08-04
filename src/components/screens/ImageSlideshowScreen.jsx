@@ -87,7 +87,7 @@ export const ImageSlideshowScreen = ({
       <TVBackControl onBack={onBack} t={t} />
       <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} />
 
-      <main className={`flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0 pt-24 ${showNewsTicker ? 'pb-16' : 'pb-4'}`}>
+      <main className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0">
         
         {/* أزرار الأسهم الجانبية للريموت كنترول والتنقل اليدوي */}
         {items.length > 1 && (

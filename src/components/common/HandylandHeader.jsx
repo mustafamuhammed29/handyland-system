@@ -6,9 +6,9 @@ import { DEFAULT_SUBTITLE } from '../../constants/defaults';
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
 
 export const HandylandHeader = ({ title, icon: Icon, customLogo, headerSubtitle, cityName, lang, isOffline }) => (
-  <header className="absolute top-0 left-0 right-0 px-6 lg:px-10 py-3.5 bg-black/80 border-b border-yellow-500/30 flex justify-between items-center z-30 backdrop-blur-md pl-16 lg:pl-20 pr-24 lg:pr-32 shadow-2xl h-20 lg:h-24">
-    <div className="flex items-center gap-4 lg:gap-6 z-10">
-      <div className="flex items-center gap-3">
+  <header className="relative w-full px-6 lg:px-10 py-3.5 bg-black/80 border-b border-yellow-500/30 flex justify-between items-center z-40 backdrop-blur-md pl-16 lg:pl-20 pr-16 lg:pr-24 shadow-2xl h-20 lg:h-24 shrink-0">
+    <div className="flex items-center gap-3 lg:gap-5 z-10 min-w-0 flex-1">
+      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         {customLogo ? (
           <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 border-yellow-400 p-0.5 bg-white flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)]">
             <img src={customLogo} alt="HANDYLAND Logo" className="w-full h-full object-contain rounded-full" />
@@ -16,16 +16,16 @@ export const HandylandHeader = ({ title, icon: Icon, customLogo, headerSubtitle,
         ) : (
           <Globe className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
         )}
-        <span className={`text-3xl lg:text-5xl font-black tracking-widest ${goldTextGradient} drop-shadow-md`}>HANDYLAND</span>
+        <span className={`text-2xl lg:text-4xl font-black tracking-widest ${goldTextGradient} drop-shadow-md`}>HANDYLAND</span>
       </div>
-      <div className="h-10 w-0.5 bg-yellow-500/40"></div>
-      <h1 className="text-lg lg:text-2xl font-extrabold text-white flex items-center gap-3 tracking-wide">
-        {Icon && <Icon className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400" />}
-        {title}
+      <div className="h-8 w-0.5 bg-yellow-500/40 shrink-0"></div>
+      <h1 className="text-base lg:text-xl font-extrabold text-white flex items-center gap-2 tracking-wide truncate shrink-0">
+        {Icon && <Icon className="w-5 h-5 lg:w-7 lg:h-7 text-yellow-400 shrink-0" />}
+        <span className="truncate">{title}</span>
       </h1>
     </div>
 
-    <div className="hidden sm:flex items-center gap-4">
+    <div className="hidden sm:flex items-center gap-4 shrink-0">
       {isOffline && (
         <div className="flex items-center gap-2 bg-red-500/20 text-red-400 px-3 py-1 rounded-xl border border-red-500/40 text-xs font-bold animate-pulse">
           <WifiOff className="w-4 h-4" />

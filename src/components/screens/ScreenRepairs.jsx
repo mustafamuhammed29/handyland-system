@@ -68,7 +68,7 @@ export const ScreenRepairs = ({
       <TVBackControl onBack={onBack} t={t} />
       <HandylandHeader title="Reparaturzentrum & Preise" icon={Wrench} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} />
 
-      <main className="flex-1 p-4 lg:p-6 overflow-hidden flex flex-col relative min-h-0 pt-24 lg:pt-28">
+      <main className="flex-1 p-4 lg:p-6 overflow-hidden flex flex-col relative min-h-0">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full z-10 min-h-0">
           
           <div className="lg:col-span-4 flex flex-col justify-between bg-gradient-to-b from-black/95 via-gray-950/90 to-black/95 rounded-3xl border-2 border-yellow-500/40 p-5 lg:p-6 shadow-2xl backdrop-blur-xl h-full min-h-0 overflow-hidden">
