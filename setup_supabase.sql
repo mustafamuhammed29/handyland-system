@@ -51,6 +51,7 @@ CREATE TABLE public.shop_settings (
     "adminPin" TEXT DEFAULT '1234',
     "cityName" TEXT DEFAULT 'Heidelberg',
     "tickerSpeed" INTEGER DEFAULT 25,
+    "fontSize" TEXT DEFAULT '100%',
     "showClock" BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

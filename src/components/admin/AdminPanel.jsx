@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Smartphone, Wrench, Tag, Plus, Trash2, 
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe, 
-  Layout, Type, Timer, Key, CloudSun, Gauge, DollarSign
+  Layout, Type, Timer, Key, CloudSun, Gauge, DollarSign, Type as TypeIcon
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -10,12 +10,12 @@ import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
-  DEFAULT_CITY, DEFAULT_TICKER_SPEED 
+  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE 
 } from '../../constants/defaults';
 
 export const AdminPanel = ({ 
   devices, repairs, offers, repairPrices = [], customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
-  headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
+  fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
   onBack, onRefresh, lang, setLang, t 
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
@@ -34,6 +34,7 @@ export const AdminPanel = ({
 
   const [editableTicker, setEditableTicker] = useState(tickerText || DEFAULT_TICKER);
   const [editableTickerSpeed, setEditableTickerSpeed] = useState(tickerSpeed || DEFAULT_TICKER_SPEED);
+  const [editableFontSize, setEditableFontSize] = useState(fontSize || DEFAULT_FONT_SIZE);
   const [editableSubtitle, setEditableSubtitle] = useState(headerSubtitle || DEFAULT_SUBTITLE);
   const [editableTimer1, setEditableTimer1] = useState(intervalScreen1 || 6);
   const [editableTimer2, setEditableTimer2] = useState(intervalScreen2 || 6);
@@ -43,6 +44,7 @@ export const AdminPanel = ({
 
   useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
+  useEffect(() => { setEditableFontSize(fontSize || DEFAULT_FONT_SIZE); }, [fontSize]);
   useEffect(() => { setEditableSubtitle(headerSubtitle || DEFAULT_SUBTITLE); }, [headerSubtitle]);
   useEffect(() => { setEditableTimer1(intervalScreen1 || 6); }, [intervalScreen1]);
   useEffect(() => { setEditableTimer2(intervalScreen2 || 6); }, [intervalScreen2]);
@@ -201,6 +203,21 @@ export const AdminPanel = ({
         id: 'config', 
         tickerSpeed: parseInt(editableTickerSpeed) || DEFAULT_TICKER_SPEED 
       });
+      if (error) throw error;
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
+
+  const handleSaveFontSize = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', fontSize: editableFontSize });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -587,13 +604,38 @@ export const AdminPanel = ({
                 </form>
               </div>
 
-              {/* قسم سرعة الشريط الإخباري وحماية PIN وودجت الطقس */}
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* سرعة الشريط الإخباري */}
+              {/* قسم التحكم بحجم الخط وسرعة الشريط الإخباري وحماية PIN والطقس */}
+              <div className="grid lg:grid-cols-4 gap-6">
+                {/* 1. حجم الخط */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
-                      <Gauge className="w-6 h-6 text-yellow-600" />
+                    <h4 className="text-lg font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                      <TypeIcon className="w-5 h-5 text-yellow-600" />
+                      {t.fontSizeTitle}
+                    </h4>
+                    <p className="text-gray-600 text-xs mb-3 font-semibold">{t.fontSizeLabel}</p>
+                    <form onSubmit={handleSaveFontSize} className="space-y-3">
+                      <select 
+                        value={editableFontSize}
+                        onChange={(e) => setEditableFontSize(e.target.value)}
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-base font-bold text-gray-900 bg-white"
+                      >
+                        <option value="100%">{t.fontNormal}</option>
+                        <option value="120%">{t.fontLarge}</option>
+                        <option value="140%">{t.fontXLarge}</option>
+                      </select>
+                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer text-sm">
+                        {t.saveFontSizeBtn}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* 2. سرعة الشريط الإخباري */}
+                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-lg font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                      <Gauge className="w-5 h-5 text-yellow-600" />
                       {t.tickerSpeedTitle}
                     </h4>
                     <p className="text-gray-600 text-xs mb-3 font-semibold">{t.tickerSpeedLabel}</p>
@@ -605,22 +647,22 @@ export const AdminPanel = ({
                           max={100}
                           value={editableTickerSpeed}
                           onChange={(e) => setEditableTickerSpeed(e.target.value)}
-                          className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-xl font-bold text-center text-gray-900 bg-white"
+                          className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-center text-gray-900 bg-white"
                         />
-                        <span className="font-bold text-gray-500">{lang === 'ar' ? 'ثانية' : 'Sek'}</span>
+                        <span className="font-bold text-gray-500 text-xs">{lang === 'ar' ? 'ثانية' : 'Sek'}</span>
                       </div>
-                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer">
+                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer text-sm">
                         {t.saveTickerSpeedBtn}
                       </button>
                     </form>
                   </div>
                 </div>
 
-                {/* 2. حماية PIN */}
+                {/* 3. حماية PIN */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
-                      <Key className="w-6 h-6 text-yellow-600" />
+                    <h4 className="text-lg font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                      <Key className="w-5 h-5 text-yellow-600" />
                       {t.pinProtectionTitle}
                     </h4>
                     <p className="text-gray-600 text-xs mb-3 font-semibold">{t.pinInputLabel}</p>
@@ -630,21 +672,21 @@ export const AdminPanel = ({
                         maxLength={6}
                         value={editablePin}
                         onChange={(e) => setEditablePin(e.target.value)}
-                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-xl font-mono font-bold text-center text-gray-900 bg-white"
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-mono font-bold text-center text-gray-900 bg-white"
                         dir="ltr"
                       />
-                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer">
+                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer text-sm">
                         {t.savePinBtn}
                       </button>
                     </form>
                   </div>
                 </div>
 
-                {/* 3. ودجت مدينة الطقس المباشر */}
+                {/* 4. ودجت مدينة الطقس المباشر */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
-                      <CloudSun className="w-6 h-6 text-yellow-600" />
+                    <h4 className="text-lg font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                      <CloudSun className="w-5 h-5 text-yellow-600" />
                       {t.weatherCityTitle}
                     </h4>
                     <p className="text-gray-600 text-xs mb-3 font-semibold">{t.weatherCityLabel}</p>
@@ -653,11 +695,11 @@ export const AdminPanel = ({
                         type="text"
                         value={editableCity}
                         onChange={(e) => setEditableCity(e.target.value)}
-                        placeholder="Heidelberg, Frankfurt, Berlin..."
-                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-gray-900 bg-white"
+                        placeholder="Heidelberg, Frankfurt..."
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-base font-bold text-gray-900 bg-white"
                         dir="ltr"
                       />
-                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer">
+                      <button type="submit" className="w-full py-3 bg-black text-yellow-400 font-bold rounded-xl hover:bg-gray-900 cursor-pointer text-sm">
                         {t.saveCityBtn}
                       </button>
                     </form>
@@ -666,7 +708,7 @@ export const AdminPanel = ({
               </div>
 
               <div className="grid lg:grid-cols-3 gap-8">
-                {/* 4. التحكم بنص الهيدر الفرعي */}
+                {/* التحكم بنص الهيدر الفرعي */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
                     <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
@@ -697,7 +739,7 @@ export const AdminPanel = ({
                   </button>
                 </div>
 
-                {/* 5. التحكم بالشريط الإخباري المتحرك */}
+                {/* التحكم بالشريط الإخباري المتحرك */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
                     <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
@@ -730,7 +772,7 @@ export const AdminPanel = ({
                   </button>
                 </div>
 
-                {/* 6. التحكم بشعار المحل */}
+                {/* التحكم بشعار المحل */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
                     <h3 className="text-xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">

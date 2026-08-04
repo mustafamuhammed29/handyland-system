@@ -9,7 +9,7 @@ const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-ye
 const darkBg = "bg-[#050505]";
 
 export const ScreenRepairs = ({ 
-  repairs, repairPrices = [], customLogo, headerSubtitle, 
+  repairs, repairPrices = [], customLogo, headerSubtitle, fontSize = '100%',
   slideInterval = 6, cityName, onBack, t, lang, isOffline 
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -92,7 +92,7 @@ export const ScreenRepairs = ({
             </div>
 
             {/* قائمة الأسعار والخدمات المباشرة */}
-            <div className="flex-1 overflow-y-auto my-3 pr-1 space-y-2.5 max-h-[300px] lg:max-h-[400px]">
+            <div className="flex-1 overflow-y-auto my-3 pr-1 space-y-2.5 max-h-[300px] lg:max-h-[400px]" style={{ fontSize: fontSize }}>
               {repairPrices && repairPrices.length > 0 ? (
                 repairPrices.map((item) => (
                   <div key={item.id} className="flex justify-between items-center bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 p-3 rounded-2xl transition">

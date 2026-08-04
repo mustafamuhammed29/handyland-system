@@ -3,7 +3,7 @@ import { Smartphone, Tag } from 'lucide-react';
 import { translations } from './constants/translations';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
-  DEFAULT_CITY, DEFAULT_TICKER_SPEED 
+  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE 
 } from './constants/defaults';
 import { supabase } from './services/supabase';
 import { offlineCache } from './services/offlineCache';
@@ -50,6 +50,7 @@ export default function App() {
   const [customLogo, setCustomLogo] = useState(null);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
   const [tickerSpeed, setTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
+  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [headerSubtitle, setHeaderSubtitle] = useState(DEFAULT_SUBTITLE);
   
   const [intervalScreen1, setIntervalScreen1] = useState(6);
@@ -108,6 +109,7 @@ export default function App() {
         setCustomLogo(settingsData.logoData || null);
         setTickerText(settingsData.tickerText || DEFAULT_TICKER);
         setTickerSpeed(settingsData.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setFontSize(settingsData.fontSize || DEFAULT_FONT_SIZE);
         setHeaderSubtitle(settingsData.headerSubtitle || DEFAULT_SUBTITLE);
         setIntervalScreen1(settingsData.intervalScreen1 || 6);
         setIntervalScreen2(settingsData.intervalScreen2 || 6);
@@ -125,6 +127,7 @@ export default function App() {
         if (cachedSettings.logoData) setCustomLogo(cachedSettings.logoData);
         if (cachedSettings.tickerText) setTickerText(cachedSettings.tickerText);
         if (cachedSettings.tickerSpeed) setTickerSpeed(cachedSettings.tickerSpeed);
+        if (cachedSettings.fontSize) setFontSize(cachedSettings.fontSize);
         if (cachedSettings.headerSubtitle) setHeaderSubtitle(cachedSettings.headerSubtitle);
         if (cachedSettings.intervalScreen1) setIntervalScreen1(cachedSettings.intervalScreen1);
         if (cachedSettings.intervalScreen2) setIntervalScreen2(cachedSettings.intervalScreen2);
@@ -153,7 +156,7 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
 
     const channel = supabase
-      .channel('public:handyland_tv_signage_v4')
+      .channel('public:handyland_tv_signage_v5')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
@@ -181,7 +184,7 @@ export default function App() {
   if (view === 'admin') return (
     <AdminPanel 
       devices={devices} repairs={repairs} offers={offers} repairPrices={repairPrices} customLogo={customLogo} tickerText={tickerText} 
-      tickerSpeed={tickerSpeed} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
+      tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
       intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
       onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
     />
@@ -199,7 +202,7 @@ export default function App() {
   if (view === 'screen2') return (
     <ScreenRepairs 
       repairs={repairs} repairPrices={repairPrices} customLogo={customLogo} headerSubtitle={headerSubtitle} 
-      slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
+      fontSize={fontSize} slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
       t={t} lang={lang} isOffline={isOffline} 
     />
   );
