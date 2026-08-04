@@ -7,7 +7,7 @@ import {
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 import { supabase } from '../../services/supabase';
-import { convertToBase64, isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
+import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE 
@@ -86,7 +86,8 @@ export const AdminPanel = ({
     }
     setLoading(true);
     try {
-      const base64Image = await convertToBase64(imageFile);
+      const compressedFile = await compressImage(imageFile, 1920, 1080, 0.82);
+      const base64Image = await convertToBase64(compressedFile);
       const { error } = await supabase.from(tableName).insert([{ imageData: base64Image }]);
       if (error) throw error;
       
@@ -144,7 +145,8 @@ export const AdminPanel = ({
     if (!logoFile) return;
     setLoading(true);
     try {
-      const base64Logo = await convertToBase64(logoFile);
+      const compressedLogo = await compressImage(logoFile, 500, 500, 0.85);
+      const base64Logo = await convertToBase64(compressedLogo);
       const { error } = await supabase.from('shop_settings').upsert({ id: 'config', logoData: base64Logo });
       if (error) throw error;
       setLogoFile(null);

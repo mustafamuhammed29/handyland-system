@@ -12,6 +12,7 @@ import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
 import { ScreenRepairs } from './components/screens/ScreenRepairs';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 
 export default function App() {
   const getInitialView = () => {
@@ -181,46 +182,55 @@ export default function App() {
     return false;
   };
 
-  if (view === 'admin') return (
-    <AdminPanel 
-      devices={devices} repairs={repairs} offers={offers} repairPrices={repairPrices} customLogo={customLogo} tickerText={tickerText} 
-      tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
-      intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
-      onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
-    />
-  );
+  const renderActiveView = () => {
+    if (view === 'admin') return (
+      <AdminPanel 
+        devices={devices} repairs={repairs} offers={offers} repairPrices={repairPrices} customLogo={customLogo} tickerText={tickerText} 
+        tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
+        intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
+        onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+      />
+    );
 
-  if (view === 'screen1') return (
-    <ImageSlideshowScreen 
-      items={devices} title="Top Angebote & Smartphones" icon={Smartphone} 
-      customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
-      headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
-      onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-    />
-  );
+    if (view === 'screen1') return (
+      <ImageSlideshowScreen 
+        items={devices} title="Top Angebote & Smartphones" icon={Smartphone} 
+        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
 
-  if (view === 'screen2') return (
-    <ScreenRepairs 
-      repairs={repairs} repairPrices={repairPrices} customLogo={customLogo} headerSubtitle={headerSubtitle} 
-      fontSize={fontSize} slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
-      t={t} lang={lang} isOffline={isOffline} 
-    />
-  );
+    if (view === 'screen2') return (
+      <ScreenRepairs 
+        repairs={repairs} repairPrices={repairPrices} customLogo={customLogo} headerSubtitle={headerSubtitle} 
+        fontSize={fontSize} slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
+        t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
 
-  if (view === 'screen3') return (
-    <ImageSlideshowScreen 
-      items={offers} title="Angebote & News" icon={Tag} showNewsTicker={true} 
-      customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
-      headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
-      onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-    />
-  );
+    if (view === 'screen3') return (
+      <ImageSlideshowScreen 
+        items={offers} title="Angebote & News" icon={Tag} showNewsTicker={true} 
+        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+      />
+    );
+
+    return (
+      <MainMenu 
+        navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
+        setLang={handleSetLang} t={t} showPinModal={showPinModal} 
+        setShowPinModal={setShowPinModal} handleVerifyPin={handleVerifyPin} 
+      />
+    );
+  };
 
   return (
-    <MainMenu 
-      navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
-      setLang={handleSetLang} t={t} showPinModal={showPinModal} 
-      setShowPinModal={setShowPinModal} handleVerifyPin={handleVerifyPin} 
-    />
+    <>
+      <AutoMemoryRefresh />
+      {renderActiveView()}
+    </>
   );
 }
