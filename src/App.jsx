@@ -1235,6 +1235,16 @@ export default function App() {
   const [view, setView] = useState('menu');
   const [lang, setLang] = useState(() => localStorage.getItem('handyland_lang') || 'de');
   const [showPinModal, setShowPinModal] = useState(false);
+
+  // دعم أزرار المتصفح للأمام والخلف (Browser History API)
+  const navigateTo = (newView) => {
+    window.history.pushState({ view: newView }, '', '#' + newView);
+    setView(newView);
+  };
+
+  const navigateBack = () => {
+    window.history.back();
+  };
   
   const [devices, setDevices] = useState([]);
   const [repairs, setRepairs] = useState([]);
@@ -1295,6 +1305,17 @@ export default function App() {
   useEffect(() => {
     fetchAllData();
 
+    // استماع لزر الرجوع في المتصفح
+    const handlePopState = (e) => {
+      const savedView = e.state?.view || 'menu';
+      setView(savedView);
+      setShowPinModal(false);
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    // تهيئة الحالة الأولى
+    window.history.replaceState({ view: 'menu' }, '', window.location.href);
+
     const channel = supabase
       .channel('public:handyland_tv_65_v22')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
@@ -1305,6 +1326,7 @@ export default function App() {
 
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, []);
 
@@ -1326,13 +1348,13 @@ export default function App() {
       devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} tickerText={tickerText} 
       headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3}
       adminPin={adminPin} cityName={cityName}
-      onBack={() => setView('menu')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+      onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
     />
   );
 
-  if (view === 'screen1') return <ImageSlideshowScreen items={devices} title="Top Angebote & Smartphones" icon={Smartphone} customLogo={customLogo} tickerText={tickerText} headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} onBack={() => setView('menu')} t={t} lang={lang} />;
-  if (view === 'screen2') return <ScreenRepairs repairs={repairs} customLogo={customLogo} headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} onBack={() => setView('menu')} t={t} lang={lang} />;
-  if (view === 'screen3') return <ImageSlideshowScreen items={offers} title="Angebote & News" icon={Tag} showNewsTicker={true} customLogo={customLogo} tickerText={tickerText} headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} onBack={() => setView('menu')} t={t} lang={lang} />;
+  if (view === 'screen1') return <ImageSlideshowScreen items={devices} title="Top Angebote & Smartphones" icon={Smartphone} customLogo={customLogo} tickerText={tickerText} headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} onBack={navigateBack} t={t} lang={lang} />;
+  if (view === 'screen2') return <ScreenRepairs repairs={repairs} customLogo={customLogo} headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} t={t} lang={lang} />;
+  if (view === 'screen3') return <ImageSlideshowScreen items={offers} title="Angebote & News" icon={Tag} showNewsTicker={true} customLogo={customLogo} tickerText={tickerText} headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} onBack={navigateBack} t={t} lang={lang} />;
 
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -1375,7 +1397,7 @@ export default function App() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl w-full relative z-10">
-        <button onClick={() => setView('screen1')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
+        <button onClick={() => navigateTo('screen1')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
           <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-8 rounded-full mb-8 transition-colors border border-yellow-500/20 shadow-inner">
              <Smartphone className="w-16 h-16 text-yellow-400 group-hover:text-black" />
           </div>
@@ -1383,7 +1405,7 @@ export default function App() {
           <p className="text-yellow-400 font-bold tracking-wider uppercase text-base lg:text-lg">{t.screen1Sub}</p>
         </button>
 
-        <button onClick={() => setView('screen2')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
+        <button onClick={() => navigateTo('screen2')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
           <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-8 rounded-full mb-8 transition-colors border border-yellow-500/20 shadow-inner">
             <Wrench className="w-16 h-16 text-yellow-400 group-hover:text-black" />
           </div>
@@ -1391,7 +1413,7 @@ export default function App() {
           <p className="text-yellow-400 font-bold tracking-wider uppercase text-base lg:text-lg">{t.screen2Sub}</p>
         </button>
 
-        <button onClick={() => setView('screen3')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
+        <button onClick={() => navigateTo('screen3')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-10 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl">
           <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-8 rounded-full mb-8 transition-colors border border-yellow-500/20 shadow-inner">
             <Tag className="w-16 h-16 text-yellow-400 group-hover:text-black" />
           </div>
