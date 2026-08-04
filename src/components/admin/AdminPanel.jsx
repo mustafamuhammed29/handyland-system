@@ -300,6 +300,13 @@ export const AdminPanel = ({
       let finalTarget = statusTimerTarget; // keep existing if unchanged
       if (timerDuration === 'clear') {
         finalTarget = '';
+      } else if (timerDuration === 'until20') {
+        const now = new Date();
+        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
+        if (target.getTime() < now.getTime()) {
+          target.setDate(target.getDate() + 1);
+        }
+        finalTarget = target.toISOString();
       } else if (timerDuration !== 'none') {
         finalTarget = new Date(Date.now() + parseInt(timerDuration) * 60000).toISOString();
       }
@@ -833,6 +840,7 @@ export const AdminPanel = ({
                               <option value="30">{lang === 'ar' ? 'بعد 30 دقيقة' : 'In 30 Minuten'}</option>
                               <option value="60">{lang === 'ar' ? 'بعد ساعة' : 'In 1 Stunde'}</option>
                               <option value="120">{lang === 'ar' ? 'بعد ساعتين' : 'In 2 Stunden'}</option>
+                              <option value="until20">{lang === 'ar' ? 'إلى الساعة 20:00 مساءً' : 'Bis 20:00 Uhr'}</option>
                               <option value="clear">{lang === 'ar' ? 'إلغاء المؤقت الحالي' : 'Aktuellen Timer löschen'}</option>
                             </select>
                             {statusTimerTarget && timerDuration === 'none' && (
