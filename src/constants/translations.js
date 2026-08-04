@@ -87,6 +87,12 @@ export const translations = {
     saveSuccess: "Erfolgreich gespeichert!",
     resetSuccess: "Erfolgreich zurückgesetzt!",
     offlineNotice: "Offline-Modus aktiv",
+    maintenanceTitle: "Wartungsmodus",
+    maintenanceDesc: "Die Website wird derzeit gewartet. Bitte haben Sie einen Moment Geduld.",
+    enableMaintenanceBtn: "Wartungsmodus aktivieren",
+    disableMaintenanceBtn: "Wartungsmodus deaktivieren",
+    forceReloadBtn: "Alle Bildschirme aktualisieren (Force Reload)",
+    systemControlTitle: "Systemsteuerung (Wartung & Reload)",
   },
   ar: {
     systemTitle: "نظام التحكم بالشاشات المصورة والخبر المتحرك",
@@ -176,5 +182,11 @@ export const translations = {
     saveSuccess: "تم الحفظ بنجاح!",
     resetSuccess: "تمت الاستعادة بنجاح!",
     offlineNotice: "وضع الأوفلاين نشط",
+    maintenanceTitle: "وضع الصيانة",
+    maintenanceDesc: "الموقع يخضع للصيانة والتحديث حالياً. يرجى الانتظار قليلاً.",
+    enableMaintenanceBtn: "تفعيل وضع الصيانة",
+    disableMaintenanceBtn: "إيقاف وضع الصيانة",
+    forceReloadBtn: "إجبار جميع الشاشات على التحديث (إعادة تحميل)",
+    systemControlTitle: "التحكم بالنظام (الصيانة والتحديث)",
   }
 };

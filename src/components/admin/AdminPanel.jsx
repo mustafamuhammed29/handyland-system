@@ -16,7 +16,7 @@ import {
 export const AdminPanel = ({ 
   devices, repairs, offers, repairPrices = [], customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  onBack, onRefresh, lang, setLang, t 
+  maintenanceMode = false, onBack, onRefresh, lang, setLang, t 
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
@@ -327,6 +327,29 @@ export const AdminPanel = ({
       if (error) throw error;
       onRefresh();
     } catch (err) { console.error(err); }
+  };
+
+  const handleToggleMaintenance = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', maintenanceMode: !maintenanceMode });
+      if (error) throw error;
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) { console.error(err); alert(t.uploadError); }
+    setLoading(false);
+  };
+
+  const handleForceReload = async () => {
+    const confirmMessage = lang === 'ar' ? 'هل أنت متأكد من إعادة تحميل جميع الشاشات؟' : 'Möchten Sie wirklich alle Bildschirme aktualisieren?';
+    if (!window.confirm(confirmMessage)) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', forceReload: Date.now() });
+      if (error) throw error;
+      alert(t.saveSuccess);
+    } catch (err) { console.error(err); alert(t.uploadError); }
+    setLoading(false);
   };
 
   const getTabInfo = () => {
@@ -860,6 +883,42 @@ export const AdminPanel = ({
                   )}
                 </div>
 
+              </div>
+              
+              {/* قسم التحكم بالنظام والصيانة */}
+              <div className="bg-gray-50 p-8 rounded-3xl border-2 border-red-500/40 shadow-sm mt-8">
+                <h3 className="text-2xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-3">
+                  <Settings className="w-8 h-8 text-red-600" />
+                  {t.systemControlTitle || 'Systemsteuerung (Wartung & Reload)'}
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-6 mt-6">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center items-center text-center">
+                    <button 
+                      onClick={handleToggleMaintenance}
+                      disabled={loading}
+                      className={`w-full py-4 text-lg font-bold rounded-xl cursor-pointer transition ${maintenanceMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-800 text-yellow-400 hover:bg-black'}`}
+                    >
+                      {maintenanceMode ? (t.disableMaintenanceBtn || 'Wartungsmodus deaktivieren') : (t.enableMaintenanceBtn || 'Wartungsmodus aktivieren')}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-3 font-semibold">
+                      {t.maintenanceDesc || 'Die Website wird derzeit gewartet. Bitte haben Sie einen Moment Geduld.'}
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center items-center text-center">
+                    <button 
+                      onClick={handleForceReload}
+                      disabled={loading}
+                      className="w-full py-4 bg-blue-600 text-white font-bold text-lg rounded-xl hover:bg-blue-700 cursor-pointer transition flex justify-center items-center gap-2"
+                    >
+                      {t.forceReloadBtn || 'Alle Bildschirme aktualisieren (Force Reload)'}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-3 font-semibold">
+                      {lang === 'ar' ? 'يجبر جميع الشاشات على تحديث الصفحة وجلب التعديلات فوراً.' : 'Zwingt alle Bildschirme, die Seite zu aktualisieren und Änderungen sofort zu übernehmen.'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
             </div>

@@ -13,8 +13,10 @@ import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen'
 import { ScreenRepairs } from './components/screens/ScreenRepairs';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
+import { MaintenanceScreen } from './components/screens/MaintenanceScreen';
 
 export default function App() {
+  const [initialLoadTime] = useState(Date.now());
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const screenParam = urlParams.get('screen');
@@ -60,6 +62,7 @@ export default function App() {
 
   const [adminPin, setAdminPin] = useState(DEFAULT_PIN);
   const [cityName, setCityName] = useState(DEFAULT_CITY);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   const t = translations[lang] || translations.de;
 
@@ -117,6 +120,11 @@ export default function App() {
         setIntervalScreen3(settingsData.intervalScreen3 || 6);
         setAdminPin(settingsData.adminPin || DEFAULT_PIN);
         setCityName(settingsData.cityName || DEFAULT_CITY);
+        setMaintenanceMode(settingsData.maintenanceMode || false);
+        
+        if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
+          window.location.reload();
+        }
       }
 
       setIsOffline(false);
@@ -135,9 +143,10 @@ export default function App() {
         if (cachedSettings.intervalScreen3) setIntervalScreen3(cachedSettings.intervalScreen3);
         if (cachedSettings.adminPin) setAdminPin(cachedSettings.adminPin);
         if (cachedSettings.cityName) setCityName(cachedSettings.cityName);
+        if (cachedSettings.maintenanceMode !== undefined) setMaintenanceMode(cachedSettings.maintenanceMode);
       }
     }
-  }, []);
+  }, [initialLoadTime]);
 
   useEffect(() => {
     fetchAllData();
@@ -189,7 +198,12 @@ export default function App() {
         tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
         onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+        maintenanceMode={maintenanceMode}
       />
+    );
+
+    if (maintenanceMode) return (
+      <MaintenanceScreen t={t} lang={lang} customLogo={customLogo} />
     );
 
     if (view === 'screen1') return (

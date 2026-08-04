@@ -53,6 +53,8 @@ CREATE TABLE public.shop_settings (
     "tickerSpeed" INTEGER DEFAULT 25,
     "fontSize" TEXT DEFAULT '100%',
     "showClock" BOOLEAN DEFAULT true,
+    "maintenanceMode" BOOLEAN DEFAULT false,
+    "forceReload" BIGINT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
