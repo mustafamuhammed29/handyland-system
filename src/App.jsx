@@ -277,27 +277,32 @@ const TVScreenControls = () => {
       title="Vollbild / Fullscreen"
       style={{
         position: 'fixed',
-        top: '12px',
-        right: '12px',
-        zIndex: 9999,
-        backgroundColor: '#111827',
-        color: '#facc15',
-        padding: '12px',
+        top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
+        right: '14px',
+        zIndex: 99999,
+        backgroundColor: isFullscreen ? '#111827' : '#eab308',
+        color: isFullscreen ? '#facc15' : '#000000',
+        padding: '13px',
         borderRadius: '14px',
         border: '2px solid #eab308',
-        boxShadow: '0 0 18px rgba(234,179,8,0.45)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(234,179,8,0.5)',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
+        WebkitAppearance: 'none',
         outline: 'none',
-        minWidth: '48px',
-        minHeight: '48px',
+        minWidth: '50px',
+        minHeight: '50px',
+        visibility: 'visible',
+        opacity: 1,
       }}
     >
-      {isFullscreen ? <Minimize style={{ width: 28, height: 28 }} /> : <Maximize style={{ width: 28, height: 28 }} />}
+      {isFullscreen 
+        ? <Minimize style={{ width: 28, height: 28, color: '#facc15', display: 'block' }} /> 
+        : <Maximize style={{ width: 28, height: 28, color: '#000000', display: 'block' }} />}
     </button>
   );
 };
