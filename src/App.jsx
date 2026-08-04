@@ -476,15 +476,20 @@ const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, cust
           >
              {item.imageData ? (
                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                  {/* طبقة الخلفية الضبابية - تملأ الشاشة كاملة */}
                   <img 
                     src={item.imageData} 
-                    alt="Ambient Blur" 
-                    className="absolute inset-0 w-full h-full object-cover filter blur-3xl opacity-60 scale-125 pointer-events-none" 
+                    alt="" 
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
                   />
+                  {/* طبقة تعتيم إضافية للتدرج اللوني */}
+                  <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+                  {/* الصورة الأصلية الواضحة في المركز */}
                   <img 
                     src={item.imageData} 
                     alt="Poster" 
-                    className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.9)] rounded-xl" 
+                    className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-xl" 
                   />
                </div>
              ) : (
@@ -614,9 +619,11 @@ const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterval = 6,
                   <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-2xl">
                     <img 
                       src={item.imageData} 
-                      alt="Ambient Blur" 
-                      className="absolute inset-0 w-full h-full object-cover filter blur-3xl opacity-50 scale-125 pointer-events-none" 
+                      alt="" 
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-2xl"
+                      style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
                     />
+                    <div className="absolute inset-0 bg-black/30 pointer-events-none rounded-2xl" />
                     <img 
                       src={item.imageData} 
                       alt="Repair Poster" 
