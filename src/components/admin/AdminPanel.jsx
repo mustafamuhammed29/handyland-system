@@ -16,7 +16,7 @@ import {
 export const AdminPanel = ({ 
   devices, repairs, offers, customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  maintenanceMode = false, maintenanceMessage = '', onBack, onRefresh, lang, setLang, t 
+  maintenanceMode = false, maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t 
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,8 @@ export const AdminPanel = ({
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
+  const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
+  const [editableStatusTimerTarget, setEditableStatusTimerTarget] = useState(statusTimerTarget || '');
 
   useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
@@ -50,6 +52,8 @@ export const AdminPanel = ({
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
+  useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
+  useEffect(() => { setEditableStatusTimerTarget(statusTimerTarget || ''); }, [statusTimerTarget]);
 
   const handleMediaSelect = (e) => {
     const file = e.target.files[0];
@@ -291,10 +295,15 @@ export const AdminPanel = ({
     } catch (err) { console.error(err); }
   };
 
-  const handleToggleMaintenance = async () => {
+  const handleSaveStoreStatus = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', maintenanceMode: !maintenanceMode });
+      const { error } = await supabase.from('shop_settings').upsert({ 
+        id: 'config', 
+        storeStatusMode: editableStoreStatusMode,
+        statusTimerTarget: editableStatusTimerTarget,
+        maintenanceMessage: editableMaintenanceMsg
+      });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -302,17 +311,7 @@ export const AdminPanel = ({
     setLoading(false);
   };
 
-  const handleSaveMaintenanceMsg = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', maintenanceMessage: editableMaintenanceMsg });
-      if (error) throw error;
-      alert(t.saveSuccess);
-      onRefresh();
-    } catch (err) { console.error(err); alert(t.uploadError); }
-    setLoading(false);
-  };
+
 
   const handleForceReload = async () => {
     const confirmMessage = lang === 'ar' ? 'هل أنت متأكد من إعادة تحميل جميع الشاشات؟' : 'Möchten Sie wirklich alle Bildschirme aktualisieren?';
@@ -784,30 +783,67 @@ export const AdminPanel = ({
                 </h3>
                 
                 <div className="grid md:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center items-center text-center">
-                    <button 
-                      onClick={handleToggleMaintenance}
-                      disabled={loading}
-                      className={`w-full py-4 text-lg font-bold rounded-xl cursor-pointer transition ${maintenanceMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-800 text-yellow-400 hover:bg-black'}`}
-                    >
-                      {maintenanceMode ? (t.disableMaintenanceBtn || 'Wartungsmodus deaktivieren') : (t.enableMaintenanceBtn || 'Wartungsmodus aktivieren')}
-                    </button>
-                    <form onSubmit={handleSaveMaintenanceMsg} className="w-full mt-4 flex gap-2">
-                      <input 
-                        type="text" 
-                        value={editableMaintenanceMsg}
-                        onChange={(e) => setEditableMaintenanceMsg(e.target.value)}
-                        placeholder="Die Website wird derzeit gewartet..."
-                        className="flex-1 p-2 border border-gray-300 rounded-lg text-sm text-gray-800"
-                        dir="ltr"
-                      />
-                      <button type="submit" disabled={loading} className="bg-gray-800 hover:bg-black text-yellow-400 px-3 rounded-lg text-sm font-bold">
-                        {t.saveSubtitleBtn || 'Save'}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                    <h4 className="font-bold text-gray-800 mb-4">{lang === 'ar' ? 'وضع الشاشات (Store Status)' : 'Bildschirmstatus (Store Status)'}</h4>
+                    <form onSubmit={(e) => { e.preventDefault(); handleSaveStoreStatus(); }} className="space-y-4">
+                      <select 
+                        value={editableStoreStatusMode}
+                        onChange={(e) => setEditableStoreStatusMode(e.target.value)}
+                        className="w-full p-3 border-2 border-gray-300 rounded-xl font-bold text-gray-800 focus:border-yellow-500 outline-none"
+                      >
+                        <option value="active">{lang === 'ar' ? 'فعال (الوضع الطبيعي)' : 'Aktiv (Normalmodus)'}</option>
+                        <option value="closed">{lang === 'ar' ? 'مغلق (Closed)' : 'Geschlossen (Closed)'}</option>
+                        <option value="lunch">{lang === 'ar' ? 'استراحة غداء (Lunch Break)' : 'Mittagspause (Lunch Break)'}</option>
+                        <option value="inventory">{lang === 'ar' ? 'جرد المستودع (Inventory)' : 'Inventur (Inventory)'}</option>
+                        <option value="maintenance">{lang === 'ar' ? 'صيانة (Maintenance)' : 'Wartung (Maintenance)'}</option>
+                      </select>
+                      
+                      {editableStoreStatusMode !== 'active' && (
+                        <div className="space-y-4 animate-fade-in">
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">
+                              {lang === 'ar' ? 'رسالة العرض المخصصة:' : 'Benutzerdefinierte Nachricht:'}
+                            </label>
+                            <input 
+                              type="text" 
+                              value={editableMaintenanceMsg}
+                              onChange={(e) => setEditableMaintenanceMsg(e.target.value)}
+                              placeholder="Wir sind bald wieder für Sie da..."
+                              className="w-full p-3 border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-800 focus:border-yellow-500"
+                              dir="ltr"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">
+                              {lang === 'ar' ? 'وقت العودة (العداد التنازلي) اختياري:' : 'Rückkehrzeit (Countdown) optional:'}
+                            </label>
+                            <input 
+                              type="datetime-local" 
+                              value={editableStatusTimerTarget}
+                              onChange={(e) => setEditableStatusTimerTarget(e.target.value)}
+                              className="w-full p-3 border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-800 focus:border-yellow-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      <button 
+                        type="submit" 
+                        disabled={loading} 
+                        className={`w-full py-4 text-lg font-bold rounded-xl cursor-pointer transition flex items-center justify-center gap-2 ${
+                          editableStoreStatusMode !== 'active' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-800 text-yellow-400 hover:bg-black'
+                        }`}
+                      >
+                        <Save className="w-5 h-5" />
+                        {lang === 'ar' ? 'حفظ الوضع' : 'Status Speichern'}
                       </button>
                     </form>
-                    <p className="text-xs text-gray-500 mt-3 font-semibold">
-                      {maintenanceMessage || t.maintenanceDesc || 'Die Website wird derzeit gewartet. Bitte haben Sie einen Moment Geduld.'}
-                    </p>
+                    
+                    {storeStatusMode !== 'active' && (
+                      <p className="text-xs text-red-500 mt-3 font-bold text-center">
+                        {lang === 'ar' ? 'تحذير: الشاشات معطلة حالياً وتعرض شاشة التوقف.' : 'Achtung: Die Bildschirme zeigen derzeit den Wartungsmodus an.'}
+                      </p>
+                    )}
                   </div>
 
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center items-center text-center">

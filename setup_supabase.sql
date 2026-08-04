@@ -55,6 +55,8 @@ CREATE TABLE public.shop_settings (
     "showClock" BOOLEAN DEFAULT true,
     "maintenanceMode" BOOLEAN DEFAULT false,
     "maintenanceMessage" TEXT DEFAULT '',
+    "storeStatusMode" TEXT DEFAULT 'active',
+    "statusTimerTarget" TEXT DEFAULT '',
     "forceReload" BIGINT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

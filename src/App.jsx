@@ -11,8 +11,8 @@ import { offlineCache } from './services/offlineCache';
 import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
-import { MaintenanceScreen } from './components/screens/MaintenanceScreen';
 
 export default function App() {
   const [initialLoadTime] = useState(Date.now());
@@ -62,6 +62,8 @@ export default function App() {
   const [cityName, setCityName] = useState(DEFAULT_CITY);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [storeStatusMode, setStoreStatusMode] = useState('active');
+  const [statusTimerTarget, setStatusTimerTarget] = useState('');
 
   const t = translations[lang] || translations.de;
 
@@ -115,6 +117,8 @@ export default function App() {
         setCityName(settingsData.cityName || DEFAULT_CITY);
         setMaintenanceMode(settingsData.maintenanceMode || false);
         setMaintenanceMessage(settingsData.maintenanceMessage || '');
+        setStoreStatusMode(settingsData.storeStatusMode || 'active');
+        setStatusTimerTarget(settingsData.statusTimerTarget || '');
         
         if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
           window.location.reload();
@@ -139,6 +143,8 @@ export default function App() {
         if (cachedSettings.cityName) setCityName(cachedSettings.cityName);
         if (cachedSettings.maintenanceMode !== undefined) setMaintenanceMode(cachedSettings.maintenanceMode);
         if (cachedSettings.maintenanceMessage !== undefined) setMaintenanceMessage(cachedSettings.maintenanceMessage);
+        if (cachedSettings.storeStatusMode !== undefined) setStoreStatusMode(cachedSettings.storeStatusMode);
+        if (cachedSettings.statusTimerTarget !== undefined) setStatusTimerTarget(cachedSettings.statusTimerTarget);
       }
     }
   }, [initialLoadTime]);
@@ -193,11 +199,17 @@ export default function App() {
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
         onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
+        storeStatusMode={storeStatusMode} statusTimerTarget={statusTimerTarget}
       />
     );
 
-    if (maintenanceMode) return (
-      <MaintenanceScreen t={t} lang={lang} customLogo={customLogo} maintenanceMessage={maintenanceMessage} />
+    if (maintenanceMode || (storeStatusMode && storeStatusMode !== 'active')) return (
+      <StoreStatusScreen 
+        t={t} lang={lang} customLogo={customLogo} 
+        storeStatusMode={maintenanceMode && storeStatusMode === 'active' ? 'maintenance' : storeStatusMode}
+        maintenanceMessage={maintenanceMessage} 
+        statusTimerTarget={statusTimerTarget}
+      />
     );
 
     if (view === 'screen1') return (
