@@ -179,17 +179,6 @@ export const ImageSlideshowScreen = ({
           );
         })}
 
-        <div className={`absolute ${showNewsTicker ? 'bottom-20' : 'bottom-6'} left-0 right-0 z-30 flex justify-center gap-4`}>
-          {items.map((_, index) => (
-             <div 
-               key={index} 
-               onClick={() => setCurrentIndex(index)}
-               className={`h-3 rounded-full transition-all duration-500 shadow-2xl border border-black/40 cursor-pointer ${
-                 index === (currentIndex % items.length) ? 'w-20 bg-yellow-400 shadow-[0_0_15px_#facc15]' : 'w-5 bg-gray-900/80 hover:bg-gray-700'
-               }`} 
-             />
-          ))}
-        </div>
       </main>
       
       <div className="h-1.5 w-full bg-gray-950 absolute top-0 z-40">
