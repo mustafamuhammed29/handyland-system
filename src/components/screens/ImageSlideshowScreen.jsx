@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Info, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { HandylandHeader } from '../common/HandylandHeader';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { TVBackControl } from '../common/TVBackControl';
@@ -89,32 +89,7 @@ export const ImageSlideshowScreen = ({
 
       <main className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0">
         
-        {/* أزرار الأسهم الجانبية للريموت كنترول والتنقل اليدوي */}
-        {items.length > 1 && (
-          <>
-            <button 
-              onClick={handlePrevSlide}
-              className="absolute left-4 z-40 bg-black/50 hover:bg-yellow-500 hover:text-black text-yellow-400 p-4 rounded-full border border-yellow-500/30 backdrop-blur-md transition-all shadow-2xl opacity-30 hover:opacity-100 cursor-pointer"
-              title="Vorheriges Medium (Arrow Left)"
-            >
-              <ChevronLeft className="w-8 h-8" />
-            </button>
-            <button 
-              onClick={handleNextSlide}
-              className="absolute right-4 z-40 bg-black/50 hover:bg-yellow-500 hover:text-black text-yellow-400 p-4 rounded-full border border-yellow-500/30 backdrop-blur-md transition-all shadow-2xl opacity-30 hover:opacity-100 cursor-pointer"
-              title="Nächstes Medium (Arrow Right)"
-            >
-              <ChevronRight className="w-8 h-8" />
-            </button>
-            
-            <button 
-              onClick={() => setIsPaused(!isPaused)}
-              className="absolute top-28 right-6 z-40 bg-black/60 text-yellow-400 px-3 py-1.5 rounded-xl border border-yellow-500/30 backdrop-blur-md text-xs font-bold flex items-center gap-1.5 opacity-40 hover:opacity-100 cursor-pointer"
-            >
-              {isPaused ? <><Play className="w-4 h-4 text-green-400" /> Resume</> : <><Pause className="w-4 h-4 text-yellow-400" /> Pause</>}
-            </button>
-          </>
-        )}
+
 
         {items.map((item, index) => {
           const isVideo = isVideoMedia(item.imageData);
