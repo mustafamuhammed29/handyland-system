@@ -1,7 +1,7 @@
 import React from 'react';
 import { Settings, AlertTriangle } from 'lucide-react';
 
-export const MaintenanceScreen = ({ t, lang, customLogo }) => {
+export const MaintenanceScreen = ({ t, lang, customLogo, maintenanceMessage }) => {
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   return (
@@ -22,8 +22,8 @@ export const MaintenanceScreen = ({ t, lang, customLogo }) => {
           {t?.maintenanceTitle || 'Maintenance Mode'}
         </h1>
         
-        <p className="text-2xl text-gray-300 font-bold leading-relaxed">
-          {t?.maintenanceDesc || 'The system is currently undergoing maintenance. Please wait a moment.'}
+        <p className="text-2xl text-gray-300 font-bold leading-relaxed whitespace-pre-wrap">
+          {maintenanceMessage || t?.maintenanceDesc || 'The system is currently undergoing maintenance. Please wait a moment.'}
         </p>
 
         <div className="mt-12 flex justify-center gap-4">

@@ -61,6 +61,7 @@ export default function App() {
   const [adminPin, setAdminPin] = useState(DEFAULT_PIN);
   const [cityName, setCityName] = useState(DEFAULT_CITY);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
 
   const t = translations[lang] || translations.de;
 
@@ -113,6 +114,7 @@ export default function App() {
         setAdminPin(settingsData.adminPin || DEFAULT_PIN);
         setCityName(settingsData.cityName || DEFAULT_CITY);
         setMaintenanceMode(settingsData.maintenanceMode || false);
+        setMaintenanceMessage(settingsData.maintenanceMessage || '');
         
         if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
           window.location.reload();
@@ -136,6 +138,7 @@ export default function App() {
         if (cachedSettings.adminPin) setAdminPin(cachedSettings.adminPin);
         if (cachedSettings.cityName) setCityName(cachedSettings.cityName);
         if (cachedSettings.maintenanceMode !== undefined) setMaintenanceMode(cachedSettings.maintenanceMode);
+        if (cachedSettings.maintenanceMessage !== undefined) setMaintenanceMessage(cachedSettings.maintenanceMessage);
       }
     }
   }, [initialLoadTime]);
@@ -189,12 +192,12 @@ export default function App() {
         tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
         onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
-        maintenanceMode={maintenanceMode}
+        maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
       />
     );
 
     if (maintenanceMode) return (
-      <MaintenanceScreen t={t} lang={lang} customLogo={customLogo} />
+      <MaintenanceScreen t={t} lang={lang} customLogo={customLogo} maintenanceMessage={maintenanceMessage} />
     );
 
     if (view === 'screen1') return (

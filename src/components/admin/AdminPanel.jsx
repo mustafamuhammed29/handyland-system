@@ -16,7 +16,7 @@ import {
 export const AdminPanel = ({ 
   devices, repairs, offers, customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  maintenanceMode = false, onBack, onRefresh, lang, setLang, t 
+  maintenanceMode = false, maintenanceMessage = '', onBack, onRefresh, lang, setLang, t 
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
@@ -38,6 +38,7 @@ export const AdminPanel = ({
   const [editableTimer3, setEditableTimer3] = useState(intervalScreen3 || 6);
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
+  const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
 
   useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
@@ -48,6 +49,7 @@ export const AdminPanel = ({
   useEffect(() => { setEditableTimer3(intervalScreen3 || 6); }, [intervalScreen3]);
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
+  useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
 
   const handleMediaSelect = (e) => {
     const file = e.target.files[0];
@@ -293,6 +295,18 @@ export const AdminPanel = ({
     setLoading(true);
     try {
       const { error } = await supabase.from('shop_settings').upsert({ id: 'config', maintenanceMode: !maintenanceMode });
+      if (error) throw error;
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) { console.error(err); alert(t.uploadError); }
+    setLoading(false);
+  };
+
+  const handleSaveMaintenanceMsg = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', maintenanceMessage: editableMaintenanceMsg });
       if (error) throw error;
       alert(t.saveSuccess);
       onRefresh();
@@ -778,8 +792,21 @@ export const AdminPanel = ({
                     >
                       {maintenanceMode ? (t.disableMaintenanceBtn || 'Wartungsmodus deaktivieren') : (t.enableMaintenanceBtn || 'Wartungsmodus aktivieren')}
                     </button>
+                    <form onSubmit={handleSaveMaintenanceMsg} className="w-full mt-4 flex gap-2">
+                      <input 
+                        type="text" 
+                        value={editableMaintenanceMsg}
+                        onChange={(e) => setEditableMaintenanceMsg(e.target.value)}
+                        placeholder="Die Website wird derzeit gewartet..."
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-sm text-gray-800"
+                        dir="ltr"
+                      />
+                      <button type="submit" disabled={loading} className="bg-gray-800 hover:bg-black text-yellow-400 px-3 rounded-lg text-sm font-bold">
+                        {t.saveSubtitleBtn || 'Save'}
+                      </button>
+                    </form>
                     <p className="text-xs text-gray-500 mt-3 font-semibold">
-                      {t.maintenanceDesc || 'Die Website wird derzeit gewartet. Bitte haben Sie einen Moment Geduld.'}
+                      {maintenanceMessage || t.maintenanceDesc || 'Die Website wird derzeit gewartet. Bitte haben Sie einen Moment Geduld.'}
                     </p>
                   </div>
 
