@@ -64,8 +64,19 @@ export const ImageSlideshowScreen = ({
             >
                {item.imageData ? (
                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    {/* طبقة الخلفية الضبابية */}
-                    {!isVideo && (
+                    {/* طبقة الخلفية الضبابية الجميلة المحيطة بالكامل (للصور والفيديو) */}
+                    {isVideo ? (
+                      <video
+                        key={`bg-video-${item.id}`}
+                        src={mediaSrc}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                        style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
+                      />
+                    ) : (
                       <img 
                         src={mediaSrc} 
                         alt="" 
@@ -75,22 +86,22 @@ export const ImageSlideshowScreen = ({
                     )}
                     <div className="absolute inset-0 bg-black/30 pointer-events-none" />
 
-                    {/* الوسائط الأصلية (صورة أو فيديو) */}
+                    {/* الوسائط الأصلية الواضحة في المركز */}
                     {isVideo ? (
                       <video
-                        key={item.id}
+                        key={`fg-video-${item.id}`}
                         src={mediaSrc}
                         autoPlay
                         loop
                         muted
                         playsInline
-                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-xl"
+                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl"
                       />
                     ) : (
                       <img 
                         src={mediaSrc} 
                         alt="Poster" 
-                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-xl" 
+                        className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl" 
                       />
                     )}
                  </div>

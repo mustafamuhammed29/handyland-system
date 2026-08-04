@@ -92,7 +92,18 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
                     }`}
                   >
                     <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-2xl">
-                      {!isVideo && (
+                      {isVideo ? (
+                        <video 
+                          key={`bg-rep-${item.id}`}
+                          src={mediaSrc} 
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-2xl"
+                          style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
+                        />
+                      ) : (
                         <img 
                           src={mediaSrc} 
                           alt="" 
@@ -104,7 +115,7 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
 
                       {isVideo ? (
                         <video 
-                          key={item.id}
+                          key={`fg-rep-${item.id}`}
                           src={mediaSrc} 
                           autoPlay
                           loop
