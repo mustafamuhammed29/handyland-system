@@ -1,4 +1,4 @@
-export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality = 0.82) => {
+export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality = 0.82, autoCropTo169 = false) => {
   return new Promise((resolve) => {
     if (!file || (file.type && file.type.startsWith('video/'))) {
       resolve(file);
@@ -11,25 +11,43 @@ export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality =
       const img = new Image();
       img.src = e.target.result;
       img.onload = () => {
-        let width = img.width;
-        let height = img.height;
+        let srcX = 0;
+        let srcY = 0;
+        let srcWidth = img.width;
+        let srcHeight = img.height;
 
-        if (width > maxWidth || height > maxHeight) {
-          if (width / height > maxWidth / maxHeight) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+        if (autoCropTo169) {
+          const targetRatio = 16 / 9;
+          const currentRatio = img.width / img.height;
+
+          if (currentRatio > targetRatio) {
+            srcWidth = Math.round(img.height * targetRatio);
+            srcX = Math.round((img.width - srcWidth) / 2);
+          } else if (currentRatio < targetRatio) {
+            srcHeight = Math.round(img.width / targetRatio);
+            srcY = Math.round((img.height - srcHeight) / 2);
+          }
+        }
+
+        let destWidth = srcWidth;
+        let destHeight = srcHeight;
+
+        if (destWidth > maxWidth || destHeight > maxHeight) {
+          if (destWidth / destHeight > maxWidth / maxHeight) {
+            destHeight = Math.round((destHeight * maxWidth) / destWidth);
+            destWidth = maxWidth;
           } else {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+            destWidth = Math.round((destWidth * maxHeight) / destHeight);
+            destHeight = maxHeight;
           }
         }
 
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = destWidth;
+        canvas.height = destHeight;
 
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, destWidth, destHeight);
 
         canvas.toBlob(
           (blob) => {

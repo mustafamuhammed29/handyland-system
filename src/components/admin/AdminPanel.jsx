@@ -26,6 +26,8 @@ export const AdminPanel = ({
   const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState(null);
+  const [autoCrop169, setAutoCrop169] = useState(false);
 
   // حالة نموذج أسعار الصيانة
   const [newDeviceModel, setNewDeviceModel] = useState('');
@@ -60,9 +62,24 @@ export const AdminPanel = ({
         return;
       }
       setImageFile(file);
-      setIsPreviewVideo(file.type.startsWith('video/'));
+      const isVideo = file.type.startsWith('video/');
+      setIsPreviewVideo(isVideo);
+
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        if (!isVideo) {
+          const img = new Image();
+          img.src = reader.result;
+          img.onload = () => {
+            const ratio = img.width / img.height;
+            const is169 = ratio >= 1.7 && ratio <= 1.85;
+            setImageDimensions({ width: img.width, height: img.height, is169 });
+          };
+        } else {
+          setImageDimensions(null);
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -86,7 +103,7 @@ export const AdminPanel = ({
     }
     setLoading(true);
     try {
-      const compressedFile = await compressImage(imageFile, 1920, 1080, 0.82);
+      const compressedFile = await compressImage(imageFile, 1920, 1080, 0.82, autoCrop169);
       const base64Image = await convertToBase64(compressedFile);
       const { error } = await supabase.from(tableName).insert([{ imageData: base64Image }]);
       if (error) throw error;
@@ -94,6 +111,8 @@ export const AdminPanel = ({
       setImageFile(null);
       setImagePreview(null);
       setIsPreviewVideo(false);
+      setImageDimensions(null);
+      setAutoCrop169(false);
       const fileInput = document.getElementById('posterUpload');
       if (fileInput) fileInput.value = '';
       onRefresh();
@@ -395,6 +414,35 @@ export const AdminPanel = ({
                         </div>
                       )}
                     </div>
+
+                    {imageDimensions && (
+                      <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-2.5 text-left" dir={dir}>
+                        <div className="flex justify-between items-center text-xs font-black text-gray-800">
+                          <span>{t.mediaDimensionsLabel} <span className="font-mono text-yellow-600">{imageDimensions.width} × {imageDimensions.height} px</span></span>
+                          {imageDimensions.is169 ? (
+                            <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
+                              ✅ {t.perfect169Badge}
+                            </span>
+                          ) : (
+                            <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
+                              ℹ️ {t.ambientBlurBadge}
+                            </span>
+                          )}
+                        </div>
+
+                        {!imageDimensions.is169 && (
+                          <label className="flex items-center gap-3 bg-yellow-50 hover:bg-yellow-100/80 p-3 rounded-xl border border-yellow-400/60 cursor-pointer transition">
+                            <input 
+                              type="checkbox" 
+                              checked={autoCrop169}
+                              onChange={(e) => setAutoCrop169(e.target.checked)}
+                              className="w-5 h-5 text-yellow-500 rounded focus:ring-yellow-400 cursor-pointer"
+                            />
+                            <span className="text-xs font-black text-gray-900 leading-tight">{t.crop169OptionLabel}</span>
+                          </label>
+                        )}
+                      </div>
+                    )}
                     
                     <button 
                       type="submit" 
