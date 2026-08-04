@@ -186,13 +186,11 @@ const LiveClockWeatherWidget = ({ cityName = 'Heidelberg', lang }) => {
     const fetchWeather = async () => {
       try {
         const targetCity = cityName.trim() || 'Heidelberg';
-        // Geocoding API لمدينة المحل
         const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(targetCity)}&count=1&language=en&format=json`);
         const geoData = await geoRes.json();
         
         if (geoData?.results?.[0]) {
           const { latitude, longitude } = geoData.results[0];
-          // Open-Meteo Live Forecast API
           const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
           const weatherData = await weatherRes.json();
           
@@ -214,7 +212,6 @@ const LiveClockWeatherWidget = ({ cityName = 'Heidelberg', lang }) => {
   const timeStr = time.toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const dateStr = time.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
 
-  // اختيار أيقونة الطقس بناء على الكود الحقيقي
   const getWeatherIcon = (code) => {
     if (code === 0) return <Sun className="w-5 h-5 text-yellow-400 animate-spin-slow" />;
     if (code >= 1 && code <= 3) return <CloudSun className="w-5 h-5 text-yellow-400" />;
@@ -406,10 +403,17 @@ const PinProtectionModal = ({ onVerify, onClose, t, lang }) => {
 };
 
 // ----------------------------------------------------------------------
-// الشاشة 1 والشاشة 3: عرض البوسترات بمؤقت خاص لكل شاشة
+// الشاشة 1 والشاشة 3: عرض البوسترات مع معالجة الاختفاء المباشر عند الحذف
 // ----------------------------------------------------------------------
 const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, customLogo, tickerText, headerSubtitle, slideInterval = 6, cityName, onBack, t, lang }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // تحديث فوري للمؤشر إذا تم حذف صورة من القائمة
+  useEffect(() => {
+    if (currentIndex >= items.length && items.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [items.length, currentIndex]);
 
   useEffect(() => {
     if (items.length <= 1) return;
@@ -442,7 +446,7 @@ const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, cust
           <div 
             key={item.id} 
             className={`absolute inset-0 transition-all duration-1000 transform flex items-center justify-center w-full h-full p-2 lg:p-4 ${
-              index === currentIndex ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0'
+              index === (currentIndex % items.length) ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0'
             }`}
           >
              {item.imageData ? (
@@ -469,7 +473,7 @@ const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, cust
              <div 
                key={index} 
                className={`h-3 rounded-full transition-all duration-500 shadow-2xl border border-black/40 ${
-                 index === currentIndex ? 'w-20 bg-yellow-400 shadow-[0_0_15px_#facc15]' : 'w-5 bg-gray-900/80'
+                 index === (currentIndex % items.length) ? 'w-20 bg-yellow-400 shadow-[0_0_15px_#facc15]' : 'w-5 bg-gray-900/80'
                }`} 
              />
           ))}
@@ -479,7 +483,7 @@ const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, cust
       <div className="h-1.5 w-full bg-gray-950 absolute top-0 z-40">
         <div 
           className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-200 transition-all duration-1000 ease-linear shadow-[0_0_10px_#facc15]" 
-          style={{ width: `${((currentIndex + 1) / items.length) * 100}%` }} 
+          style={{ width: `${(((currentIndex % items.length) + 1) / items.length) * 100}%` }} 
         />
       </div>
 
@@ -502,10 +506,17 @@ const ImageSlideshowScreen = ({ items, title, icon, showNewsTicker = false, cust
 
 
 // ----------------------------------------------------------------------
-// الشاشة 2: شاشة الصيانة بمؤقت خاص بها
+// الشاشة 2: شاشة الصيانة مع معالجة الاختفاء المباشر عند الحذف
 // ----------------------------------------------------------------------
 const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterval = 6, cityName, onBack, t, lang }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // تحديث فوري للمؤشر إذا تم حذف صورة صيانة
+  useEffect(() => {
+    if (currentIndex >= repairs.length && repairs.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [repairs.length, currentIndex]);
 
   useEffect(() => {
     if (repairs.length <= 1) return;
@@ -572,7 +583,7 @@ const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterval = 6,
                 <div 
                   key={item.id} 
                   className={`absolute inset-0 transition-all duration-1000 transform flex items-center justify-center p-2 ${
-                    index === currentIndex ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0'
+                    index === (currentIndex % repairs.length) ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0'
                   }`}
                 >
                   <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-2xl">
@@ -597,7 +608,7 @@ const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterval = 6,
                    <div 
                      key={index} 
                      className={`h-2.5 rounded-full transition-all duration-500 shadow-xl ${
-                       index === currentIndex ? 'w-16 bg-yellow-400' : 'w-4 bg-gray-800'
+                       index === (currentIndex % repairs.length) ? 'w-16 bg-yellow-400' : 'w-4 bg-gray-800'
                      }`} 
                    />
                 ))}
@@ -613,7 +624,7 @@ const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterval = 6,
 
 
 // ----------------------------------------------------------------------
-// لوحة التحكم المتقدمة (إدارة البوسترات + مؤقت منفصل لكل شاشة + PIN + طقس حقيقي)
+// لوحة التحكم المتقدمة
 // ----------------------------------------------------------------------
 const AdminPanel = ({ 
   devices, repairs, offers, customLogo, tickerText, headerSubtitle, 
@@ -1259,7 +1270,7 @@ export default function App() {
     fetchAllData();
 
     const channel = supabase
-      .channel('public:handyland_tv_65_v21')
+      .channel('public:handyland_tv_65_v22')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
