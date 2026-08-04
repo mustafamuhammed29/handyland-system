@@ -29,7 +29,8 @@ html {
   /* منع الارتجاج عند تغيير الاتجاه */
   height: 100%;
   height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
