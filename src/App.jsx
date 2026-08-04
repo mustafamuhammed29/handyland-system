@@ -971,7 +971,7 @@ const AdminPanel = ({
                       </div>
                       <button 
                         onClick={() => handleDelete(currentTab.table, item.id)} 
-                        className="absolute top-3 left-3 text-white bg-red-600 hover:bg-red-700 p-3 rounded-xl transition z-10 opacity-0 group-hover:opacity-100 shadow-md"
+                        className="absolute top-3 left-3 text-white bg-red-600 hover:bg-red-700 active:bg-red-800 p-3 rounded-xl transition z-10 shadow-md"
                         title={t.deletePosterTooltip}
                       >
                         <Trash2 className="w-5 h-5" />
