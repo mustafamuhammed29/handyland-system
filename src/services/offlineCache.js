@@ -4,7 +4,6 @@ const CACHE_KEYS = {
   REPAIRS: 'handyland_cache_repairs',
   OFFERS: 'handyland_cache_offers',
   SETTINGS: 'handyland_cache_settings',
-  REPAIR_PRICES: 'handyland_cache_repair_prices',
 };
 
 export const offlineCache = {
@@ -50,22 +49,6 @@ export const offlineCache = {
   getOffers: () => {
     try {
       const data = localStorage.getItem(CACHE_KEYS.OFFERS);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  },
-
-  saveRepairPrices: (data) => {
-    try {
-      localStorage.setItem(CACHE_KEYS.REPAIR_PRICES, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Local storage cache quota notice:", e);
-    }
-  },
-  getRepairPrices: () => {
-    try {
-      const data = localStorage.getItem(CACHE_KEYS.REPAIR_PRICES);
       return data ? JSON.parse(data) : [];
     } catch {
       return [];

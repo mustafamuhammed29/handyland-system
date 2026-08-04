@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Smartphone, Wrench, Tag, Plus, Trash2, 
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe, 
-  Layout, Type, Timer, Key, CloudSun, Gauge, DollarSign, Type as TypeIcon
+  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -14,7 +14,7 @@ import {
 } from '../../constants/defaults';
 
 export const AdminPanel = ({ 
-  devices, repairs, offers, repairPrices = [], customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
+  devices, repairs, offers, customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
   maintenanceMode = false, onBack, onRefresh, lang, setLang, t 
 }) => {
@@ -28,11 +28,6 @@ export const AdminPanel = ({
   const [logoFile, setLogoFile] = useState(null);
   const [imageDimensions, setImageDimensions] = useState(null);
   const [autoCrop169, setAutoCrop169] = useState(false);
-
-  // حالة نموذج أسعار الصيانة
-  const [newDeviceModel, setNewDeviceModel] = useState('');
-  const [newServiceName, setNewServiceName] = useState('');
-  const [newPrice, setNewPrice] = useState('');
 
   const [editableTicker, setEditableTicker] = useState(tickerText || DEFAULT_TICKER);
   const [editableTickerSpeed, setEditableTickerSpeed] = useState(tickerSpeed || DEFAULT_TICKER_SPEED);
@@ -122,41 +117,6 @@ export const AdminPanel = ({
       alert(t.uploadError);
     }
     setLoading(false);
-  };
-
-  const handleAddRepairPrice = async (e) => {
-    e.preventDefault();
-    if (!newDeviceModel || !newServiceName || !newPrice) {
-      alert("Bitte alle Felder ausfüllen / يرجى ملء كافة الحقول");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.from('shop_repair_prices').insert([{
-        device_model: newDeviceModel,
-        service_name: newServiceName,
-        price: newPrice
-      }]);
-      if (error) throw error;
-
-      setNewDeviceModel('');
-      setNewServiceName('');
-      setNewPrice('');
-      onRefresh();
-      alert(t.saveSuccess);
-    } catch (err) {
-      console.error(err);
-      alert(t.uploadError);
-    }
-    setLoading(false);
-  };
-
-  const handleDeleteRepairPrice = async (id) => {
-    try {
-      const { error } = await supabase.from('shop_repair_prices').delete().eq('id', id);
-      if (error) throw error;
-      onRefresh();
-    } catch (err) { console.error(err); }
   };
 
   const handleSaveLogo = async (e) => {
@@ -518,89 +478,6 @@ export const AdminPanel = ({
                 </div>
 
               </div>
-
-              {/* قسم إدارة قائمة أسعار الصيانة الحصرية لشاشة 2 */}
-              {activeTab === 'repairs' && (
-                <div className="bg-gray-50 p-8 rounded-3xl border-2 border-yellow-500/40 shadow-sm mt-8">
-                  <h3 className="text-2xl font-black mb-6 text-gray-800 border-b pb-4 flex items-center gap-3">
-                    <DollarSign className="w-8 h-8 text-yellow-600" />
-                    {t.repairPricesTitle}
-                  </h3>
-
-                  <div className="grid lg:grid-cols-5 gap-10">
-                    <form onSubmit={handleAddRepairPrice} className="lg:col-span-2 space-y-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.deviceModelLabel}</label>
-                        <input 
-                          type="text" 
-                          value={newDeviceModel} 
-                          onChange={(e) => setNewDeviceModel(e.target.value)}
-                          placeholder="iPhone 13, Samsung S22..." 
-                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.serviceNameLabel}</label>
-                        <input 
-                          type="text" 
-                          value={newServiceName} 
-                          onChange={(e) => setNewServiceName(e.target.value)}
-                          placeholder="Display Express, Akku..." 
-                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.priceLabel}</label>
-                        <input 
-                          type="text" 
-                          value={newPrice} 
-                          onChange={(e) => setNewPrice(e.target.value)}
-                          placeholder="79 €, 49 €..." 
-                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
-                        />
-                      </div>
-
-                      <button 
-                        type="submit" 
-                        disabled={loading}
-                        className="w-full py-4 bg-black text-yellow-400 font-extrabold text-lg rounded-xl hover:bg-gray-900 flex justify-center items-center gap-2 cursor-pointer shadow-md"
-                      >
-                        <Plus className="w-5 h-5" /> {t.addPriceBtn}
-                      </button>
-                    </form>
-
-                    <div className="lg:col-span-3">
-                      <h4 className="text-xl font-bold mb-4 text-gray-800">{t.displayedPrices} ({repairPrices.length})</h4>
-                      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                        {repairPrices.length === 0 && (
-                          <p className="text-gray-500 text-base text-center py-10 bg-white rounded-2xl border">{t.noPrices}</p>
-                        )}
-                        {repairPrices.map((item) => (
-                          <div key={item.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:border-yellow-400 transition">
-                            <div>
-                              <span className="font-black text-gray-900 text-base">{item.device_model}</span>
-                              <span className="text-gray-500 text-sm mx-2">•</span>
-                              <span className="font-semibold text-yellow-700 text-sm">{item.service_name}</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <span className="bg-black text-yellow-400 font-extrabold px-3 py-1 rounded-xl text-base">{item.price}</span>
-                              <button 
-                                onClick={() => handleDeleteRepairPrice(item.id)} 
-                                className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 cursor-pointer transition"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
             </div>
           ) : (

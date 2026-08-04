@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Smartphone, Tag } from 'lucide-react';
+import { Smartphone, Tag, Wrench } from 'lucide-react';
 import { translations } from './constants/translations';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
@@ -10,7 +10,6 @@ import { offlineCache } from './services/offlineCache';
 
 import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
-import { ScreenRepairs } from './components/screens/ScreenRepairs';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 import { MaintenanceScreen } from './components/screens/MaintenanceScreen';
@@ -48,7 +47,6 @@ export default function App() {
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
   const [offers, setOffers] = useState(() => offlineCache.getOffers());
-  const [repairPrices, setRepairPrices] = useState(() => offlineCache.getRepairPrices());
 
   const [customLogo, setCustomLogo] = useState(null);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
@@ -99,12 +97,6 @@ export default function App() {
       if (!offErr && offData) {
         setOffers(offData);
         offlineCache.saveOffers(offData);
-      }
-
-      const { data: pricesData, error: pricesErr } = await supabase.from('shop_repair_prices').select('*').order('created_at', { ascending: false });
-      if (!pricesErr && pricesData) {
-        setRepairPrices(pricesData);
-        offlineCache.saveRepairPrices(pricesData);
       }
 
       const { data: settingsData, error: setErr } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
@@ -170,7 +162,6 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repair_prices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchAllData)
       .subscribe();
 
@@ -194,7 +185,7 @@ export default function App() {
   const renderActiveView = () => {
     if (view === 'admin') return (
       <AdminPanel 
-        devices={devices} repairs={repairs} offers={offers} repairPrices={repairPrices} customLogo={customLogo} tickerText={tickerText} 
+        devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} tickerText={tickerText} 
         tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
         onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
@@ -216,10 +207,11 @@ export default function App() {
     );
 
     if (view === 'screen2') return (
-      <ScreenRepairs 
-        repairs={repairs} repairPrices={repairPrices} customLogo={customLogo} headerSubtitle={headerSubtitle} 
-        fontSize={fontSize} slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
-        t={t} lang={lang} isOffline={isOffline} 
+      <ImageSlideshowScreen 
+        items={repairs} title="Reparaturzentrum & Preise" icon={Wrench} 
+        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
       />
     );
 
