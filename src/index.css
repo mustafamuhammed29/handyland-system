@@ -13,6 +13,25 @@
   }
 }
 
+/* ========= إصلاح مشاكل الدوران على أندرويد ========= */
+
+/* استخدام dvh بدلاً من vh - يعيد الحساب عند تغيير الاتجاه */
+:root {
+  --app-height: 100dvh;
+  /* Safe area insets for devices with notches/rounded corners */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+html {
+  /* منع الارتجاج عند تغيير الاتجاه */
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -20,4 +39,123 @@ body {
   color: #ffffff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
+  /* استخدام dvh لحل مشكلة الدوران */
+  min-height: 100dvh;
+  min-height: var(--app-height);
+  /* منع التكبير غير المرغوب عند الدوران */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Safe area padding */
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
+
+#root {
+  min-height: 100dvh;
+  min-height: var(--app-height);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========= إصلاح h-screen لتعمل مع الدوران ========= */
+/* Tailwind h-screen يستخدم 100vh الثابت - نستبدله بـ dvh */
+.h-screen {
+  height: 100dvh !important;
+  height: var(--app-height) !important;
+}
+
+.min-h-screen {
+  min-height: 100dvh !important;
+  min-height: var(--app-height) !important;
+}
+
+.max-h-screen {
+  max-height: 100dvh !important;
+  max-height: var(--app-height) !important;
+}
+
+/* ========= تأثير سلس عند تغيير الاتجاه ========= */
+* {
+  /* انتقال سلس عند تغيير الأبعاد بسبب الدوران */
+  transition-property: height, min-height, max-height, width, min-width, max-width;
+  transition-duration: 0s;
+}
+
+/* ========= تعديلات خاصة بالوضع العمودي (Portrait) ========= */
+@media (orientation: portrait) {
+  /* في الوضع العمودي على الهواتف - تكييف الهيدر */
+  header {
+    flex-wrap: wrap;
+    height: auto !important;
+    min-height: 60px;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  /* تصغير أحجام النصوص للشاشات العمودية الصغيرة */
+  @media (max-width: 768px) {
+    header .text-2xl,
+    header .lg\:text-4xl {
+      font-size: 1.125rem !important;
+    }
+
+    header .text-base,
+    header .lg\:text-xl {
+      font-size: 0.75rem !important;
+    }
+
+    /* تكييف أزرار القائمة الرئيسية */
+    .grid.grid-cols-1 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
+    }
+
+    .grid .p-10 {
+      padding: 1.5rem !important;
+    }
+
+    .grid .w-16,
+    .grid .h-16 {
+      width: 2.5rem !important;
+      height: 2.5rem !important;
+    }
+
+    .grid .p-8 {
+      padding: 1.25rem !important;
+    }
+
+    .grid .mb-8 {
+      margin-bottom: 1rem !important;
+    }
+  }
+
+  /* تكييف شاشة حالة المتجر */
+  .text-6xl.font-mono {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* ========= تعديلات خاصة بالوضع الأفقي (Landscape) ========= */
+@media (orientation: landscape) {
+  /* في الوضع الأفقي - تأكد من الاستغلال الكامل للعرض */
+  main {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* التأكد من أن الفيديو والصور تملأ المساحة المتاحة */
+  main img,
+  main video {
+    max-height: calc(100dvh - 6rem);
+  }
+}
+
+/* ========= منع مشاكل Chrome Android مع address bar ========= */
+@supports (height: 100dvh) {
+  .h-screen {
+    height: 100dvh !important;
+  }
+  .min-h-screen {
+    min-height: 100dvh !important;
+  }
+}
+
