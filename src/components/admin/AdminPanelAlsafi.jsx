@@ -11,7 +11,8 @@ import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
 import {
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN,
-  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE
+  DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
+  ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE
 } from '../../constants/defaults';
 
 export const AdminPanelAlsafi = ({
@@ -31,10 +32,10 @@ export const AdminPanelAlsafi = ({
   const [imageDimensions, setImageDimensions] = useState(null);
   const [autoCrop169, setAutoCrop169] = useState(false);
 
-  const [editableTicker, setEditableTicker] = useState(tickerText || DEFAULT_TICKER);
+  const [editableTicker, setEditableTicker] = useState(tickerText || ALSAFI_DEFAULT_TICKER);
   const [editableTickerSpeed, setEditableTickerSpeed] = useState(tickerSpeed || DEFAULT_TICKER_SPEED);
   const [editableFontSize, setEditableFontSize] = useState(fontSize || DEFAULT_FONT_SIZE);
-  const [editableSubtitle, setEditableSubtitle] = useState(headerSubtitle || DEFAULT_SUBTITLE);
+  const [editableSubtitle, setEditableSubtitle] = useState(headerSubtitle || ALSAFI_DEFAULT_SUBTITLE);
   const [editableTimer1, setEditableTimer1] = useState(intervalScreen1 || 6);
   const [editableTimer2, setEditableTimer2] = useState(intervalScreen2 || 6);
   const [editableTimer3, setEditableTimer3] = useState(intervalScreen3 || 6);
@@ -44,10 +45,10 @@ export const AdminPanelAlsafi = ({
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
   const [timerDuration, setTimerDuration] = useState('none');
 
-  useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
+  useEffect(() => { setEditableTicker(tickerText || ALSAFI_DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
   useEffect(() => { setEditableFontSize(fontSize || DEFAULT_FONT_SIZE); }, [fontSize]);
-  useEffect(() => { setEditableSubtitle(headerSubtitle || DEFAULT_SUBTITLE); }, [headerSubtitle]);
+  useEffect(() => { setEditableSubtitle(headerSubtitle || ALSAFI_DEFAULT_SUBTITLE); }, [headerSubtitle]);
   useEffect(() => { setEditableTimer1(intervalScreen1 || 6); }, [intervalScreen1]);
   useEffect(() => { setEditableTimer2(intervalScreen2 || 6); }, [intervalScreen2]);
   useEffect(() => { setEditableTimer3(intervalScreen3 || 6); }, [intervalScreen3]);
@@ -254,8 +255,8 @@ export const AdminPanelAlsafi = ({
     if (!window.confirm(t.confirmResetTicker)) return;
     setLoading(true);
     try {
-      await supabase.from('alsafi_settings').upsert({ id: 'config', tickerText: DEFAULT_TICKER });
-      setEditableTicker(DEFAULT_TICKER);
+      await supabase.from('alsafi_settings').upsert({ id: 'config', tickerText: ALSAFI_DEFAULT_TICKER });
+      setEditableTicker(ALSAFI_DEFAULT_TICKER);
       alert(t.resetSuccess);
       onRefresh();
     } catch (err) { console.error(err); }
@@ -314,8 +315,8 @@ export const AdminPanelAlsafi = ({
     if (!window.confirm(t.confirmResetSubtitle)) return;
     setLoading(true);
     try {
-      await supabase.from('alsafi_settings').upsert({ id: 'config', headerSubtitle: DEFAULT_SUBTITLE });
-      setEditableSubtitle(DEFAULT_SUBTITLE);
+      await supabase.from('alsafi_settings').upsert({ id: 'config', headerSubtitle: ALSAFI_DEFAULT_SUBTITLE });
+      setEditableSubtitle(ALSAFI_DEFAULT_SUBTITLE);
       alert(t.resetSuccess);
       onRefresh();
     } catch (err) { console.error(err); }

@@ -184,10 +184,10 @@ export default function App() {
         setAlsafiLogo(alsSettings.logoData || null);
         setAlsafiFavicon(alsSettings.faviconData || null);
         if (view.startsWith('alsafi')) updateFavicon(alsSettings.faviconData);
-        setAlsafiTicker(alsSettings.tickerText || DEFAULT_TICKER);
+        setAlsafiTicker(alsSettings.tickerText || ALSAFI_DEFAULT_TICKER);
         setAlsafiTickerSpeed(alsSettings.tickerSpeed || DEFAULT_TICKER_SPEED);
         setAlsafiFontSize(alsSettings.fontSize || DEFAULT_FONT_SIZE);
-        setAlsafiSubtitle(alsSettings.headerSubtitle || DEFAULT_SUBTITLE);
+        setAlsafiSubtitle(alsSettings.headerSubtitle || ALSAFI_DEFAULT_SUBTITLE);
         setAlsafiInt1(alsSettings.intervalScreen1 || 6);
         setAlsafiInt2(alsSettings.intervalScreen2 || 6);
         setAlsafiInt3(alsSettings.intervalScreen3 || 6);
