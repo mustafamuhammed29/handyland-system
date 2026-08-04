@@ -7,6 +7,15 @@ import { registerSW } from 'virtual:pwa-register'
 registerSW({ immediate: true })
 
 // ========= إصلاح مشكلة دوران الشاشة على أندرويد =========
+// محاولة إجبار المتصفح على فك أي قفل سابق للاتجاه
+try {
+  if (screen.orientation && screen.orientation.unlock) {
+    screen.orientation.unlock();
+  }
+} catch (e) {
+  console.log('Orientation unlock not supported');
+}
+
 // حساب الارتفاع الفعلي للشاشة وتعيينه كـ CSS variable
 const updateAppHeight = () => {
   const vh = window.innerHeight;

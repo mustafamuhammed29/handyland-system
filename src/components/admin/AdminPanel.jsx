@@ -21,8 +21,8 @@ export const AdminPanel = ({
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
 
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
@@ -67,33 +67,45 @@ export const AdminPanel = ({
   };
 
   const handleMediaSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    
+    for(let file of files) {
       if (file.size > 10485760) { // 10MB
         alert(t.imageTooLarge);
         return;
       }
-      setImageFile(file);
-      const isVideo = file.type.startsWith('video/');
-      setIsPreviewVideo(isVideo);
+    }
+    
+    setImageFiles(files);
+    const hasVideo = files.some(f => f.type.startsWith('video/'));
+    setIsPreviewVideo(hasVideo);
 
+    const previews = [];
+    let processed = 0;
+    
+    files.forEach((file, index) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
-        if (!isVideo) {
-          const img = new Image();
-          img.src = reader.result;
-          img.onload = () => {
-            const ratio = img.width / img.height;
-            const is169 = ratio >= 1.7 && ratio <= 1.85;
-            setImageDimensions({ width: img.width, height: img.height, is169 });
-          };
-        } else {
-          setImageDimensions(null);
+        previews[index] = reader.result;
+        processed++;
+        if(processed === files.length) {
+          setImagePreviews([...previews]);
+          if (!hasVideo && previews[0]) {
+             const img = new Image();
+             img.src = previews[0];
+             img.onload = () => {
+               const ratio = img.width / img.height;
+               const is169 = ratio >= 1.7 && ratio <= 1.85;
+               setImageDimensions({ width: img.width, height: img.height, is169 });
+             };
+          } else {
+            setImageDimensions(null);
+          }
         }
       };
       reader.readAsDataURL(file);
-    }
+    });
   };
 
   const handleLogoSelect = (e) => {
@@ -109,19 +121,25 @@ export const AdminPanel = ({
 
   const handleUploadImage = async (e, tableName) => {
     e.preventDefault();
-    if (!imageFile) {
+    if (imageFiles.length === 0) {
       alert(t.selectImageFirst);
       return;
     }
     setLoading(true);
     try {
-      const compressedFile = await compressImage(imageFile, 1920, 1080, 0.82, autoCrop169);
-      const base64Image = await convertToBase64(compressedFile);
-      const { error } = await supabase.from(tableName).insert([{ imageData: base64Image }]);
+      const uploadPromises = imageFiles.map(async (file) => {
+        const compressedFile = await compressImage(file, 1920, 1080, 0.82, autoCrop169);
+        const base64Image = await convertToBase64(compressedFile);
+        return { imageData: base64Image };
+      });
+      
+      const newRows = await Promise.all(uploadPromises);
+      const { error } = await supabase.from(tableName).insert(newRows);
+      
       if (error) throw error;
       
-      setImageFile(null);
-      setImagePreview(null);
+      setImageFiles([]);
+      setImagePreviews([]);
       setIsPreviewVideo(false);
       setImageDimensions(null);
       setAutoCrop169(false);
@@ -411,13 +429,13 @@ export const AdminPanel = ({
         </div>
 
         <div className="flex flex-col md:flex-row border-b border-gray-200">
-          <button onClick={() => { setActiveTab('devices'); setImageFile(null); setImagePreview(null); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'devices' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
+          <button onClick={() => { setActiveTab('devices'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'devices' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
             <Smartphone className="w-6 h-6" /> {t.tabDevices}
           </button>
-          <button onClick={() => { setActiveTab('repairs'); setImageFile(null); setImagePreview(null); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'repairs' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
+          <button onClick={() => { setActiveTab('repairs'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'repairs' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
             <Wrench className="w-6 h-6" /> {t.tabRepairs}
           </button>
-          <button onClick={() => { setActiveTab('offers'); setImageFile(null); setImagePreview(null); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'offers' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
+          <button onClick={() => { setActiveTab('offers'); setImageFiles([]); setImagePreviews([]); setIsPreviewVideo(false); }} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'offers' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
             <Tag className="w-6 h-6" /> {t.tabOffers}
           </button>
           <button onClick={() => setActiveTab('settings')} className={`flex-1 py-5 text-lg font-bold flex justify-center items-center gap-3 transition cursor-pointer ${activeTab === 'settings' ? 'bg-yellow-50 border-b-4 border-yellow-500 text-yellow-700' : 'text-gray-500 hover:bg-gray-50'}`}>
@@ -440,8 +458,9 @@ export const AdminPanel = ({
                         accept="image/*,video/mp4,video/webm" 
                         onChange={handleMediaSelect} 
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                        multiple
                       />
-                      {!imagePreview ? (
+                      {imagePreviews.length === 0 ? (
                         <div className="flex flex-col items-center pointer-events-none">
                           <div className="flex gap-2 mb-4 text-yellow-600">
                             <ImageIcon className="w-12 h-12" />
@@ -452,12 +471,21 @@ export const AdminPanel = ({
                         </div>
                       ) : (
                         <div className="relative">
-                          {isPreviewVideo ? (
-                            <video src={imagePreview} autoPlay loop muted className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
-                          ) : (
-                            <img src={imagePreview} alt="Preview" className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
-                          )}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition rounded-xl pointer-events-none">
+                          <div className="grid gap-3 justify-center" style={{ gridTemplateColumns: `repeat(${Math.min(imagePreviews.length, 3)}, minmax(0, 1fr))` }}>
+                            {imagePreviews.slice(0, 3).map((preview, i) => (
+                              imageFiles[i]?.type.startsWith('video/') ? (
+                                <video key={i} src={preview} autoPlay loop muted className="h-40 mx-auto rounded-xl shadow-md object-cover w-full" />
+                              ) : (
+                                <img key={i} src={preview} alt="Preview" className="h-40 mx-auto rounded-xl shadow-md object-cover w-full" />
+                              )
+                            ))}
+                            {imagePreviews.length > 3 && (
+                               <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-black/80 text-white rounded-r-xl font-bold text-2xl z-20 shadow-[-10px_0_15px_rgba(0,0,0,0.5)]">
+                                 +{imagePreviews.length - 3}
+                               </div>
+                            )}
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition rounded-xl pointer-events-none z-30">
                             <p className="text-white font-bold text-lg">{t.changeImage}</p>
                           </div>
                         </div>
@@ -495,10 +523,10 @@ export const AdminPanel = ({
                     
                     <button 
                       type="submit" 
-                      disabled={loading || !imageFile} 
-                      className={`w-full py-5 rounded-2xl text-2xl font-black flex justify-center items-center gap-3 shadow-xl transition-transform active:scale-95 border border-yellow-500/50 cursor-pointer ${loading || !imageFile ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
+                      disabled={loading || imageFiles.length === 0} 
+                      className={`w-full py-5 rounded-2xl text-2xl font-black flex justify-center items-center gap-3 shadow-xl transition-transform active:scale-95 border border-yellow-500/50 cursor-pointer ${loading || imageFiles.length === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
                     >
-                      {loading ? t.uploading : <><Plus className="w-7 h-7" /> {t.uploadBtn}</>}
+                      {loading ? t.uploading : <><Plus className="w-7 h-7" /> {t.uploadBtn} {imageFiles.length > 1 ? `(${imageFiles.length})` : ''}</>}
                     </button>
                   </form>
                 </div>
