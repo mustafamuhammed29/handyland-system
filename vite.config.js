@@ -17,6 +17,7 @@ export default defineConfig({
         theme_color: '#eab308',
         background_color: '#000000',
         display: 'fullscreen',
+        orientation: 'any',
         icons: [
           {
             src: 'favicon.svg',
