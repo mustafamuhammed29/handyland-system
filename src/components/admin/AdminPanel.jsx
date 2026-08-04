@@ -353,6 +353,7 @@ export const AdminPanel = ({
                   
                   {currentTab.items.map((item, index) => {
                     const isVideo = isVideoMedia(item.imageData);
+                    const mediaSrc = getMediaSrc(item.imageData);
 
                     return (
                       <div key={item.id} className="bg-white border-2 border-gray-200 p-3 rounded-2xl flex flex-col justify-between shadow-sm hover:border-yellow-400 transition relative group h-56">
@@ -371,9 +372,9 @@ export const AdminPanel = ({
                         <div className="w-full h-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
                           {item.imageData ? (
                             isVideo ? (
-                              <video src={item.imageData} autoPlay loop muted className="w-full h-full object-contain" />
+                              <video src={mediaSrc} autoPlay loop muted className="w-full h-full object-contain" />
                             ) : (
-                              <img src={item.imageData} alt={`Slide ${index}`} className="w-full h-full object-contain" />
+                              <img src={mediaSrc} alt={`Slide ${index}`} className="w-full h-full object-contain" />
                             )
                           ) : (
                             <span className="text-gray-400">Medienfehler</span>

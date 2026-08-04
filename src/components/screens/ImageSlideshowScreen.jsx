@@ -3,7 +3,7 @@ import { Info } from 'lucide-react';
 import { HandylandHeader } from '../common/HandylandHeader';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { TVBackControl } from '../common/TVBackControl';
-import { isVideoMedia } from '../../utils/mediaHelpers';
+import { isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 import { DEFAULT_TICKER, DEFAULT_TICKER_SPEED } from '../../constants/defaults';
 
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
@@ -52,6 +52,7 @@ export const ImageSlideshowScreen = ({
       <main className={`flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0 pt-24 ${showNewsTicker ? 'pb-16' : 'pb-4'}`}>
         {items.map((item, index) => {
           const isVideo = isVideoMedia(item.imageData);
+          const mediaSrc = getMediaSrc(item.imageData);
           const isCurrent = index === (currentIndex % items.length);
 
           return (
@@ -66,7 +67,7 @@ export const ImageSlideshowScreen = ({
                     {/* طبقة الخلفية الضبابية */}
                     {!isVideo && (
                       <img 
-                        src={item.imageData} 
+                        src={mediaSrc} 
                         alt="" 
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                         style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
@@ -77,7 +78,8 @@ export const ImageSlideshowScreen = ({
                     {/* الوسائط الأصلية (صورة أو فيديو) */}
                     {isVideo ? (
                       <video
-                        src={item.imageData}
+                        key={item.id}
+                        src={mediaSrc}
                         autoPlay
                         loop
                         muted
@@ -86,7 +88,7 @@ export const ImageSlideshowScreen = ({
                       />
                     ) : (
                       <img 
-                        src={item.imageData} 
+                        src={mediaSrc} 
                         alt="Poster" 
                         className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-xl" 
                       />

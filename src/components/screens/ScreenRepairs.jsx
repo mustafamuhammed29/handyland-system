@@ -3,7 +3,7 @@ import { Wrench, Battery, Smartphone, Cpu, Zap } from 'lucide-react';
 import { HandylandHeader } from '../common/HandylandHeader';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { TVBackControl } from '../common/TVBackControl';
-import { isVideoMedia } from '../../utils/mediaHelpers';
+import { isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
 const darkBg = "bg-[#050505]";
@@ -81,6 +81,7 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
             ) : (
               repairs.map((item, index) => {
                 const isVideo = isVideoMedia(item.imageData);
+                const mediaSrc = getMediaSrc(item.imageData);
                 const isCurrent = index === (currentIndex % repairs.length);
 
                 return (
@@ -93,7 +94,7 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
                     <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-2xl">
                       {!isVideo && (
                         <img 
-                          src={item.imageData} 
+                          src={mediaSrc} 
                           alt="" 
                           className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-2xl"
                           style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
@@ -103,7 +104,8 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
 
                       {isVideo ? (
                         <video 
-                          src={item.imageData} 
+                          key={item.id}
+                          src={mediaSrc} 
                           autoPlay
                           loop
                           muted
@@ -112,7 +114,7 @@ export const ScreenRepairs = ({ repairs, customLogo, headerSubtitle, slideInterv
                         />
                       ) : (
                         <img 
-                          src={item.imageData} 
+                          src={mediaSrc} 
                           alt="Repair Poster" 
                           className="relative z-10 max-w-full max-h-full object-contain rounded-xl shadow-2xl" 
                         />
