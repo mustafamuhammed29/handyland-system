@@ -40,6 +40,7 @@ CREATE TABLE public.shop_settings (
     "intervalScreen3" INTEGER DEFAULT 6,
     "adminPin" TEXT DEFAULT '1234',
     "cityName" TEXT DEFAULT 'Heidelberg',
+    "tickerSpeed" INTEGER DEFAULT 25,
     "showClock" BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
