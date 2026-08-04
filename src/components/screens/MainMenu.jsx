@@ -24,7 +24,7 @@ export const MainMenu = ({
       <div className="text-center mb-16 relative z-10">
         <div className="mb-6 inline-block bg-white p-1 rounded-full border-4 border-yellow-400 shadow-[0_0_40px_rgba(234,179,8,0.5)] w-48 h-48 lg:w-60 lg:h-60 overflow-hidden">
            <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
-             <img src="/logo.png" alt="JansaTech Logo" className="w-full h-full object-contain" />
+             <img src="./logo.png" alt="JansaTech Logo" className="w-full h-full object-contain" />
            </div>
         </div>
         <h1 className={`text-6xl md:text-8xl font-black mb-6 tracking-widest uppercase ${goldTextGradient} drop-shadow-2xl`}>
