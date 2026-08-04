@@ -166,12 +166,39 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
 
+    const handleSettingsPayload = (payload) => {
+      if (payload.new && payload.new.id === 'config') {
+        const settingsData = payload.new;
+        offlineCache.saveSettings(settingsData);
+        if (settingsData.logoData !== undefined) setCustomLogo(settingsData.logoData);
+        if (settingsData.tickerText !== undefined) setTickerText(settingsData.tickerText);
+        if (settingsData.tickerSpeed !== undefined) setTickerSpeed(settingsData.tickerSpeed);
+        if (settingsData.fontSize !== undefined) setFontSize(settingsData.fontSize);
+        if (settingsData.headerSubtitle !== undefined) setHeaderSubtitle(settingsData.headerSubtitle);
+        if (settingsData.intervalScreen1 !== undefined) setIntervalScreen1(settingsData.intervalScreen1);
+        if (settingsData.intervalScreen2 !== undefined) setIntervalScreen2(settingsData.intervalScreen2);
+        if (settingsData.intervalScreen3 !== undefined) setIntervalScreen3(settingsData.intervalScreen3);
+        if (settingsData.adminPin !== undefined) setAdminPin(settingsData.adminPin);
+        if (settingsData.cityName !== undefined) setCityName(settingsData.cityName);
+        if (settingsData.maintenanceMode !== undefined) setMaintenanceMode(settingsData.maintenanceMode);
+        if (settingsData.maintenanceMessage !== undefined) setMaintenanceMessage(settingsData.maintenanceMessage);
+        if (settingsData.storeStatusMode !== undefined) setStoreStatusMode(settingsData.storeStatusMode);
+        if (settingsData.statusTimerTarget !== undefined) setStatusTimerTarget(settingsData.statusTimerTarget);
+        
+        if (settingsData.forceReload && settingsData.forceReload > initialLoadTime) {
+          window.location.reload();
+        }
+      } else {
+        fetchAllData();
+      }
+    };
+
     const channel = supabase
       .channel('public:handyland_tv_signage_v5')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, handleSettingsPayload)
       .subscribe();
 
     return () => {
