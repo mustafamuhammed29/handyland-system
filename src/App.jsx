@@ -14,7 +14,6 @@ import { ScreenRepairs } from './components/screens/ScreenRepairs';
 import { AdminPanel } from './components/admin/AdminPanel';
 
 export default function App() {
-  // تحديد الشاشة المبدئية عند إقلاع التلفزيون أو المتصفح
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const screenParam = urlParams.get('screen');
@@ -46,6 +45,8 @@ export default function App() {
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
   const [offers, setOffers] = useState(() => offlineCache.getOffers());
+  const [repairPrices, setRepairPrices] = useState(() => offlineCache.getRepairPrices());
+
   const [customLogo, setCustomLogo] = useState(null);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
   const [tickerSpeed, setTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
@@ -95,6 +96,12 @@ export default function App() {
         offlineCache.saveOffers(offData);
       }
 
+      const { data: pricesData, error: pricesErr } = await supabase.from('shop_repair_prices').select('*').order('created_at', { ascending: false });
+      if (!pricesErr && pricesData) {
+        setRepairPrices(pricesData);
+        offlineCache.saveRepairPrices(pricesData);
+      }
+
       const { data: settingsData, error: setErr } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
       if (!setErr && settingsData) {
         offlineCache.saveSettings(settingsData);
@@ -113,7 +120,6 @@ export default function App() {
     } catch (err) {
       console.warn("Supabase fetch notice (Offline mode active):", err);
       setIsOffline(true);
-      // استرجاع الكاش المحلي للأوفلاين
       const cachedSettings = offlineCache.getSettings();
       if (cachedSettings) {
         if (cachedSettings.logoData) setCustomLogo(cachedSettings.logoData);
@@ -138,7 +144,6 @@ export default function App() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // دعم أزرار الانتقال في المتصفح والريموت
     const handlePopState = (e) => {
       const savedView = e.state?.view || window.location.hash.replace('#', '') || 'menu';
       setView(savedView);
@@ -147,12 +152,12 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
 
-    // الاشتراك في المزامنة اللحظية Realtime
     const channel = supabase
-      .channel('public:handyland_tv_signage_v3')
+      .channel('public:handyland_tv_signage_v4')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repair_prices' }, fetchAllData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchAllData)
       .subscribe();
 
@@ -175,7 +180,7 @@ export default function App() {
 
   if (view === 'admin') return (
     <AdminPanel 
-      devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} tickerText={tickerText} 
+      devices={devices} repairs={repairs} offers={offers} repairPrices={repairPrices} customLogo={customLogo} tickerText={tickerText} 
       tickerSpeed={tickerSpeed} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
       intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
       onBack={navigateBack} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
@@ -193,7 +198,7 @@ export default function App() {
 
   if (view === 'screen2') return (
     <ScreenRepairs 
-      repairs={repairs} customLogo={customLogo} headerSubtitle={headerSubtitle} 
+      repairs={repairs} repairPrices={repairPrices} customLogo={customLogo} headerSubtitle={headerSubtitle} 
       slideInterval={intervalScreen2} cityName={cityName} onBack={navigateBack} 
       t={t} lang={lang} isOffline={isOffline} 
     />

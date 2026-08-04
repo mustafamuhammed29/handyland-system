@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Smartphone, Wrench, Tag, Plus, Trash2, 
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe, 
-  Layout, Type, Timer, Key, CloudSun, Gauge
+  Layout, Type, Timer, Key, CloudSun, Gauge, DollarSign
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -14,7 +14,7 @@ import {
 } from '../../constants/defaults';
 
 export const AdminPanel = ({ 
-  devices, repairs, offers, customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
+  devices, repairs, offers, repairPrices = [], customLogo, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
   onBack, onRefresh, lang, setLang, t 
 }) => {
@@ -26,6 +26,11 @@ export const AdminPanel = ({
   const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
+
+  // حالة نموذج أسعار الصيانة
+  const [newDeviceModel, setNewDeviceModel] = useState('');
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newPrice, setNewPrice] = useState('');
 
   const [editableTicker, setEditableTicker] = useState(tickerText || DEFAULT_TICKER);
   const [editableTickerSpeed, setEditableTickerSpeed] = useState(tickerSpeed || DEFAULT_TICKER_SPEED);
@@ -95,6 +100,41 @@ export const AdminPanel = ({
       alert(t.uploadError);
     }
     setLoading(false);
+  };
+
+  const handleAddRepairPrice = async (e) => {
+    e.preventDefault();
+    if (!newDeviceModel || !newServiceName || !newPrice) {
+      alert("Bitte alle Felder ausfüllen / يرجى ملء كافة الحقول");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_repair_prices').insert([{
+        device_model: newDeviceModel,
+        service_name: newServiceName,
+        price: newPrice
+      }]);
+      if (error) throw error;
+
+      setNewDeviceModel('');
+      setNewServiceName('');
+      setNewPrice('');
+      onRefresh();
+      alert(t.saveSuccess);
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteRepairPrice = async (id) => {
+    try {
+      const { error } = await supabase.from('shop_repair_prices').delete().eq('id', id);
+      if (error) throw error;
+      onRefresh();
+    } catch (err) { console.error(err); }
   };
 
   const handleSaveLogo = async (e) => {
@@ -300,91 +340,177 @@ export const AdminPanel = ({
 
         <div className="p-8 md:p-10">
           {activeTab !== 'settings' ? (
-            <div className="grid lg:grid-cols-5 gap-12">
-              
-              <div className="lg:col-span-2 bg-gray-50 p-8 rounded-3xl border border-gray-200 shadow-sm h-fit">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">{t.uploadTitle} {currentTab.name}</h3>
-                <form onSubmit={(e) => handleUploadImage(e, currentTab.table)} className="space-y-6">
-                  <div className="border-3 border-dashed border-yellow-500 bg-yellow-50/50 p-8 rounded-3xl text-center relative hover:bg-yellow-50 transition cursor-pointer">
-                    <input 
-                      type="file" 
-                      id="posterUpload"
-                      accept="image/*,video/mp4,video/webm" 
-                      onChange={handleMediaSelect} 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                    />
-                    {!imagePreview ? (
-                      <div className="flex flex-col items-center pointer-events-none">
-                        <div className="flex gap-2 mb-4 text-yellow-600">
-                          <ImageIcon className="w-12 h-12" />
-                          <Video className="w-12 h-12" />
+            <div className="space-y-12">
+              <div className="grid lg:grid-cols-5 gap-12">
+                
+                <div className="lg:col-span-2 bg-gray-50 p-8 rounded-3xl border border-gray-200 shadow-sm h-fit">
+                  <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">{t.uploadTitle} {currentTab.name}</h3>
+                  <form onSubmit={(e) => handleUploadImage(e, currentTab.table)} className="space-y-6">
+                    <div className="border-3 border-dashed border-yellow-500 bg-yellow-50/50 p-8 rounded-3xl text-center relative hover:bg-yellow-50 transition cursor-pointer">
+                      <input 
+                        type="file" 
+                        id="posterUpload"
+                        accept="image/*,video/mp4,video/webm" 
+                        onChange={handleMediaSelect} 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                      />
+                      {!imagePreview ? (
+                        <div className="flex flex-col items-center pointer-events-none">
+                          <div className="flex gap-2 mb-4 text-yellow-600">
+                            <ImageIcon className="w-12 h-12" />
+                            <Video className="w-12 h-12" />
+                          </div>
+                          <p className="font-extrabold text-xl text-gray-800">{t.selectImagePrompt}</p>
+                          <p className="text-sm text-gray-500 mt-2">{t.noCropNote}</p>
                         </div>
-                        <p className="font-extrabold text-xl text-gray-800">{t.selectImagePrompt}</p>
-                        <p className="text-sm text-gray-500 mt-2">{t.noCropNote}</p>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        {isPreviewVideo ? (
-                          <video src={imagePreview} autoPlay loop muted className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
-                        ) : (
-                          <img src={imagePreview} alt="Preview" className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
-                        )}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition rounded-xl pointer-events-none">
-                          <p className="text-white font-bold text-lg">{t.changeImage}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    disabled={loading || !imageFile} 
-                    className={`w-full py-5 rounded-2xl text-2xl font-black flex justify-center items-center gap-3 shadow-xl transition-transform active:scale-95 border border-yellow-500/50 cursor-pointer ${loading || !imageFile ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
-                  >
-                    {loading ? t.uploading : <><Plus className="w-7 h-7" /> {t.uploadBtn}</>}
-                  </button>
-                </form>
-              </div>
-              
-              <div className="lg:col-span-3">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800">{t.displayedPosters} {currentTab.name} ({currentTab.items.length})</h3>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto pr-2">
-                  {currentTab.items.length === 0 && <p className="text-gray-500 text-xl col-span-3 text-center py-16 bg-gray-50 rounded-2xl border">{t.noPosters}</p>}
-                  
-                  {currentTab.items.map((item, index) => {
-                    const isVideo = isVideoMedia(item.imageData);
-                    const mediaSrc = getMediaSrc(item.imageData);
-
-                    return (
-                      <div key={item.id} className="bg-white border-2 border-gray-200 p-3 rounded-2xl flex flex-col justify-between shadow-sm hover:border-yellow-400 transition relative group h-56">
-                        <div className="absolute top-3 right-3 bg-black/80 text-yellow-400 px-3 py-1 rounded-lg text-sm font-bold z-10 flex items-center gap-1">
-                          {isVideo ? <Video className="w-4 h-4 text-cyan-400" /> : <ImageIcon className="w-4 h-4" />}
-                          {t.posterLabel} {index + 1}
-                        </div>
-                        <button 
-                          onClick={() => handleDelete(currentTab.table, item.id)} 
-                          className="absolute top-3 left-3 text-white bg-red-600 hover:bg-red-700 active:bg-red-800 p-3 rounded-xl transition z-10 shadow-md cursor-pointer"
-                          title={t.deletePosterTooltip}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                        
-                        <div className="w-full h-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
-                          {item.imageData ? (
-                            isVideo ? (
-                              <video src={mediaSrc} autoPlay loop muted className="w-full h-full object-contain" />
-                            ) : (
-                              <img src={mediaSrc} alt={`Slide ${index}`} className="w-full h-full object-contain" />
-                            )
+                      ) : (
+                        <div className="relative">
+                          {isPreviewVideo ? (
+                            <video src={imagePreview} autoPlay loop muted className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
                           ) : (
-                            <span className="text-gray-400">Medienfehler</span>
+                            <img src={imagePreview} alt="Preview" className="max-h-56 mx-auto rounded-xl shadow-md object-contain" />
                           )}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition rounded-xl pointer-events-none">
+                            <p className="text-white font-bold text-lg">{t.changeImage}</p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      )}
+                    </div>
+                    
+                    <button 
+                      type="submit" 
+                      disabled={loading || !imageFile} 
+                      className={`w-full py-5 rounded-2xl text-2xl font-black flex justify-center items-center gap-3 shadow-xl transition-transform active:scale-95 border border-yellow-500/50 cursor-pointer ${loading || !imageFile ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
+                    >
+                      {loading ? t.uploading : <><Plus className="w-7 h-7" /> {t.uploadBtn}</>}
+                    </button>
+                  </form>
                 </div>
+                
+                <div className="lg:col-span-3">
+                  <h3 className="text-2xl font-bold mb-6 text-gray-800">{t.displayedPosters} {currentTab.name} ({currentTab.items.length})</h3>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto pr-2">
+                    {currentTab.items.length === 0 && <p className="text-gray-500 text-xl col-span-3 text-center py-16 bg-gray-50 rounded-2xl border">{t.noPosters}</p>}
+                    
+                    {currentTab.items.map((item, index) => {
+                      const isVideo = isVideoMedia(item.imageData);
+                      const mediaSrc = getMediaSrc(item.imageData);
+
+                      return (
+                        <div key={item.id} className="bg-white border-2 border-gray-200 p-3 rounded-2xl flex flex-col justify-between shadow-sm hover:border-yellow-400 transition relative group h-56">
+                          <div className="absolute top-3 right-3 bg-black/80 text-yellow-400 px-3 py-1 rounded-lg text-sm font-bold z-10 flex items-center gap-1">
+                            {isVideo ? <Video className="w-4 h-4 text-cyan-400" /> : <ImageIcon className="w-4 h-4" />}
+                            {t.posterLabel} {index + 1}
+                          </div>
+                          <button 
+                            onClick={() => handleDelete(currentTab.table, item.id)} 
+                            className="absolute top-3 left-3 text-white bg-red-600 hover:bg-red-700 active:bg-red-800 p-3 rounded-xl transition z-10 shadow-md cursor-pointer"
+                            title={t.deletePosterTooltip}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                          
+                          <div className="w-full h-full bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
+                            {item.imageData ? (
+                              isVideo ? (
+                                <video src={mediaSrc} autoPlay loop muted className="w-full h-full object-contain" />
+                              ) : (
+                                <img src={mediaSrc} alt={`Slide ${index}`} className="w-full h-full object-contain" />
+                              )
+                            ) : (
+                              <span className="text-gray-400">Medienfehler</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
+
+              {/* قسم إدارة قائمة أسعار الصيانة الحصرية لشاشة 2 */}
+              {activeTab === 'repairs' && (
+                <div className="bg-gray-50 p-8 rounded-3xl border-2 border-yellow-500/40 shadow-sm mt-8">
+                  <h3 className="text-2xl font-black mb-6 text-gray-800 border-b pb-4 flex items-center gap-3">
+                    <DollarSign className="w-8 h-8 text-yellow-600" />
+                    {t.repairPricesTitle}
+                  </h3>
+
+                  <div className="grid lg:grid-cols-5 gap-10">
+                    <form onSubmit={handleAddRepairPrice} className="lg:col-span-2 space-y-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.deviceModelLabel}</label>
+                        <input 
+                          type="text" 
+                          value={newDeviceModel} 
+                          onChange={(e) => setNewDeviceModel(e.target.value)}
+                          placeholder="iPhone 13, Samsung S22..." 
+                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.serviceNameLabel}</label>
+                        <input 
+                          type="text" 
+                          value={newServiceName} 
+                          onChange={(e) => setNewServiceName(e.target.value)}
+                          placeholder="Display Express, Akku..." 
+                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">{t.priceLabel}</label>
+                        <input 
+                          type="text" 
+                          value={newPrice} 
+                          onChange={(e) => setNewPrice(e.target.value)}
+                          placeholder="79 €, 49 €..." 
+                          className="w-full p-3 border-2 border-gray-300 rounded-xl text-base font-semibold text-gray-900 bg-gray-50 focus:bg-white"
+                        />
+                      </div>
+
+                      <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full py-4 bg-black text-yellow-400 font-extrabold text-lg rounded-xl hover:bg-gray-900 flex justify-center items-center gap-2 cursor-pointer shadow-md"
+                      >
+                        <Plus className="w-5 h-5" /> {t.addPriceBtn}
+                      </button>
+                    </form>
+
+                    <div className="lg:col-span-3">
+                      <h4 className="text-xl font-bold mb-4 text-gray-800">{t.displayedPrices} ({repairPrices.length})</h4>
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                        {repairPrices.length === 0 && (
+                          <p className="text-gray-500 text-base text-center py-10 bg-white rounded-2xl border">{t.noPrices}</p>
+                        )}
+                        {repairPrices.map((item) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:border-yellow-400 transition">
+                            <div>
+                              <span className="font-black text-gray-900 text-base">{item.device_model}</span>
+                              <span className="text-gray-500 text-sm mx-2">•</span>
+                              <span className="font-semibold text-yellow-700 text-sm">{item.service_name}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="bg-black text-yellow-400 font-extrabold px-3 py-1 rounded-xl text-base">{item.price}</span>
+                              <button 
+                                onClick={() => handleDeleteRepairPrice(item.id)} 
+                                className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 cursor-pointer transition"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
           ) : (

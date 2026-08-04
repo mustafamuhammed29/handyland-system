@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Info } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Info, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { HandylandHeader } from '../common/HandylandHeader';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { TVBackControl } from '../common/TVBackControl';
@@ -15,6 +15,35 @@ export const ImageSlideshowScreen = ({
   slideInterval = 6, cityName, onBack, t, lang, isOffline 
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const videoRef = useRef(null);
+
+  const handleNextSlide = useCallback(() => {
+    if (items.length <= 1) return;
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
+  const handlePrevSlide = useCallback(() => {
+    if (items.length <= 1) return;
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  // دعم أزرار الريموت كنترول للأسهم والتوقف المؤقت والتنقل
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'MediaTrackNext') {
+        handleNextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'MediaTrackPrevious') {
+        handlePrevSlide();
+      } else if (e.key === ' ' || e.key === 'MediaPlayPause') {
+        e.preventDefault();
+        setIsPaused((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNextSlide, handlePrevSlide]);
 
   // تحديث فوري للمؤشر إذا تم حذف عنصر من القائمة
   useEffect(() => {
@@ -23,12 +52,21 @@ export const ImageSlideshowScreen = ({
     }
   }, [items.length, currentIndex]);
 
+  const currentItem = items[currentIndex % items.length];
+  const isCurrentVideo = currentItem ? isVideoMedia(currentItem.imageData) : false;
+
   useEffect(() => {
-    if (items.length <= 1) return;
-    const intervalMs = Math.max(2, parseInt(slideInterval) || 6) * 1000;
-    const timer = setInterval(() => setCurrentIndex((prev) => (prev + 1) % items.length), intervalMs);
-    return () => clearInterval(timer);
-  }, [items.length, slideInterval]);
+    if (items.length <= 1 || isPaused) return;
+
+    if (!isCurrentVideo) {
+      const intervalMs = Math.max(2, parseInt(slideInterval) || 6) * 1000;
+      const timer = setTimeout(handleNextSlide, intervalMs);
+      return () => clearTimeout(timer);
+    } else {
+      const safetyTimer = setTimeout(handleNextSlide, 60000);
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [items.length, slideInterval, currentIndex, isCurrentVideo, isPaused, handleNextSlide]);
 
   if (items.length === 0) {
     return (
@@ -50,6 +88,34 @@ export const ImageSlideshowScreen = ({
       <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} />
 
       <main className={`flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0 pt-24 ${showNewsTicker ? 'pb-16' : 'pb-4'}`}>
+        
+        {/* أزرار الأسهم الجانبية للريموت كنترول والتنقل اليدوي */}
+        {items.length > 1 && (
+          <>
+            <button 
+              onClick={handlePrevSlide}
+              className="absolute left-4 z-40 bg-black/50 hover:bg-yellow-500 hover:text-black text-yellow-400 p-4 rounded-full border border-yellow-500/30 backdrop-blur-md transition-all shadow-2xl opacity-30 hover:opacity-100 cursor-pointer"
+              title="Vorheriges Medium (Arrow Left)"
+            >
+              <ChevronLeft className="w-8 h-8" />
+            </button>
+            <button 
+              onClick={handleNextSlide}
+              className="absolute right-4 z-40 bg-black/50 hover:bg-yellow-500 hover:text-black text-yellow-400 p-4 rounded-full border border-yellow-500/30 backdrop-blur-md transition-all shadow-2xl opacity-30 hover:opacity-100 cursor-pointer"
+              title="Nächstes Medium (Arrow Right)"
+            >
+              <ChevronRight className="w-8 h-8" />
+            </button>
+            
+            <button 
+              onClick={() => setIsPaused(!isPaused)}
+              className="absolute top-28 right-6 z-40 bg-black/60 text-yellow-400 px-3 py-1.5 rounded-xl border border-yellow-500/30 backdrop-blur-md text-xs font-bold flex items-center gap-1.5 opacity-40 hover:opacity-100 cursor-pointer"
+            >
+              {isPaused ? <><Play className="w-4 h-4 text-green-400" /> Resume</> : <><Pause className="w-4 h-4 text-yellow-400" /> Pause</>}
+            </button>
+          </>
+        )}
+
         {items.map((item, index) => {
           const isVideo = isVideoMedia(item.imageData);
           const mediaSrc = getMediaSrc(item.imageData);
@@ -59,12 +125,12 @@ export const ImageSlideshowScreen = ({
             <div 
               key={item.id} 
               className={`absolute inset-0 transition-all duration-1000 transform flex items-center justify-center w-full h-full p-2 lg:p-4 ${
-                isCurrent ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0'
+                isCurrent ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 z-0 pointer-events-none'
               }`}
             >
                {item.imageData ? (
                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    {/* طبقة الخلفية الضبابية الجميلة المحيطة بالكامل (للصور والفيديو) */}
+                    {/* طبقة الخلفية الضبابية الجميلة المحيطة بالكامل */}
                     {isVideo ? (
                       <video
                         key={`bg-video-${item.id}`}
@@ -89,12 +155,13 @@ export const ImageSlideshowScreen = ({
                     {/* الوسائط الأصلية الواضحة في المركز */}
                     {isVideo ? (
                       <video
+                        ref={isCurrent ? videoRef : null}
                         key={`fg-video-${item.id}`}
                         src={mediaSrc}
-                        autoPlay
-                        loop
+                        autoPlay={isCurrent && !isPaused}
                         muted
                         playsInline
+                        onEnded={handleNextSlide}
                         className="relative z-10 max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl"
                       />
                     ) : (
@@ -116,8 +183,9 @@ export const ImageSlideshowScreen = ({
           {items.map((_, index) => (
              <div 
                key={index} 
-               className={`h-3 rounded-full transition-all duration-500 shadow-2xl border border-black/40 ${
-                 index === (currentIndex % items.length) ? 'w-20 bg-yellow-400 shadow-[0_0_15px_#facc15]' : 'w-5 bg-gray-900/80'
+               onClick={() => setCurrentIndex(index)}
+               className={`h-3 rounded-full transition-all duration-500 shadow-2xl border border-black/40 cursor-pointer ${
+                 index === (currentIndex % items.length) ? 'w-20 bg-yellow-400 shadow-[0_0_15px_#facc15]' : 'w-5 bg-gray-900/80 hover:bg-gray-700'
                }`} 
              />
           ))}

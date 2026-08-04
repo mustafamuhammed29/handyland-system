@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS public.shop_devices CASCADE;
 DROP TABLE IF EXISTS public.shop_repairs CASCADE;
 DROP TABLE IF EXISTS public.shop_offers CASCADE;
 DROP TABLE IF EXISTS public.shop_settings CASCADE;
+DROP TABLE IF EXISTS public.shop_repair_prices CASCADE;
 
 -- 1. جدول شاشة 1 (الأجهزة)
 CREATE TABLE public.shop_devices (
@@ -28,7 +29,16 @@ CREATE TABLE public.shop_offers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. جدول إعدادات المحل الكاملة (المدينة الافتراضية Heidelberg)
+-- 4. جدول أسعار الصيانة الديناميكية (شاشة 2)
+CREATE TABLE public.shop_repair_prices (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    device_model TEXT NOT NULL,
+    service_name TEXT NOT NULL,
+    price TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 5. جدول إعدادات المحل الكاملة
 CREATE TABLE public.shop_settings (
     id TEXT PRIMARY KEY DEFAULT 'config',
     "logoData" TEXT,
@@ -45,19 +55,22 @@ CREATE TABLE public.shop_settings (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. صلاحيات القراءة والكتابة العامة
+-- 6. صلاحيات القراءة والكتابة العامة
 ALTER TABLE public.shop_devices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shop_repairs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shop_offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shop_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.shop_repair_prices ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read/write on shop_devices" ON public.shop_devices FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on shop_repairs" ON public.shop_repairs FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on shop_offers" ON public.shop_offers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on shop_settings" ON public.shop_settings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on shop_repair_prices" ON public.shop_repair_prices FOR ALL USING (true) WITH CHECK (true);
 
--- 6. تفعيل المزامنة اللحظية
+-- 7. تفعيل المزامنة اللحظية
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shop_devices;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shop_repairs;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shop_offers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shop_settings;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.shop_repair_prices;
