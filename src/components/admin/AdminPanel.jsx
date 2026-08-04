@@ -7,7 +7,7 @@ import {
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 import { supabase } from '../../services/supabase';
-import { convertToBase64, isVideoMedia } from '../../utils/mediaHelpers';
+import { convertToBase64, isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
   DEFAULT_CITY, DEFAULT_TICKER_SPEED 
