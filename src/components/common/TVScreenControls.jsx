@@ -57,7 +57,7 @@ export const TVScreenControls = () => {
         minWidth: '50px',
         minHeight: '50px',
         visibility: 'visible',
-        opacity: 1,
+        opacity: 0.03,
       }}
     >
       {isFullscreen 
