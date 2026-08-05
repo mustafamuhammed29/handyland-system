@@ -10,14 +10,29 @@ const CACHE_KEYS = {
   ALSAFI_SETTINGS: 'alsafi_cache_settings',
 };
 
-export const offlineCache = {
-  saveDevices: (data) => {
+const safeSetItem = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.warn(`Local storage cache quota notice for ${key}:`, e);
     try {
-      localStorage.setItem(CACHE_KEYS.DEVICES, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Local storage cache quota notice:", e);
+      if (Array.isArray(data)) {
+        const pruned = data.map(item => {
+          if (typeof item.imageData === 'string' && item.imageData.length > 300000) {
+            return { ...item, imageData: '' };
+          }
+          return item;
+        });
+        localStorage.setItem(key, JSON.stringify(pruned));
+      }
+    } catch (fallbackErr) {
+      console.warn(`Storage recovery failed for ${key}:`, fallbackErr);
     }
-  },
+  }
+};
+
+export const offlineCache = {
+  saveDevices: (data) => safeSetItem(CACHE_KEYS.DEVICES, data),
   getDevices: () => {
     try {
       const data = localStorage.getItem(CACHE_KEYS.DEVICES);
@@ -27,13 +42,7 @@ export const offlineCache = {
     }
   },
 
-  saveRepairs: (data) => {
-    try {
-      localStorage.setItem(CACHE_KEYS.REPAIRS, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Local storage cache quota notice:", e);
-    }
-  },
+  saveRepairs: (data) => safeSetItem(CACHE_KEYS.REPAIRS, data),
   getRepairs: () => {
     try {
       const data = localStorage.getItem(CACHE_KEYS.REPAIRS);
@@ -43,13 +52,7 @@ export const offlineCache = {
     }
   },
 
-  saveOffers: (data) => {
-    try {
-      localStorage.setItem(CACHE_KEYS.OFFERS, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Local storage cache quota notice:", e);
-    }
-  },
+  saveOffers: (data) => safeSetItem(CACHE_KEYS.OFFERS, data),
   getOffers: () => {
     try {
       const data = localStorage.getItem(CACHE_KEYS.OFFERS);
@@ -59,13 +62,7 @@ export const offlineCache = {
     }
   },
 
-  saveSettings: (data) => {
-    try {
-      localStorage.setItem(CACHE_KEYS.SETTINGS, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Local storage settings cache notice:", e);
-    }
-  },
+  saveSettings: (data) => safeSetItem(CACHE_KEYS.SETTINGS, data),
   getSettings: () => {
     try {
       const data = localStorage.getItem(CACHE_KEYS.SETTINGS);
@@ -75,37 +72,25 @@ export const offlineCache = {
     }
   },
 
-  saveAlsafiMenu: (data) => {
-    try { localStorage.setItem(CACHE_KEYS.ALSAFI_MENU, JSON.stringify(data)); }
-    catch (e) { console.warn("Local storage cache quota notice:", e); }
-  },
+  saveAlsafiMenu: (data) => safeSetItem(CACHE_KEYS.ALSAFI_MENU, data),
   getAlsafiMenu: () => {
     try { const data = localStorage.getItem(CACHE_KEYS.ALSAFI_MENU); return data ? JSON.parse(data) : []; }
     catch { return []; }
   },
 
-  saveAlsafiDrinks: (data) => {
-    try { localStorage.setItem(CACHE_KEYS.ALSAFI_DRINKS, JSON.stringify(data)); }
-    catch (e) { console.warn("Local storage cache quota notice:", e); }
-  },
+  saveAlsafiDrinks: (data) => safeSetItem(CACHE_KEYS.ALSAFI_DRINKS, data),
   getAlsafiDrinks: () => {
     try { const data = localStorage.getItem(CACHE_KEYS.ALSAFI_DRINKS); return data ? JSON.parse(data) : []; }
     catch { return []; }
   },
 
-  saveAlsafiOffers: (data) => {
-    try { localStorage.setItem(CACHE_KEYS.ALSAFI_OFFERS, JSON.stringify(data)); }
-    catch (e) { console.warn("Local storage cache quota notice:", e); }
-  },
+  saveAlsafiOffers: (data) => safeSetItem(CACHE_KEYS.ALSAFI_OFFERS, data),
   getAlsafiOffers: () => {
     try { const data = localStorage.getItem(CACHE_KEYS.ALSAFI_OFFERS); return data ? JSON.parse(data) : []; }
     catch { return []; }
   },
 
-  saveAlsafiSettings: (data) => {
-    try { localStorage.setItem(CACHE_KEYS.ALSAFI_SETTINGS, JSON.stringify(data)); }
-    catch (e) { console.warn("Local storage settings cache notice:", e); }
-  },
+  saveAlsafiSettings: (data) => safeSetItem(CACHE_KEYS.ALSAFI_SETTINGS, data),
   getAlsafiSettings: () => {
     try { const data = localStorage.getItem(CACHE_KEYS.ALSAFI_SETTINGS); return data ? JSON.parse(data) : null; }
     catch { return null; }
