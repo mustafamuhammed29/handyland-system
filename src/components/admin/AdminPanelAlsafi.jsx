@@ -101,13 +101,6 @@ export const AdminPanelAlsafi = ({
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
 
-    for (let file of files) {
-      if (file.size > 10485760) { // 10MB
-        alert(t.imageTooLarge);
-        return;
-      }
-    }
-
     setImageFiles(files);
     const hasVideo = files.some(f => f.type.startsWith('video/'));
     setIsPreviewVideo(hasVideo);
@@ -415,11 +408,42 @@ export const AdminPanelAlsafi = ({
   };
 
   const handleDelete = async (tableName, id) => {
+    const confirmMsg = lang === 'ar' ? 'هل أنت متأكد من حذف هذا البوستر؟' : 'Möchten Sie dieses Medium wirklich löschen?';
+    if (!window.confirm(confirmMsg)) return;
+    setLoading(true);
     try {
       const { error } = await supabase.from(tableName).delete().eq('id', id);
-      if (error) throw error;
+      if (error) {
+        console.error("Delete error:", error);
+        alert(lang === 'ar' ? 'فشل الحذف من السيرفر. تحقق من الاتصال.' : 'Fehler beim Löschen vom Server.');
+      } else {
+        alert(t.resetSuccess);
+      }
       onRefresh();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteAll = async (tableName) => {
+    const confirmMsg = lang === 'ar' ? 'هل أنت متأكد من حذف جميع البوسترات المعروضة في هذه الشاشة؟' : 'Möchten Sie wirklich ALLE Medien auf diesem Bildschirm löschen?';
+    if (!window.confirm(confirmMsg)) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) {
+        console.error("Delete all error:", error);
+        alert(lang === 'ar' ? 'حدث خطأ أثناء الحذف.' : 'Fehler beim Löschen.');
+      } else {
+        alert(lang === 'ar' ? 'تم حذف جميع البوسترات بنجاح!' : 'Alle Medien erfolgreich gelöscht!');
+      }
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
   };
 
   const handleSaveStoreStatus = async () => {
@@ -612,7 +636,19 @@ export const AdminPanelAlsafi = ({
                 </div>
 
                 <div className="lg:col-span-3">
-                  <h3 className="text-2xl font-bold mb-6 text-gray-800">{t.displayedPosters} {currentTab.name} ({currentTab.items.length})</h3>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b pb-4">
+                    <h3 className="text-2xl font-bold text-gray-800">{t.displayedPosters} {currentTab.name} ({currentTab.items.length})</h3>
+                    {currentTab.items.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAll(currentTab.table)}
+                        className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow flex items-center gap-2 cursor-pointer border border-red-500"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {lang === 'ar' ? 'حذف جميع البوسترات' : 'Alle Medien löschen'}
+                      </button>
+                    )}
+                  </div>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto pr-2">
                     {currentTab.items.length === 0 && <p className="text-gray-500 text-xl col-span-3 text-center py-16 bg-gray-50 rounded-2xl border">{t.noPosters}</p>}
 

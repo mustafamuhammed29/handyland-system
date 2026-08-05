@@ -15,19 +15,6 @@ const safeSetItem = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {
     console.warn(`Local storage cache quota notice for ${key}:`, e);
-    try {
-      if (Array.isArray(data)) {
-        const pruned = data.map(item => {
-          if (typeof item.imageData === 'string' && item.imageData.length > 300000) {
-            return { ...item, imageData: '' };
-          }
-          return item;
-        });
-        localStorage.setItem(key, JSON.stringify(pruned));
-      }
-    } catch (fallbackErr) {
-      console.warn(`Storage recovery failed for ${key}:`, fallbackErr);
-    }
   }
 };
 
