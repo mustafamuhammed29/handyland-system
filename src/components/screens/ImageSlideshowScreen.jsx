@@ -168,7 +168,7 @@ export const ImageSlideshowScreen = ({
         <footer className="w-full bg-yellow-400 text-black py-3.5 shadow-2xl z-30 flex border-t-4 border-yellow-500 overflow-hidden relative">
           <div className="flex items-center px-8 bg-yellow-500 z-40 font-black text-2xl lg:text-3xl gap-4 whitespace-nowrap border-r-4 border-yellow-600 shadow-xl tracking-wider">
             <Info className="w-8 h-8 animate-pulse" />
-            HANDYLAND NEWS
+            {systemName} NEWS
           </div>
           <div className="flex-1 relative overflow-hidden flex items-center">
             <p 

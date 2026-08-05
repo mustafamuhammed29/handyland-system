@@ -341,6 +341,7 @@ export default function App() {
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
@@ -350,6 +351,7 @@ export default function App() {
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
@@ -359,6 +361,7 @@ export default function App() {
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
@@ -368,6 +371,7 @@ export default function App() {
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
@@ -377,6 +381,7 @@ export default function App() {
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
@@ -386,6 +391,7 @@ export default function App() {
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
       />
     );
 
