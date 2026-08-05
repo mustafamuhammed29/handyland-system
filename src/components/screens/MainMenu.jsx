@@ -7,7 +7,8 @@ const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-ye
 
 export const MainMenu = ({ 
   navigateTo, customLogo, lang, setLang, t, 
-  showPinModal, setShowPinModal, handleVerifyPin 
+  showPinModal, setShowPinModal, handleVerifyPin,
+  alsafiTitle1, alsafiTitle2, alsafiTitle3
 }) => {
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -15,40 +16,47 @@ export const MainMenu = ({
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 md:p-12 text-white font-sans relative overflow-hidden" dir={dir}>
       <TVScreenControls />
 
-      <div className="absolute inset-0 opacity-25 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #fbbf24 2px, transparent 2px)', backgroundSize: '50px 50px' }}></div>
+      {/* Decorative Gradient Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-yellow-500/10 rounded-full blur-[150px] pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-600/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="absolute top-6 left-6 z-20">
-        <LanguageToggle lang={lang} setLang={setLang} />
-      </div>
-
-      <div className="text-center mb-16 relative z-10">
-        <div className="mb-6 inline-block bg-white p-1 rounded-full border-4 border-yellow-400 shadow-[0_0_40px_rgba(234,179,8,0.5)] w-48 h-48 lg:w-60 lg:h-60 overflow-hidden">
-           <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
-             <img src="./logo.png" alt="JansaTech Logo" className="w-full h-full object-contain" />
-           </div>
-        </div>
-        <h1 className={`text-6xl md:text-8xl font-black mb-6 tracking-widest uppercase ${goldTextGradient} drop-shadow-2xl`}>
-          JansaTech
-        </h1>
-        <p className="text-gray-300 text-2xl font-light tracking-wide bg-black/60 px-8 py-3 rounded-full border border-yellow-500/30 backdrop-blur-md inline-block">
-          {t.systemTitle}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-12 max-w-7xl w-full relative z-10">
+      <div className="max-w-6xl w-full flex flex-col gap-8 relative z-10">
         
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center bg-black/60 p-6 md:p-8 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl shadow-2xl gap-6">
+          <div className="flex items-center gap-6">
+            {customLogo ? (
+              <img src={customLogo} alt="Logo" className="h-16 md:h-20 object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]" />
+            ) : (
+              <div className="bg-yellow-500 p-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                <Smartphone className="w-10 h-10 text-black" />
+              </div>
+            )}
+            <div>
+              <h1 className={`text-3xl md:text-5xl font-black tracking-wider uppercase ${goldTextGradient}`}>
+                HANDYLAND & ALSAFI
+              </h1>
+              <p className="text-gray-400 font-medium text-sm md:text-base mt-1">
+                {t.systemTagline}
+              </p>
+            </div>
+          </div>
+
+          <LanguageToggle lang={lang} setLang={setLang} />
+        </div>
+
         {/* Handyland Section */}
         <div className="bg-black/40 p-8 rounded-[3rem] border border-yellow-500/20 backdrop-blur-md">
           <h2 className="text-3xl font-black text-yellow-400 mb-8 flex items-center gap-3">
             <Smartphone className="w-8 h-8" />
-            {lang === 'ar' ? 'شاشات عرض الهواتف (Handyland)' : 'Handyland Bildschirme'}
+            {lang === 'ar' ? 'شاشات عرض المحل (Handyland)' : 'Handyland Bildschirme'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button onClick={() => navigateTo('screen1')} className="group bg-black/90 hover:bg-black border-2 border-yellow-500/40 hover:border-yellow-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
               <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-6 rounded-full mb-6 transition-colors border border-yellow-500/20 shadow-inner">
-                 <Smartphone className="w-12 h-12 text-yellow-400 group-hover:text-black" />
+                <Smartphone className="w-12 h-12 text-yellow-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{t.screen1Title}</h2>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">Top Angebote & Smartphones</h2>
               <p className="text-yellow-400 font-bold tracking-wider uppercase text-sm lg:text-base">{t.screen1Sub}</p>
             </button>
 
@@ -56,7 +64,7 @@ export const MainMenu = ({
               <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-6 rounded-full mb-6 transition-colors border border-yellow-500/20 shadow-inner">
                 <Wrench className="w-12 h-12 text-yellow-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{t.screen2Title}</h2>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">Reparaturzentrum & Preise</h2>
               <p className="text-yellow-400 font-bold tracking-wider uppercase text-sm lg:text-base">{t.screen2Sub}</p>
             </button>
 
@@ -64,7 +72,7 @@ export const MainMenu = ({
               <div className="bg-yellow-500/10 group-hover:bg-yellow-500 p-6 rounded-full mb-6 transition-colors border border-yellow-500/20 shadow-inner">
                 <Tag className="w-12 h-12 text-yellow-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{t.screen3Title}</h2>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">Spezielle Angebote</h2>
               <p className="text-yellow-400 font-bold tracking-wider uppercase text-sm lg:text-base">{t.screen3Sub}</p>
             </button>
           </div>
@@ -81,7 +89,7 @@ export const MainMenu = ({
               <div className="bg-orange-500/10 group-hover:bg-orange-500 p-6 rounded-full mb-6 transition-colors border border-orange-500/20 shadow-inner">
                  <Utensils className="w-12 h-12 text-orange-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü'}</h2>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{alsafiTitle1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü')}</h2>
               <p className="text-orange-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'وجبات المطعم' : 'Mahlzeiten'}</p>
             </button>
 
@@ -89,7 +97,7 @@ export const MainMenu = ({
               <div className="bg-orange-500/10 group-hover:bg-orange-500 p-6 rounded-full mb-6 transition-colors border border-orange-500/20 shadow-inner">
                 <Coffee className="w-12 h-12 text-orange-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{lang === 'ar' ? 'المشروبات' : 'Getränke'}</h2>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{alsafiTitle2 || (lang === 'ar' ? 'المشروبات' : 'Getränke')}</h2>
               <p className="text-orange-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'عصائر ومشروبات ساخنة' : 'Kalt & Heiß'}</p>
             </button>
 
@@ -97,8 +105,8 @@ export const MainMenu = ({
               <div className="bg-orange-500/10 group-hover:bg-orange-500 p-6 rounded-full mb-6 transition-colors border border-orange-500/20 shadow-inner">
                 <Percent className="w-12 h-12 text-orange-400 group-hover:text-black" />
               </div>
-              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{lang === 'ar' ? 'عروض المطعم' : 'Restaurant Angebote'}</h2>
-              <p className="text-orange-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'خصومات وعروض مميزة' : 'Sonderangebote'}</p>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{alsafiTitle3 ? alsafiTitle3 : (lang === 'ar' ? 'عروض المطعم' : 'Restaurant Angebote')}</h2>
+              <p className="text-orange-400 font-bold tracking-wider uppercase text-sm lg:text-base">{alsafiTitle3 || (lang === 'ar' ? 'خصومات وعروض مميزة' : 'Sonderangebote')}</p>
             </button>
           </div>
         </div>

@@ -88,6 +88,9 @@ export default function App() {
   const [alsafiMaintMsg, setAlsafiMaintMsg] = useState('');
   const [alsafiStatusMode, setAlsafiStatusMode] = useState('active');
   const [alsafiTimerTarget, setAlsafiTimerTarget] = useState('');
+  const [alsafiTitle1, setAlsafiTitle1] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen1 || '');
+  const [alsafiTitle2, setAlsafiTitle2] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen2 || '');
+  const [alsafiTitle3, setAlsafiTitle3] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen3 || '');
 
   // Pin Protection State (Tracks which branch they are trying to access)
   const [pendingAdminBranch, setPendingAdminBranch] = useState(null);
@@ -197,6 +200,9 @@ export default function App() {
         setAlsafiMaintMsg(alsSettings.maintenanceMessage || '');
         setAlsafiStatusMode(alsSettings.storeStatusMode || 'active');
         setAlsafiTimerTarget(alsSettings.statusTimerTarget || '');
+        setAlsafiTitle1(alsSettings.titleScreen1 || '');
+        setAlsafiTitle2(alsSettings.titleScreen2 || '');
+        setAlsafiTitle3(alsSettings.titleScreen3 || '');
 
         if (alsSettings.forceReload && alsSettings.forceReload > initialLoadTime && view.startsWith('alsafi')) {
           window.location.reload(true);
@@ -313,6 +319,7 @@ export default function App() {
         devices={alsafiMenu} repairs={alsafiDrinks} offers={alsafiOffers} customLogo={alsafiLogo} customFavicon={alsafiFavicon}
         tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} fontSize={alsafiFontSize} headerSubtitle={alsafiSubtitle} intervalScreen1={alsafiInt1} 
         intervalScreen2={alsafiInt2} intervalScreen3={alsafiInt3} adminPin={alsafiPin} cityName={alsafiCity}
+        titleScreen1={alsafiTitle1} titleScreen2={alsafiTitle2} titleScreen3={alsafiTitle3}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={alsafiMaint} maintenanceMessage={alsafiMaintMsg}
         storeStatusMode={alsafiStatusMode} statusTimerTarget={alsafiTimerTarget}
@@ -341,7 +348,7 @@ export default function App() {
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-        showNewsTicker={true}
+        showNewsTicker={false}
       />
     );
 
@@ -351,7 +358,7 @@ export default function App() {
         customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-        showNewsTicker={true}
+        showNewsTicker={false}
       />
     );
 
@@ -367,27 +374,27 @@ export default function App() {
 
     if (view === 'alsafi-screen1') return (
       <ImageSlideshowScreen 
-        items={alsafiMenu} title={lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü'} icon={Utensils} systemName="ALSAFI" 
+        items={alsafiMenu} title={alsafiTitle1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü')} icon={Utensils} systemName="ALSAFI" 
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-        showNewsTicker={true}
+        showNewsTicker={false}
       />
     );
 
     if (view === 'alsafi-screen2') return (
       <ImageSlideshowScreen 
-        items={alsafiDrinks} title={lang === 'ar' ? 'المشروبات' : 'Getränke'} icon={Coffee} systemName="ALSAFI" 
+        items={alsafiDrinks} title={alsafiTitle2 || (lang === 'ar' ? 'المشروبات' : 'Getränke')} icon={Coffee} systemName="ALSAFI" 
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
-        showNewsTicker={true}
+        showNewsTicker={false}
       />
     );
 
     if (view === 'alsafi-screen3') return (
       <ImageSlideshowScreen 
-        items={alsafiOffers} title={lang === 'ar' ? 'العروض المميزة' : 'Sonderangebote'} icon={Percent} systemName="ALSAFI" 
+        items={alsafiOffers} title={alsafiTitle3 || (lang === 'ar' ? 'العروض المميزة' : 'Sonderangebote')} icon={Percent} systemName="ALSAFI" 
         customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
@@ -399,6 +406,7 @@ export default function App() {
       <MainMenu 
         navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
         setLang={handleSetLang} t={t}
+        alsafiTitle1={alsafiTitle1} alsafiTitle2={alsafiTitle2} alsafiTitle3={alsafiTitle3}
       />
     );
   };

@@ -18,6 +18,7 @@ import {
 export const AdminPanelAlsafi = ({
   devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
+  titleScreen1 = '', titleScreen2 = '', titleScreen3 = '',
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
@@ -39,6 +40,9 @@ export const AdminPanelAlsafi = ({
   const [editableTimer1, setEditableTimer1] = useState(intervalScreen1 || 6);
   const [editableTimer2, setEditableTimer2] = useState(intervalScreen2 || 6);
   const [editableTimer3, setEditableTimer3] = useState(intervalScreen3 || 6);
+  const [editableTitle1, setEditableTitle1] = useState(titleScreen1 || '');
+  const [editableTitle2, setEditableTitle2] = useState(titleScreen2 || '');
+  const [editableTitle3, setEditableTitle3] = useState(titleScreen3 || '');
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
@@ -52,6 +56,9 @@ export const AdminPanelAlsafi = ({
   useEffect(() => { setEditableTimer1(intervalScreen1 || 6); }, [intervalScreen1]);
   useEffect(() => { setEditableTimer2(intervalScreen2 || 6); }, [intervalScreen2]);
   useEffect(() => { setEditableTimer3(intervalScreen3 || 6); }, [intervalScreen3]);
+  useEffect(() => { setEditableTitle1(titleScreen1 || ''); }, [titleScreen1]);
+  useEffect(() => { setEditableTitle2(titleScreen2 || ''); }, [titleScreen2]);
+  useEffect(() => { setEditableTitle3(titleScreen3 || ''); }, [titleScreen3]);
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
@@ -340,6 +347,45 @@ export const AdminPanelAlsafi = ({
     setLoading(false);
   };
 
+  const handleSaveScreenTitles = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('alsafi_settings').upsert({
+        id: 'config',
+        titleScreen1: editableTitle1,
+        titleScreen2: editableTitle2,
+        titleScreen3: editableTitle3
+      });
+      if (error) throw error;
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
+
+  const handleResetScreenTitles = async () => {
+    if (!window.confirm(t.confirmResetScreenTitles)) return;
+    setLoading(true);
+    try {
+      await supabase.from('alsafi_settings').upsert({
+        id: 'config',
+        titleScreen1: '',
+        titleScreen2: '',
+        titleScreen3: ''
+      });
+      setEditableTitle1('');
+      setEditableTitle2('');
+      setEditableTitle3('');
+      alert(t.resetSuccess);
+      onRefresh();
+    } catch (err) { console.error(err); }
+    setLoading(false);
+  };
+
   const handleSavePin = async (e) => {
     e.preventDefault();
     if (!editablePin || editablePin.length < 4) {
@@ -421,9 +467,9 @@ export const AdminPanelAlsafi = ({
   };
 
   const tabs = [
-    { id: 'menu', name: lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü', icon: Utensils, table: 'alsafi_menu', items: devices || [] },
-    { id: 'drinks', name: lang === 'ar' ? 'المشروبات' : 'Getränke', icon: Coffee, table: 'alsafi_drinks', items: repairs || [] },
-    { id: 'offers', name: lang === 'ar' ? 'العروض' : 'Angebote', icon: Percent, table: 'alsafi_offers', items: offers || [] },
+    { id: 'menu', name: editableTitle1 || titleScreen1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü'), icon: Utensils, table: 'alsafi_menu', items: devices || [] },
+    { id: 'drinks', name: editableTitle2 || titleScreen2 || (lang === 'ar' ? 'المشروبات' : 'Getränke'), icon: Coffee, table: 'alsafi_drinks', items: repairs || [] },
+    { id: 'offers', name: editableTitle3 || titleScreen3 || (lang === 'ar' ? 'العروض' : 'Sonderangebote'), icon: Percent, table: 'alsafi_offers', items: offers || [] },
     { id: 'settings', name: t.settingsTab, icon: Settings, table: null, items: [] }
   ];
 
@@ -679,6 +725,71 @@ export const AdminPanelAlsafi = ({
                   <button type="submit" className="w-full py-4 bg-black text-yellow-400 font-black text-xl rounded-2xl hover:bg-gray-900 shadow-lg flex justify-center items-center gap-2 cursor-pointer">
                     <Save className="w-6 h-6" /> {t.saveTimersBtn}
                   </button>
+                </form>
+              </div>
+
+              {/* قسم التحكم بأسماء الشاشات المنفصلة */}
+              <div className="bg-gray-50 p-8 rounded-3xl border-2 border-yellow-500/40 shadow-sm">
+                <h3 className="text-2xl font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-3">
+                  <TypeIcon className="w-8 h-8 text-yellow-600" />
+                  {t.screenTitlesTitle}
+                </h3>
+                <p className="text-gray-600 text-sm mb-6 font-semibold">{t.screenTitlesInstruction}</p>
+
+                <form onSubmit={handleSaveScreenTitles} className="space-y-6">
+                  <div className="grid md:grid-cols-3 gap-6">
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Utensils className="w-4 h-4 text-yellow-600" /> {t.titleScreen1Label}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={lang === 'ar' ? 'المنيو الرئيسي (افتراضي)' : 'Hauptmenü (Standard)'}
+                        value={editableTitle1}
+                        onChange={(e) => setEditableTitle1(e.target.value)}
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-gray-900 bg-white"
+                      />
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Coffee className="w-4 h-4 text-yellow-600" /> {t.titleScreen2Label}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={lang === 'ar' ? 'المشروبات (افتراضي)' : 'Getränke (Standard)'}
+                        value={editableTitle2}
+                        onChange={(e) => setEditableTitle2(e.target.value)}
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-gray-900 bg-white"
+                      />
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Percent className="w-4 h-4 text-yellow-600" /> {t.titleScreen3Label}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={lang === 'ar' ? 'Sonderangebote (افتراضي)' : 'Sonderangebote (Standard)'}
+                        value={editableTitle3}
+                        onChange={(e) => setEditableTitle3(e.target.value)}
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-gray-900 bg-white"
+                      />
+                    </div>
+
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button type="submit" className="flex-1 py-4 bg-black text-yellow-400 font-black text-xl rounded-2xl hover:bg-gray-900 shadow-lg flex justify-center items-center gap-2 cursor-pointer">
+                      <Save className="w-6 h-6" /> {t.saveScreenTitlesBtn}
+                    </button>
+                    {(editableTitle1 || editableTitle2 || editableTitle3) && (
+                      <button type="button" onClick={handleResetScreenTitles} className="px-6 py-4 bg-gray-200 text-gray-700 font-bold text-sm rounded-2xl hover:bg-gray-300 transition cursor-pointer">
+                        {t.resetScreenTitlesBtn}
+                      </button>
+                    )}
+                  </div>
                 </form>
               </div>
 
