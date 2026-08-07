@@ -17,8 +17,10 @@ import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 import { PinProtectionModal } from './components/common/PinProtectionModal';
+import { useWakeLock } from './hooks/useWakeLock';
 
 export default function App() {
+  useWakeLock();
   const [initialLoadTime] = useState(Date.now());
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);

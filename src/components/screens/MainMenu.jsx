@@ -132,6 +132,17 @@ export const MainMenu = ({
         </div>
 
       </div>
+
+      {/* Footer / Copyright */}
+      <div className="mt-12 relative z-20 text-gray-500/70 text-sm md:text-base font-medium tracking-wide text-center pb-4">
+        <p>
+          &copy; {new Date().getFullYear()}{' '}
+          <a href="https://jansatech.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-yellow-500 transition-colors">
+            JansaTech
+          </a>
+          . {lang === 'ar' ? 'جميع الحقوق محفوظة.' : 'Alle Rechte vorbehalten.'}
+        </p>
+      </div>
     </div>
   );
 };
