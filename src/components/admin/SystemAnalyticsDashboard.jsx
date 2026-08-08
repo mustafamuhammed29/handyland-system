@@ -124,8 +124,18 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      await supabase.from('shop_settings').upsert({ id: 'config', forceReload: Date.now() });
-      await supabase.from('alsafi_settings').upsert({ id: 'config', forceReload: Date.now() });
+      const now = Date.now();
+      try {
+        const reloadChannel = supabase.channel('public:handyland_tv_signage_v6');
+        await reloadChannel.send({
+          type: 'broadcast',
+          event: 'FORCE_RELOAD_ALL_SCREENS',
+          payload: { timestamp: now },
+        });
+      } catch (e) {}
+
+      await supabase.from('shop_settings').upsert({ id: 'config', forceReload: now });
+      await supabase.from('alsafi_settings').upsert({ id: 'config', forceReload: now });
       alert(lang === 'ar' ? 'تم إرسال إشارة التحديث لجميع الشاشات بنجاح!' : 'Aktualisierungssignal erfolgreich an alle Bildschirme gesendet!');
     } catch (e) {
       alert(lang === 'ar' ? 'حدث خطأ أثناء الإرسال.' : 'Fehler beim Senden.');

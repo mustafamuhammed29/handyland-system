@@ -171,6 +171,30 @@ export default function App() {
     }
   }, []);
 
+  const hardReloadScreen = useCallback(() => {
+    try {
+      if ('caches' in window) {
+        caches.keys().then((keys) => {
+          keys.forEach((k) => caches.delete(k));
+        });
+      }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((r) => r.unregister());
+        });
+      }
+    } catch (e) {}
+
+    const currentUrl = window.location.href;
+    const hash = window.location.hash || '';
+    const urlWithoutHash = currentUrl.replace(hash, '');
+    const cleanUrl = urlWithoutHash.split('&_t=')[0].split('?_t=')[0];
+    const separator = cleanUrl.includes('?') ? '&' : '?';
+    const newUrl = `${cleanUrl}${separator}_t=${Date.now()}${hash}`;
+
+    window.location.replace(newUrl);
+  }, []);
+
   const fetchShopSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
@@ -193,14 +217,14 @@ export default function App() {
         setStoreStatusMode(data.storeStatusMode || 'active');
         setStatusTimerTarget(data.statusTimerTarget || '');
         
-        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('alsafi')) {
-          window.location.reload(true);
+        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
+          hardReloadScreen();
         }
       }
     } catch (e) {
       console.warn("Fetch shop_settings notice:", e);
     }
-  }, [view, initialLoadTime]);
+  }, [view, initialLoadTime, hardReloadScreen]);
 
   const fetchAlsafiMenu = useCallback(async () => {
     try {
@@ -263,14 +287,14 @@ export default function App() {
         setAlsafiTitle2(data.titleScreen2 || '');
         setAlsafiTitle3(data.titleScreen3 || '');
 
-        if (data.forceReload && data.forceReload > initialLoadTime && view.startsWith('alsafi')) {
-          window.location.reload(true);
+        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
+          hardReloadScreen();
         }
       }
     } catch (e) {
       console.warn("Fetch alsafi_settings notice:", e);
     }
-  }, [view, initialLoadTime]);
+  }, [view, initialLoadTime, hardReloadScreen]);
 
   // جلب البيانات بالكامل بشكل متسلسل وذكي
   const fetchAllData = useCallback(async () => {
@@ -362,6 +386,11 @@ export default function App() {
     // عند تعديل أي جدول، يتم جلب ذلك الجدول فقط بدلاً من إعادة جلب كل شيء
     const channel = supabase
       .channel('public:handyland_tv_signage_v6')
+      .on('broadcast', { event: 'FORCE_RELOAD_ALL_SCREENS' }, () => {
+        if (!view.startsWith('admin')) {
+          hardReloadScreen();
+        }
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchShopDevices)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchShopRepairs)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchShopOffers)
@@ -372,13 +401,25 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAlsafiSettings)
       .subscribe();
 
+    // فاحص نبض دوري كل 15 ثانية لشاشات التلفزيون لضمان استلام أمر التحديث حتى لو سكن المتصفح
+    const tvPollerInterval = setInterval(() => {
+      if (view.startsWith('admin')) return;
+      supabase.from('shop_settings').select('forceReload').eq('id', 'config').single().then(({ data }) => {
+        if (data?.forceReload && data.forceReload > initialLoadTime) {
+          hardReloadScreen();
+        }
+      }).catch(() => {});
+    }, 15000);
+
     return () => {
+      clearInterval(tvPollerInterval);
       supabase.removeChannel(channel);
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, [
+    view, initialLoadTime, hardReloadScreen,
     fetchAllData,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers, fetchShopSettings,
     fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiSettings
