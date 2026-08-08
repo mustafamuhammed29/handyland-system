@@ -14,6 +14,7 @@ import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen'
 import { AdminGateway } from './components/admin/AdminGateway';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
+import { SystemAnalyticsDashboard } from './components/admin/SystemAnalyticsDashboard';
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 import { PinProtectionModal } from './components/common/PinProtectionModal';
@@ -25,7 +26,7 @@ export default function App() {
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const screenParam = urlParams.get('screen');
-    const validViews = ['screen1', 'screen2', 'screen3', 'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'admin-gateway', 'admin-handyland', 'admin-alsafi', 'menu'];
+    const validViews = ['screen1', 'screen2', 'screen3', 'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-analytics', 'analytics', 'menu'];
     
     if (screenParam && validViews.includes(screenParam)) {
       return screenParam;
@@ -393,6 +394,10 @@ export default function App() {
   };
 
   const initiateAdminLogin = (branch) => {
+    if (branch === 'analytics') {
+      navigateTo('admin-analytics');
+      return;
+    }
     setPendingAdminBranch(branch);
     setShowPinModal(true);
   };
@@ -400,6 +405,10 @@ export default function App() {
   const renderActiveView = () => {
     if (view === 'admin-gateway') return (
       <AdminGateway onBranchSelect={initiateAdminLogin} onBack={navigateBack} lang={lang} />
+    );
+
+    if (view === 'admin-analytics' || view === 'analytics') return (
+      <SystemAnalyticsDashboard onBack={() => navigateTo('admin-gateway')} lang={lang} />
     );
 
     if (view === 'admin-handyland') return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Settings, Smartphone, Wrench, Tag, Plus, Trash2,
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
-  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut
+  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut, Activity
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -466,6 +466,18 @@ export const AdminPanel = ({
           </div>
 
           <div className="flex items-center gap-4">
+            <button 
+              type="button"
+              onClick={() => {
+                window.location.hash = '#admin-analytics';
+                window.dispatchEvent(new PopStateEvent('popstate', { state: { view: 'admin-analytics' } }));
+              }}
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-5 py-3.5 rounded-2xl transition text-base font-bold text-white shadow-lg cursor-pointer border border-emerald-400/40"
+              title={lang === 'ar' ? 'استعراض لوحة التحليلات والباندويث' : 'Datenfluss & Telemetrie'}
+            >
+              <Activity className="w-5 h-5 animate-pulse" />
+              <span>{lang === 'ar' ? 'لوحة التحليلات' : 'Analytics'}</span>
+            </button>
             <LanguageToggle lang={lang} setLang={setLang} />
             <button onClick={onBack} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3.5 rounded-2xl transition text-lg font-bold text-white shadow-lg cursor-pointer">
               <LogOut className="w-5 h-5" />
