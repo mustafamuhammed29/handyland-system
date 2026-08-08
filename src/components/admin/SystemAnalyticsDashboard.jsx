@@ -68,6 +68,11 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     screenPresence.pingAllScreens();
     screenPresence.trackScreen('admin-analytics');
 
+    // إرسال نداء استكشاف دوري كل 4 ثوانٍ لجمع جميع الشاشات النشطة فوراً
+    const pingInterval = setInterval(() => {
+      screenPresence.pingAllScreens();
+    }, 4000);
+
     const handleResize = () => {
       setScreenInfo({
         width: window.innerWidth,
@@ -80,6 +85,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
 
     window.addEventListener('resize', handleResize);
     return () => {
+      clearInterval(pingInterval);
       unsubTelemetry();
       unsubPresence();
       window.removeEventListener('resize', handleResize);

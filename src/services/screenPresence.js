@@ -1,14 +1,17 @@
 import { supabase } from './supabase';
 
-// توليد أو استرجاع معرف فريد لجهاز العرض / الشاشة
-const getDeviceId = () => {
-  const KEY = 'handyland_device_screen_uuid';
-  let id = localStorage.getItem(KEY);
-  if (!id) {
-    id = 'screen_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
-    localStorage.setItem(KEY, id);
+// توليد معرف فريد 100% لكل نافذة وشاشة وتبويب لمنع أي تداخل بين الشاشات
+const getDeviceId = (view) => {
+  try {
+    let tabId = sessionStorage.getItem('handyland_tab_uuid');
+    if (!tabId) {
+      tabId = `${view || 'scr'}_` + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
+      sessionStorage.setItem('handyland_tab_uuid', tabId);
+    }
+    return tabId;
+  } catch (e) {
+    return `${view || 'scr'}_` + Math.random().toString(36).substring(2, 9);
   }
-  return id;
 };
 
 const getScreenLabel = (view) => {
@@ -51,7 +54,7 @@ export const screenPresence = {
   // تتبع وجود الشاشة الحالية وبث حالتها اللحظية إلى السيرفر
   trackScreen: async (currentView) => {
     try {
-      const deviceId = getDeviceId();
+      const deviceId = getDeviceId(currentView);
       currentPayload = {
         id: deviceId,
         view: currentView,
@@ -79,9 +82,10 @@ export const screenPresence = {
             Object.keys(state).forEach((key) => {
               const presences = state[key];
               if (Array.isArray(presences) && presences.length > 0) {
-                // نأخذ آخر حالة نشطة
-                const latest = presences[presences.length - 1];
-                flattened.push({ ...latest, sessionKey: key });
+                // استخراج جميع الجلسات النشطة
+                presences.forEach((p) => {
+                  flattened.push({ ...p, sessionKey: key });
+                });
               }
             });
             currentLiveScreens = flattened;
@@ -100,7 +104,7 @@ export const screenPresence = {
             }
           });
 
-        // 3. نبض قلبي دوري كل 12 ثانية لتثبيت اتصال البث المباشر
+        // 3. نبض قلبي دوري كل 8 ثوانٍ لتثبيت اتصال البث المباشر للشاشات
         setInterval(async () => {
           if (presenceChannel && currentPayload) {
             currentPayload.lastActive = Date.now();
@@ -108,7 +112,7 @@ export const screenPresence = {
               await presenceChannel.track(currentPayload);
             } catch (e) {}
           }
-        }, 12000);
+        }, 8000);
       } else {
         await presenceChannel.track(currentPayload);
       }
