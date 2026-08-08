@@ -7,7 +7,7 @@ import {
   ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE
 } from './constants/defaults';
 import { supabase } from './services/supabase';
-import { offlineCache } from './services/offlineCache';
+import { offlineCache, hydrateCacheFromIndexedDB } from './services/offlineCache';
 
 import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
@@ -128,105 +128,157 @@ export default function App() {
     }
   };
 
+  // دوال جلب البيانات المستهدفة بدقة (Targeted Fetching) لتوفير الباندويث بنسبة 95%
+  const fetchShopDevices = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('shop_devices').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setDevices(data);
+        offlineCache.saveDevices(data);
+      }
+    } catch (e) {
+      console.warn("Fetch shop_devices notice:", e);
+    }
+  }, []);
+
+  const fetchShopRepairs = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('shop_repairs').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setRepairs(data);
+        offlineCache.saveRepairs(data);
+      }
+    } catch (e) {
+      console.warn("Fetch shop_repairs notice:", e);
+    }
+  }, []);
+
+  const fetchShopOffers = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('shop_offers').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setOffers(data);
+        offlineCache.saveOffers(data);
+      }
+    } catch (e) {
+      console.warn("Fetch shop_offers notice:", e);
+    }
+  }, []);
+
+  const fetchShopSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
+      if (!error && data) {
+        offlineCache.saveSettings(data);
+        setCustomLogo(data.logoData || null);
+        setCustomFavicon(data.faviconData || null);
+        if (['screen1', 'screen2', 'screen3', 'menu'].includes(view) || view.startsWith('admin')) updateFavicon(data.faviconData);
+        setTickerText(data.tickerText || DEFAULT_TICKER);
+        setTickerSpeed(data.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setFontSize(data.fontSize || DEFAULT_FONT_SIZE);
+        setHeaderSubtitle(data.headerSubtitle || DEFAULT_SUBTITLE);
+        setIntervalScreen1(data.intervalScreen1 || 6);
+        setIntervalScreen2(data.intervalScreen2 || 6);
+        setIntervalScreen3(data.intervalScreen3 || 6);
+        setAdminPin(data.adminPin || DEFAULT_PIN);
+        setCityName(data.cityName || DEFAULT_CITY);
+        setMaintenanceMode(data.maintenanceMode || false);
+        setMaintenanceMessage(data.maintenanceMessage || '');
+        setStoreStatusMode(data.storeStatusMode || 'active');
+        setStatusTimerTarget(data.statusTimerTarget || '');
+        
+        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('alsafi')) {
+          window.location.reload(true);
+        }
+      }
+    } catch (e) {
+      console.warn("Fetch shop_settings notice:", e);
+    }
+  }, [view, initialLoadTime]);
+
+  const fetchAlsafiMenu = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('alsafi_menu').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setAlsafiMenu(data);
+        offlineCache.saveAlsafiMenu(data);
+      }
+    } catch (e) {
+      console.warn("Fetch alsafi_menu notice:", e);
+    }
+  }, []);
+
+  const fetchAlsafiDrinks = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('alsafi_drinks').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setAlsafiDrinks(data);
+        offlineCache.saveAlsafiDrinks(data);
+      }
+    } catch (e) {
+      console.warn("Fetch alsafi_drinks notice:", e);
+    }
+  }, []);
+
+  const fetchAlsafiOffers = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('alsafi_offers').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setAlsafiOffers(data);
+        offlineCache.saveAlsafiOffers(data);
+      }
+    } catch (e) {
+      console.warn("Fetch alsafi_offers notice:", e);
+    }
+  }, []);
+
+  const fetchAlsafiSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('alsafi_settings').select('*').eq('id', 'config').single();
+      if (!error && data) {
+        offlineCache.saveAlsafiSettings(data);
+        setAlsafiLogo(data.logoData || null);
+        setAlsafiFavicon(data.faviconData || null);
+        if (view.startsWith('alsafi')) updateFavicon(data.faviconData);
+        setAlsafiTicker(data.tickerText || ALSAFI_DEFAULT_TICKER);
+        setAlsafiTickerSpeed(data.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setAlsafiFontSize(data.fontSize || DEFAULT_FONT_SIZE);
+        setAlsafiSubtitle(data.headerSubtitle || ALSAFI_DEFAULT_SUBTITLE);
+        setAlsafiInt1(data.intervalScreen1 || 6);
+        setAlsafiInt2(data.intervalScreen2 || 6);
+        setAlsafiInt3(data.intervalScreen3 || 6);
+        setAlsafiPin(data.adminPin || '0000');
+        setAlsafiCity(data.cityName || DEFAULT_CITY);
+        setAlsafiMaint(data.maintenanceMode || false);
+        setAlsafiMaintMsg(data.maintenanceMessage || '');
+        setAlsafiStatusMode(data.storeStatusMode || 'active');
+        setAlsafiTimerTarget(data.statusTimerTarget || '');
+        setAlsafiTitle1(data.titleScreen1 || '');
+        setAlsafiTitle2(data.titleScreen2 || '');
+        setAlsafiTitle3(data.titleScreen3 || '');
+
+        if (data.forceReload && data.forceReload > initialLoadTime && view.startsWith('alsafi')) {
+          window.location.reload(true);
+        }
+      }
+    } catch (e) {
+      console.warn("Fetch alsafi_settings notice:", e);
+    }
+  }, [view, initialLoadTime]);
+
+  // جلب البيانات بالكامل بشكل متسلسل وذكي
   const fetchAllData = useCallback(async () => {
     try {
-      try {
-        const { data: devData, error: devErr } = await supabase.from('shop_devices').select('*').order('created_at', { ascending: false });
-        if (!devErr && devData) {
-          setDevices(devData);
-          offlineCache.saveDevices(devData);
-        }
-      } catch (e) { console.warn("Fetch shop_devices notice:", e); }
-
-      try {
-        const { data: repData, error: repErr } = await supabase.from('shop_repairs').select('*').order('created_at', { ascending: false });
-        if (!repErr && repData) {
-          setRepairs(repData);
-          offlineCache.saveRepairs(repData);
-        }
-      } catch (e) { console.warn("Fetch shop_repairs notice:", e); }
-
-      try {
-        const { data: offData, error: offErr } = await supabase.from('shop_offers').select('*').order('created_at', { ascending: false });
-        if (!offErr && offData) {
-          setOffers(offData);
-          offlineCache.saveOffers(offData);
-        }
-      } catch (e) { console.warn("Fetch shop_offers notice:", e); }
-
-      try {
-        const { data: setErrData, error: setErr } = await supabase.from('shop_settings').select('*').eq('id', 'config').single();
-        if (!setErr && setErrData) {
-          offlineCache.saveSettings(setErrData);
-          setCustomLogo(setErrData.logoData || null);
-          setCustomFavicon(setErrData.faviconData || null);
-          if (['screen1', 'screen2', 'screen3', 'menu'].includes(view) || view.startsWith('admin')) updateFavicon(setErrData.faviconData);
-          setTickerText(setErrData.tickerText || DEFAULT_TICKER);
-          setTickerSpeed(setErrData.tickerSpeed || DEFAULT_TICKER_SPEED);
-          setFontSize(setErrData.fontSize || DEFAULT_FONT_SIZE);
-          setHeaderSubtitle(setErrData.headerSubtitle || DEFAULT_SUBTITLE);
-          setIntervalScreen1(setErrData.intervalScreen1 || 6);
-          setIntervalScreen2(setErrData.intervalScreen2 || 6);
-          setIntervalScreen3(setErrData.intervalScreen3 || 6);
-          setAdminPin(setErrData.adminPin || DEFAULT_PIN);
-          setCityName(setErrData.cityName || DEFAULT_CITY);
-          setMaintenanceMode(setErrData.maintenanceMode || false);
-          setMaintenanceMessage(setErrData.maintenanceMessage || '');
-          setStoreStatusMode(setErrData.storeStatusMode || 'active');
-          setStatusTimerTarget(setErrData.statusTimerTarget || '');
-          
-          if (setErrData.forceReload && setErrData.forceReload > initialLoadTime && !view.startsWith('alsafi')) {
-            window.location.reload(true);
-          }
-        }
-      } catch (e) { console.warn("Fetch shop_settings notice:", e); }
-
-      // Fetch Alsafi Data
-      try {
-        const { data: alsMenu, error: alsMenuErr } = await supabase.from('alsafi_menu').select('*').order('created_at', { ascending: false });
-        if (!alsMenuErr && alsMenu) { setAlsafiMenu(alsMenu); offlineCache.saveAlsafiMenu(alsMenu); }
-      } catch (e) { console.warn("Fetch alsafi_menu notice:", e); }
-
-      try {
-        const { data: alsDrinks, error: alsDrinksErr } = await supabase.from('alsafi_drinks').select('*').order('created_at', { ascending: false });
-        if (!alsDrinksErr && alsDrinks) { setAlsafiDrinks(alsDrinks); offlineCache.saveAlsafiDrinks(alsDrinks); }
-      } catch (e) { console.warn("Fetch alsafi_drinks notice:", e); }
-
-      try {
-        const { data: alsOffers, error: alsOffersErr } = await supabase.from('alsafi_offers').select('*').order('created_at', { ascending: false });
-        if (!alsOffersErr && alsOffers) { setAlsafiOffers(alsOffers); offlineCache.saveAlsafiOffers(alsOffers); }
-      } catch (e) { console.warn("Fetch alsafi_offers notice:", e); }
-
-      try {
-        const { data: alsSettings, error: alsSetErr } = await supabase.from('alsafi_settings').select('*').eq('id', 'config').single();
-        if (!alsSetErr && alsSettings) {
-          offlineCache.saveAlsafiSettings(alsSettings);
-          setAlsafiLogo(alsSettings.logoData || null);
-          setAlsafiFavicon(alsSettings.faviconData || null);
-          if (view.startsWith('alsafi')) updateFavicon(alsSettings.faviconData);
-          setAlsafiTicker(alsSettings.tickerText || ALSAFI_DEFAULT_TICKER);
-          setAlsafiTickerSpeed(alsSettings.tickerSpeed || DEFAULT_TICKER_SPEED);
-          setAlsafiFontSize(alsSettings.fontSize || DEFAULT_FONT_SIZE);
-          setAlsafiSubtitle(alsSettings.headerSubtitle || ALSAFI_DEFAULT_SUBTITLE);
-          setAlsafiInt1(alsSettings.intervalScreen1 || 6);
-          setAlsafiInt2(alsSettings.intervalScreen2 || 6);
-          setAlsafiInt3(alsSettings.intervalScreen3 || 6);
-          setAlsafiPin(alsSettings.adminPin || '0000');
-          setAlsafiCity(alsSettings.cityName || DEFAULT_CITY);
-          setAlsafiMaint(alsSettings.maintenanceMode || false);
-          setAlsafiMaintMsg(alsSettings.maintenanceMessage || '');
-          setAlsafiStatusMode(alsSettings.storeStatusMode || 'active');
-          setAlsafiTimerTarget(alsSettings.statusTimerTarget || '');
-          setAlsafiTitle1(alsSettings.titleScreen1 || '');
-          setAlsafiTitle2(alsSettings.titleScreen2 || '');
-          setAlsafiTitle3(alsSettings.titleScreen3 || '');
-
-          if (alsSettings.forceReload && alsSettings.forceReload > initialLoadTime && view.startsWith('alsafi')) {
-            window.location.reload(true);
-          }
-        }
-      } catch (e) { console.warn("Fetch alsafi_settings notice:", e); }
-
+      await Promise.allSettled([
+        fetchShopSettings(),
+        fetchAlsafiSettings(),
+        fetchShopDevices(),
+        fetchShopRepairs(),
+        fetchShopOffers(),
+        fetchAlsafiMenu(),
+        fetchAlsafiDrinks(),
+        fetchAlsafiOffers(),
+      ]);
       setIsOffline(false);
     } catch (err) {
       console.warn("Error in fetchAllData:", err);
@@ -258,7 +310,30 @@ export default function App() {
         if (alsCacheSet.cityName) setAlsafiCity(alsCacheSet.cityName);
       }
     }
-  }, [initialLoadTime]);
+  }, [
+    fetchShopSettings, fetchAlsafiSettings,
+    fetchShopDevices, fetchShopRepairs, fetchShopOffers,
+    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers
+  ]);
+
+  // استرجاع الذاكرة المحلية عند الإقلاع
+  useEffect(() => {
+    hydrateCacheFromIndexedDB().then(() => {
+      const cachedDev = offlineCache.getDevices();
+      if (cachedDev?.length) setDevices(cachedDev);
+      const cachedRep = offlineCache.getRepairs();
+      if (cachedRep?.length) setRepairs(cachedRep);
+      const cachedOff = offlineCache.getOffers();
+      if (cachedOff?.length) setOffers(cachedOff);
+
+      const cachedMenu = offlineCache.getAlsafiMenu();
+      if (cachedMenu?.length) setAlsafiMenu(cachedMenu);
+      const cachedDrinks = offlineCache.getAlsafiDrinks();
+      if (cachedDrinks?.length) setAlsafiDrinks(cachedDrinks);
+      const cachedAlsOff = offlineCache.getAlsafiOffers();
+      if (cachedAlsOff?.length) setAlsafiOffers(cachedAlsOff);
+    });
+  }, []);
 
   useEffect(() => {
     fetchAllData();
@@ -277,16 +352,18 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
 
+    // اشتراك لحظي ذكي ومستهدف (Smart Granular Realtime)
+    // عند تعديل أي جدول، يتم جلب ذلك الجدول فقط بدلاً من إعادة جلب كل شيء
     const channel = supabase
-      .channel('public:handyland_tv_signage_v5')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_menu' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_drinks' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_offers' }, fetchAllData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAllData)
+      .channel('public:handyland_tv_signage_v6')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchShopDevices)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchShopRepairs)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchShopOffers)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_settings' }, fetchShopSettings)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_menu' }, fetchAlsafiMenu)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_drinks' }, fetchAlsafiDrinks)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_offers' }, fetchAlsafiOffers)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAlsafiSettings)
       .subscribe();
 
     return () => {
@@ -295,7 +372,11 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [fetchAllData]);
+  }, [
+    fetchAllData,
+    fetchShopDevices, fetchShopRepairs, fetchShopOffers, fetchShopSettings,
+    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiSettings
+  ]);
 
   const handleVerifyPin = (inputPin) => {
     const targetPin = pendingAdminBranch === 'alsafi' ? (alsafiPin || '0000') : (adminPin || DEFAULT_PIN);

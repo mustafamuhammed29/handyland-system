@@ -1,4 +1,4 @@
-export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality = 0.82, autoCropTo169 = false) => {
+export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality = 0.76, autoCropTo169 = false) => {
   return new Promise((resolve) => {
     if (!file || (file.type && file.type.startsWith('video/'))) {
       resolve(file);
@@ -46,22 +46,42 @@ export const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality =
         canvas.width = destWidth;
         canvas.height = destHeight;
 
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, destWidth, destHeight);
+        const ctx = canvas.getContext('2d', { alpha: false });
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, destWidth, destHeight);
+        }
 
+        // اختيار نوع الصورة المضغوطة (WebP أو JPEG)
+        const format = 'image/webp';
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              resolve(file);
+              // Fallback to jpeg if webp not supported
+              canvas.toBlob(
+                (jpegBlob) => {
+                  if (!jpegBlob) {
+                    resolve(file);
+                    return;
+                  }
+                  resolve(new File([jpegBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  }));
+                },
+                'image/jpeg',
+                0.78
+              );
               return;
             }
-            const compressedFile = new File([blob], file.name, {
-              type: 'image/jpeg',
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), {
+              type: 'image/webp',
               lastModified: Date.now(),
             });
             resolve(compressedFile);
           },
-          'image/jpeg',
+          format,
           quality
         );
       };
