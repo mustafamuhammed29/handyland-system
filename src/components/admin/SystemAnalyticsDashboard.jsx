@@ -29,6 +29,14 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const [apiError, setApiError] = useState(null);
 
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+  
+  const [screenInfo, setScreenInfo] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+    dpr: typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
+    screenW: typeof window !== 'undefined' ? window.screen.width : 1920,
+    screenH: typeof window !== 'undefined' ? window.screen.height : 1080,
+  });
 
   useEffect(() => {
     const handleFullscreenChange = () => {
