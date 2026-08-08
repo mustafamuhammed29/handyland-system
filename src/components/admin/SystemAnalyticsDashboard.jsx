@@ -4,7 +4,8 @@ import {
   HardDrive, RefreshCw, CheckCircle2, ArrowLeft,
   Smartphone, Utensils, Tag, Wrench, BarChart3, Radio, Gauge,
   TrendingDown, Globe2, Eye, Clock, Cpu, Monitor, Signal,
-  Tv, Cast, Laptop, ExternalLink, KeyRound, AlertTriangle
+  Tv, Cast, Laptop, ExternalLink, KeyRound, AlertTriangle,
+  Play, Coffee, Percent, Layers
 } from 'lucide-react';
 import { networkTelemetry } from '../../services/networkTelemetry';
 import { offlineCache } from '../../services/offlineCache';
@@ -21,10 +22,9 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const [pingLoading, setPingLoading] = useState(false);
   const [pingResult, setPingResult] = useState(stats.lastLatencyMs || 38);
   
-  // مفتاح Supabase Management API إذا أراد جلبه برمجياً
+  // مفتاح Supabase Management API
   const [apiToken, setApiToken] = useState(() => localStorage.getItem('supabase_mgmt_token') || '');
   const [fetchingApi, setFetchingApi] = useState(false);
-  const [apiUsageData, setApiUsageData] = useState(null);
   const [apiError, setApiError] = useState(null);
 
   const [screenInfo, setScreenInfo] = useState({
@@ -44,6 +44,76 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     alsafiDrinks: offlineCache.getAlsafiDrinks().length,
     alsafiOffers: offlineCache.getAlsafiOffers().length,
   });
+
+  // قائمة جميع شاشات النظام الـ 6 الكاملة مع روابطها ومواصفاتها
+  const ALL_SYSTEM_SCREENS = [
+    {
+      id: 'screen1',
+      system: 'HANDYLAND',
+      nameAr: 'شاشة 1 - عروض الهواتف والأجهزة',
+      nameDe: 'Bildschirm 1 - Top Angebote & Smartphones',
+      icon: Smartphone,
+      color: 'yellow',
+      itemsCount: inventory.devices,
+      itemLabel: lang === 'ar' ? 'بوستر معروض' : 'Medien',
+      path: '#screen1'
+    },
+    {
+      id: 'screen2',
+      system: 'HANDYLAND',
+      nameAr: 'شاشة 2 - مركز الصيانة والأسعار',
+      nameDe: 'Bildschirm 2 - Reparaturzentrum & Preise',
+      icon: Wrench,
+      color: 'yellow',
+      itemsCount: inventory.repairs,
+      itemLabel: lang === 'ar' ? 'بطاقة صيانة' : 'Reparaturen',
+      path: '#screen2'
+    },
+    {
+      id: 'screen3',
+      system: 'HANDYLAND',
+      nameAr: 'شاشة 3 - العروض المميزة وشريط الأخبار',
+      nameDe: 'Bildschirm 3 - Spezielle Angebote & Ticker',
+      icon: Tag,
+      color: 'yellow',
+      itemsCount: inventory.offers,
+      itemLabel: lang === 'ar' ? 'عرض خاص' : 'Angebote',
+      path: '#screen3'
+    },
+    {
+      id: 'alsafi-screen1',
+      system: 'ALSAFI',
+      nameAr: 'شاشة 1 - المنيو الرئيسي للوجبات',
+      nameDe: 'Bildschirm 1 - Hauptmenü Speisen',
+      icon: Utensils,
+      color: 'orange',
+      itemsCount: inventory.alsafiMenu,
+      itemLabel: lang === 'ar' ? 'عنصر منيو' : 'Menü-Artikel',
+      path: '#alsafi-screen1'
+    },
+    {
+      id: 'alsafi-screen2',
+      system: 'ALSAFI',
+      nameAr: 'شاشة 2 - قائمة المشروبات والعصائر',
+      nameDe: 'Bildschirm 2 - Getränkekarte',
+      icon: Coffee,
+      color: 'orange',
+      itemsCount: inventory.alsafiDrinks,
+      itemLabel: lang === 'ar' ? 'مشروب' : 'Getränke',
+      path: '#alsafi-screen2'
+    },
+    {
+      id: 'alsafi-screen3',
+      system: 'ALSAFI',
+      nameAr: 'شاشة 3 - العروض والخصومات الخاصة',
+      nameDe: 'Bildschirm 3 - Sonderangebote & Deals',
+      icon: Percent,
+      color: 'orange',
+      itemsCount: inventory.alsafiOffers,
+      itemLabel: lang === 'ar' ? 'عرض مميز' : 'Aktionen',
+      path: '#alsafi-screen3'
+    }
+  ];
 
   useEffect(() => {
     const unsubTelemetry = networkTelemetry.subscribe((newStats) => {
@@ -110,8 +180,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
       if (!res.ok) {
         throw new Error(`API Error: ${res.status}`);
       }
-      const data = await res.json();
-      setApiUsageData(data);
+      alert(lang === 'ar' ? 'تم جلب البيانات بنجاح من سيرفر سوبابيز!' : 'Erfolgreich von Supabase-Servern synchronisiert!');
     } catch (err) {
       setApiError(err.message);
     }
@@ -180,12 +249,12 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                   <Activity className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500">
-                  {isAr ? 'لوحة تحليلات وبث الشاشات الحي' : 'Live-Bildschirm- & Datenfluss-Analyse'}
+                  {isAr ? 'لوحة تحليلات وبث جميع شاشات النظام' : 'Gesamte Bildschirm- & Datenfluss-Zentrale'}
                 </h1>
               </div>
               <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{isAr ? 'بيانات حقيقية ومباشرة عبر بروتوكول Supabase Realtime Presence' : 'Echtzeit-Daten via Supabase Realtime Presence'}</span>
+                <span>{isAr ? 'مراقبة حية لجميع شاشات المحل الـ 6 بالكامل دون حصر' : 'Vollständige Überwachung aller 6 Filial-Bildschirme'}</span>
               </p>
             </div>
           </div>
@@ -196,7 +265,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
               className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer"
             >
               <Cast className="w-4 h-4" />
-              <span>{isAr ? 'تحديث الشاشات فوراً' : 'Alle Bildschirme neuladen'}</span>
+              <span>{isAr ? 'تحديث كل الشاشات فوراً' : 'Alle Bildschirme neuladen'}</span>
             </button>
 
             <button
@@ -212,6 +281,134 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             </button>
           </div>
         </header>
+
+        {/* 📺 مصفوفة جميع شاشات النظام الـ 6 بالكامل (Complete 6-Screen Master Matrix) */}
+        <div className="bg-gradient-to-br from-gray-900/95 via-gray-900/80 to-black border-2 border-yellow-500/40 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-800 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-yellow-500/20 text-yellow-400 rounded-2xl border border-yellow-500/40 shadow-inner">
+                <Layers className="w-7 h-7 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-xl md:text-2xl font-black text-white">
+                    {isAr ? 'مصفوفة شاشات العرض الكاملة (هانديلاند + مطعم الصافي)' : 'Gesamte Bildschirme der Filialen (Handyland + Alsafi)'}
+                  </h2>
+                  <span className="bg-yellow-500 text-black font-black text-xs px-2.5 py-1 rounded-full">
+                    6 SCREENS
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {isAr ? 'عرض لجميع الشاشات المتاحة في النظام مع حالة البث المباشر وزر الفتح السريع لكل شاشة' : 'Alle verfügbaren Bildschirme mit Live-Status und Direktzugriff'}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-emerald-500/10 border border-emerald-500/30 px-5 py-2.5 rounded-2xl flex items-center gap-3">
+              <span className="w-3.5 h-3.5 bg-emerald-400 rounded-full animate-ping" />
+              <div className="text-start">
+                <span className="text-xs text-gray-400 block font-bold">{isAr ? 'الشاشات النشطة حالياً' : 'Aktive Live-Geräte'}</span>
+                <span className="text-2xl font-black text-emerald-400 font-mono">
+                  {connectedScreensCount} {isAr ? 'شاشات متصلة' : 'Geräte online'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* شبكة الشاشات الـ 6 الكاملة دون حصر */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {ALL_SYSTEM_SCREENS.map((scr) => {
+              // فحص هل هذه الشاشة متصلة بالبث المباشر الآن عبر Presence
+              const activePresence = liveScreens.find(
+                (live) => live.view === scr.id || (live.label && live.label.includes(scr.id))
+              );
+              const isOnline = Boolean(activePresence);
+              const IconComp = scr.icon;
+
+              return (
+                <div
+                  key={scr.id}
+                  className={`bg-gray-800/50 border-2 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl ${
+                    isOnline
+                      ? 'border-emerald-500/60 bg-emerald-950/20 shadow-emerald-950/30'
+                      : 'border-gray-700/60 hover:border-yellow-500/40'
+                  }`}
+                >
+                  <div>
+                    {/* رأس بطاقة الشاشة */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-2 rounded-xl ${scr.system === 'ALSAFI' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                          <IconComp className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className={`text-[11px] font-black uppercase tracking-wider block ${scr.system === 'ALSAFI' ? 'text-orange-400' : 'text-yellow-400'}`}>
+                            {scr.system}
+                          </span>
+                          <span className="text-xs font-mono text-gray-400">{scr.id}</span>
+                        </div>
+                      </div>
+
+                      {/* شارة الحالة: بث حي أم جاهزة */}
+                      {isOnline ? (
+                        <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-lg border border-emerald-500/40 flex items-center gap-1.5 animate-pulse">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                          <span>{isAr ? 'متصلة بالبث الحي' : 'Live Online'}</span>
+                        </span>
+                      ) : (
+                        <span className="bg-gray-700/40 text-gray-400 text-xs font-bold px-2.5 py-1 rounded-lg border border-gray-700 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
+                          <span>{isAr ? 'جاهزة للعرض' : 'Bereit'}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* اسم الشاشة ووصفها */}
+                    <h3 className="text-base font-black text-white mb-2 leading-snug">
+                      {isAr ? scr.nameAr : scr.nameDe}
+                    </h3>
+
+                    {/* معلومات الميديا والمحتوى */}
+                    <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-gray-700/50 mb-3 text-xs">
+                      <span className="text-gray-400">{isAr ? 'المحتوى المخزن محلياً:' : 'Lokaler Inhalt:'}</span>
+                      <span className="font-bold text-yellow-400 font-mono">
+                        {scr.itemsCount} {scr.itemLabel}
+                      </span>
+                    </div>
+
+                    {/* تفاصيل الجهاز المتصل إن وُجد */}
+                    {isOnline && activePresence && (
+                      <div className="space-y-1 text-[11px] text-gray-300 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30 mb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">{isAr ? 'نوع الجهاز:' : 'Gerät:'}</span>
+                          <span className="font-bold text-emerald-300">{activePresence.deviceType || 'Smart TV'}</span>
+                        </div>
+                        <div className="flex items-center justify-between font-mono">
+                          <span className="text-gray-400">{isAr ? 'دقة الشاشة:' : 'Auflösung:'}</span>
+                          <span className="text-white">{activePresence.resolution || '1920x1080'}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* أزرار التحكم والفتح المباشر للشاشة */}
+                  <div className="pt-3 border-t border-gray-700/60 flex items-center gap-2">
+                    <a
+                      href={`?screen=${scr.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-400 hover:text-black border border-yellow-500/30 hover:border-yellow-500 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>{isAr ? 'فتح الشاشة' : 'Öffnen'}</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         {/* 🌟 بطاقة سوبابيز الرسمية الحقيقية (Official Supabase Live Egress & Usage Portal) */}
         <div className="bg-gradient-to-br from-emerald-950/40 via-gray-900/90 to-black border-2 border-emerald-500/50 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
@@ -294,119 +491,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                 <AlertTriangle className="w-3.5 h-3.5" />
                 {isAr ? 'للاطلاع على الرسم البياني الرسمي الدقيق، اضغط على زر (فتح لوحة سوبابيز الرسمية) بالأعلى' : 'Bitte das offizielle Supabase Dashboard über den Button oben öffnen.'}
               </p>
-            )}
-          </div>
-        </div>
-
-        {/* 🟢 قسم رصد الشاشات المتصلة بالبث المباشر الآن (Live Connected Screens) */}
-        <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/70 to-black border-2 border-emerald-500/40 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-800 pb-5">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl border border-emerald-500/40 shadow-inner">
-                <Tv className="w-7 h-7 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <h2 className="text-xl md:text-2xl font-black text-white">
-                    {isAr ? 'الشاشات المتصلة بالبث المباشر الآن' : 'Aktuell verbundene Live-Bildschirme'}
-                  </h2>
-                  <span className="bg-emerald-500 text-black font-black text-xs px-2.5 py-1 rounded-full animate-bounce">
-                    LIVE
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  {isAr ? 'يتم اكتشاف الشاشات وأجهزة التلفزيون المتصلة تلقائياً عبر تقنية WebSockets Presence' : 'Automatische Erkennung aller Smart-TVs über WebSockets'}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-emerald-500/10 border border-emerald-500/30 px-5 py-2.5 rounded-2xl flex items-center gap-3">
-              <span className="w-3.5 h-3.5 bg-emerald-400 rounded-full animate-ping" />
-              <div className="text-start">
-                <span className="text-xs text-gray-400 block font-bold">{isAr ? 'إجمالي الشاشات المتصلة' : 'Online Bildschirme'}</span>
-                <span className="text-2xl font-black text-emerald-400 font-mono">
-                  {connectedScreensCount} {isAr ? 'شاشات متصلة' : 'Geräte online'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* بطاقات الشاشات المتصلة بالبث */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {liveScreens.length === 0 ? (
-              // شاشة افتراضية نشطة للجهاز الحالي
-              <div className="bg-gray-800/60 border-2 border-emerald-500/40 p-5 rounded-2xl flex flex-col justify-between hover:border-emerald-400 transition">
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
-                      <Tv className="w-4 h-4" />
-                      <span>{isAr ? 'الشاشة الحالية (هذا الجهاز)' : 'Aktueller Bildschirm'}</span>
-                    </div>
-                    <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-500/40 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      {isAr ? 'بث نشط' : 'Online'}
-                    </span>
-                  </div>
-                  <div className="font-bold text-white text-base mb-1">
-                    {isAr ? 'لوحة المراقبة والتحليلات' : 'Analytics & Signage Hub'}
-                  </div>
-                  <div className="text-xs text-gray-400 flex items-center gap-1.5">
-                    <Monitor className="w-3.5 h-3.5 text-gray-500" />
-                    <span>{screenInfo.screenW} × {screenInfo.screenH} px (WebP 1080p)</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-gray-700/60 flex justify-between items-center text-[11px] text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>WakeLock 24/7</span>
-                  </span>
-                  <span className="font-mono text-emerald-400 font-bold">{pingResult} ms Ping</span>
-                </div>
-              </div>
-            ) : (
-              liveScreens.map((screen, idx) => (
-                <div
-                  key={screen.sessionKey || idx}
-                  className="bg-gray-800/60 border border-emerald-500/30 hover:border-emerald-400 p-5 rounded-2xl flex flex-col justify-between transition-all duration-300 shadow-lg"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2 text-yellow-400 font-black text-xs uppercase tracking-wider">
-                        {screen.system === 'ALSAFI' ? <Utensils className="w-4 h-4 text-orange-400" /> : <Smartphone className="w-4 h-4 text-yellow-400" />}
-                        <span>{screen.system || 'HANDYLAND'}</span>
-                      </div>
-                      <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-500/40 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        {isAr ? 'بث نشط' : 'Online'}
-                      </span>
-                    </div>
-
-                    <div className="font-bold text-white text-base mb-1">
-                      {screen.label || screen.view}
-                    </div>
-
-                    <div className="space-y-1 text-xs text-gray-400">
-                      <div className="flex items-center gap-1.5">
-                        <Tv className="w-3.5 h-3.5 text-gray-500" />
-                        <span>{screen.deviceType || 'Smart TV'}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                        <Monitor className="w-3.5 h-3.5 text-gray-500" />
-                        <span>{screen.resolution || '1920x1080'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-gray-700/60 flex justify-between items-center text-[11px] text-gray-400">
-                    <span className="flex items-center gap-1 text-cyan-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>WakeLock: Active</span>
-                    </span>
-                    <span className="font-mono text-emerald-400 font-bold">{pingResult} ms</span>
-                  </div>
-                </div>
-              ))
             )}
           </div>
         </div>
