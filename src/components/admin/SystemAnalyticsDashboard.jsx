@@ -5,7 +5,7 @@ import {
   Smartphone, Utensils, Tag, Wrench, BarChart3, Radio, Gauge,
   TrendingDown, Globe2, Eye, Clock, Cpu, Monitor, Signal,
   Tv, Cast, Laptop, ExternalLink, KeyRound, AlertTriangle,
-  Play, Coffee, Percent, Layers, PowerOff
+  Play, Coffee, Percent, Layers, PowerOff, Maximize, Minimize
 } from 'lucide-react';
 import { networkTelemetry } from '../../services/networkTelemetry';
 import { offlineCache } from '../../services/offlineCache';
