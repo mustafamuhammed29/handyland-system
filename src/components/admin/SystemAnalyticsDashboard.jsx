@@ -28,13 +28,32 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const [fetchingApi, setFetchingApi] = useState(false);
   const [apiError, setApiError] = useState(null);
 
-  const [screenInfo, setScreenInfo] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    dpr: window.devicePixelRatio || 1,
-    screenW: window.screen.width,
-    screenH: window.screen.height,
-  });
+  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    try {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+  }, []);
 
   // جلب إحصائيات المخزون المحلي الحقيقي
   const [inventory, setInventory] = useState({
@@ -219,6 +238,15 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
 
           <div className="flex flex-wrap items-center gap-3">
             <button
+              onClick={toggleFullscreen}
+              className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-emerald-400/40"
+              title={isFullscreen ? (isAr ? 'إنهاء وضع ملء الشاشة' : 'Vollbild beenden') : (isAr ? 'تكبير وملء الشاشة' : 'Vollbild aktivieren')}
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4 text-emerald-200" /> : <Maximize className="w-4 h-4 text-emerald-200 animate-pulse" />}
+              <span>{isFullscreen ? (isAr ? 'تصغير' : 'Verkleinern') : (isAr ? 'تكبير الشاشة' : 'Vollbild')}</span>
+            </button>
+
+            <button
               onClick={handleBroadcastReload}
               className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer"
             >
@@ -239,6 +267,9 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             </button>
           </div>
         </header>
+
+        {/* أدوات التحكم العائمة للتلفزيون */}
+        <TVScreenControls lang={lang} />
 
         {/* 🟢 قسم الشاشات المتصلة بالبث المباشر فقط (Only Currently Connected Screens) */}
         <div className="bg-gradient-to-br from-gray-900/95 via-gray-900/80 to-black border-2 border-emerald-500/40 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
