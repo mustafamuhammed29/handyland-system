@@ -268,9 +268,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
           </div>
         </header>
 
-        {/* أدوات التحكم العائمة للتلفزيون */}
-        <TVScreenControls lang={lang} />
-
         {/* 🟢 قسم الشاشات المتصلة بالبث المباشر فقط (Only Currently Connected Screens) */}
         <div className="bg-gradient-to-br from-gray-900/95 via-gray-900/80 to-black border-2 border-emerald-500/40 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-800 pb-5">

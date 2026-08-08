@@ -1,118 +1,68 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Maximize, Minimize, Expand } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Maximize, Minimize } from 'lucide-react';
 
-export const TVScreenControls = ({ lang = 'de' }) => {
-  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
-  const [isHovered, setIsHovered] = useState(false);
+export const TVScreenControls = () => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    // تحديث حالة وضع ملء الشاشة فورياً
-    const handleFullscreenChange = () => {
-      const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-      setIsFullscreen(active);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-    // دعم اختصار لوحة المفاتيح والريموت كونترول (F أو F11)
-    const handleKeyDown = (e) => {
-      if (e.key === 'f' || e.key === 'F') {
-        if (!['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
-          toggleFullscreen();
+    let wakeLock = null;
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
         }
+      } catch (err) {
+        console.log('Wake Lock Error:', err);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-
+    requestWakeLock();
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      window.removeEventListener('keydown', handleKeyDown);
+      if (wakeLock) wakeLock.release().catch(() => {});
     };
   }, []);
 
-  const toggleFullscreen = useCallback(() => {
-    try {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen().catch(() => {});
-        } else if (docEl.msRequestFullscreen) {
-          docEl.msRequestFullscreen().catch(() => {});
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen().catch(() => {});
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen().catch(() => {});
-        }
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
       }
-    } catch (e) {
-      console.warn('Fullscreen notice:', e);
     }
-  }, []);
-
-  const isAr = lang === 'ar';
+  };
 
   return (
-    <div
+    <button 
+      onClick={toggleFullscreen}
+      title="Vollbild / Fullscreen"
       style={{
         position: 'fixed',
         top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
-        right: '16px',
-        zIndex: 999999,
-        pointerEvents: 'auto',
+        right: '14px',
+        zIndex: 99999,
+        backgroundColor: isFullscreen ? '#111827' : '#eab308',
+        color: isFullscreen ? '#facc15' : '#000000',
+        padding: '13px',
+        borderRadius: '14px',
+        border: '2px solid #eab308',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(234,179,8,0.5)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        WebkitAppearance: 'none',
+        outline: 'none',
+        minWidth: '50px',
+        minHeight: '50px',
+        visibility: 'visible',
+        opacity: 0.03,
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <button
-        onClick={toggleFullscreen}
-        title={isFullscreen ? (isAr ? 'تصغير الشاشة' : 'Vollbild beenden') : (isAr ? 'تكبير وملء الشاشة' : 'Vollbildmodus aktivieren')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          backgroundColor: isFullscreen 
-            ? (isHovered ? '#1f2937' : 'rgba(17, 24, 39, 0.4)') 
-            : '#eab308',
-          color: isFullscreen ? '#facc15' : '#000000',
-          padding: isFullscreen ? '10px 14px' : '12px 18px',
-          borderRadius: '16px',
-          border: isFullscreen ? '1.5px solid rgba(234, 179, 8, 0.4)' : '2.5px solid #facc15',
-          boxShadow: isFullscreen 
-            ? '0 4px 15px rgba(0,0,0,0.5)' 
-            : '0 0 25px rgba(234, 179, 8, 0.6), 0 4px 15px rgba(0,0,0,0.8)',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          fontWeight: 900,
-          fontSize: '14px',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          opacity: isFullscreen ? (isHovered ? 1 : 0.25) : 0.95,
-          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-          backdropFilter: 'blur(10px)',
-          userSelect: 'none',
-          WebkitTapHighlightColor: 'transparent',
-          outline: 'none',
-        }}
-      >
-        {isFullscreen ? (
-          <>
-            <Minimize style={{ width: 20, height: 20, strokeWidth: 2.5 }} />
-            {isHovered && <span>{isAr ? 'تصغير' : 'Beenden'}</span>}
-          </>
-        ) : (
-          <>
-            <Maximize style={{ width: 22, height: 22, strokeWidth: 2.5, animation: 'pulse 2s infinite' }} />
-            <span>{isAr ? 'تكبير الشاشة' : 'Vollbild'}</span>
-          </>
-        )}
-      </button>
-    </div>
+      {isFullscreen 
+        ? <Minimize style={{ width: 28, height: 28, color: '#facc15', display: 'block' }} /> 
+        : <Maximize style={{ width: 28, height: 28, color: '#000000', display: 'block' }} />}
+    </button>
   );
 };

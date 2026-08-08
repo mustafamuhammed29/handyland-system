@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, AlertTriangle, Moon, Coffee, Package, Lock } from 'lucide-react';
-import { TVScreenControls } from '../common/TVScreenControls';
 
 const MODE_CONFIGS = {
   maintenance: {
@@ -77,7 +76,6 @@ export const StoreStatusScreen = ({ lang, customLogo, storeStatusMode, maintenan
 
   return (
     <div className={`min-h-screen ${modeConfig.bgClass} flex flex-col items-center justify-center p-8 text-center`} dir={dir}>
-      <TVScreenControls lang={lang} />
       <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none overflow-hidden">
         <div className="w-[100vw] h-[100vh] bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,#333_20px,#333_40px)] animate-[bg-scroll_10s_linear_infinite]" />
       </div>
