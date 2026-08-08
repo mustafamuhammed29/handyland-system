@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Utensils, Lock, ChevronRight, ArrowLeft, Activity, BarChart3 } from 'lucide-react';
+import { Smartphone, Utensils, Lock, ChevronRight, ArrowLeft } from 'lucide-react';
 
 export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
   const isAr = lang === 'ar';
@@ -26,11 +26,11 @@ export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
           {isAr ? 'بوابة الإدارة الموحدة' : 'Zentrales Verwaltungsportal'}
         </h1>
         <p className="text-gray-400 text-base md:text-lg font-light">
-          {isAr ? 'الرجاء اختيار الفرع أو استعراض لوحة التحليلات ومراقبة البيانات' : 'Bitte wählen Sie eine Filiale oder das Analyse-Dashboard'}
+          {isAr ? 'الرجاء إدخال الرمز السري للفرع المطلوب للوصول إلى لوحة التحكم والتحليلات' : 'Bitte wählen Sie die geschützte Filiale zur Verwaltung'}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full relative z-10 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full relative z-10 mb-4">
         
         {/* Handyland Branch */}
         <button 
@@ -43,10 +43,10 @@ export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
           </div>
           <h2 className="text-2xl font-black mb-2 text-white z-10">HANDYLAND</h2>
           <p className="text-yellow-500/80 font-bold tracking-wide uppercase text-xs mb-5 z-10">
-            {isAr ? 'إدارة شاشات الهواتف' : 'Smartphone-Bildschirme'}
+            {isAr ? 'إدارة شاشات الهواتف والتحليلات' : 'Smartphone-Bildschirme & Analytics'}
           </p>
           <div className="flex items-center justify-center gap-2 text-yellow-400 bg-yellow-400/10 px-5 py-2.5 rounded-full group-hover:bg-yellow-400 group-hover:text-black transition-colors z-10 font-bold text-sm">
-            <span>{isAr ? 'تسجيل الدخول' : 'Anmelden'}</span>
+            <span>{isAr ? 'تسجيل الدخول بالرمز السري' : 'PIN-geschützter Zugang'}</span>
             <ChevronRight className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
           </div>
         </button>
@@ -62,44 +62,14 @@ export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
           </div>
           <h2 className="text-2xl font-black mb-2 text-white z-10">ALSAFI</h2>
           <p className="text-orange-500/80 font-bold tracking-wide uppercase text-xs mb-5 z-10">
-            {isAr ? 'إدارة شاشات المطعم' : 'Restaurant-Bildschirme'}
+            {isAr ? 'إدارة شاشات المطعم والتحليلات' : 'Restaurant-Bildschirme & Analytics'}
           </p>
           <div className="flex items-center justify-center gap-2 text-orange-400 bg-orange-400/10 px-5 py-2.5 rounded-full group-hover:bg-orange-500 group-hover:text-white transition-colors z-10 font-bold text-sm">
-            <span>{isAr ? 'تسجيل الدخول' : 'Anmelden'}</span>
+            <span>{isAr ? 'تسجيل الدخول بالرمز السري' : 'PIN-geschützter Zugang'}</span>
             <ChevronRight className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
           </div>
         </button>
 
-      </div>
-
-      {/* زر لوحة تحليلات البيانات وتدفق الباندويث الموحدة */}
-      <div className="max-w-4xl w-full relative z-10">
-        <button
-          onClick={() => onBranchSelect('analytics')}
-          className="w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 hover:from-gray-800 hover:to-gray-700 border-2 border-emerald-500/40 hover:border-emerald-400 rounded-2xl p-4.5 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] shadow-xl cursor-pointer group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30 group-hover:bg-emerald-500 group-hover:text-black transition">
-              <Activity className="w-6 h-6" />
-            </div>
-            <div className="text-start">
-              <div className="text-lg font-black text-white flex items-center gap-2">
-                <span>{isAr ? 'لوحة تحليلات وتدفق البيانات اللحظي' : 'Echtzeit-Datenfluss & Telemetrie'}</span>
-                <span className="bg-emerald-500/20 text-emerald-300 text-[11px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  {isAr ? 'مباشر' : 'Live'}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400">
-                {isAr ? 'مراقبة توفير الباندويث، الذاكرة المؤقتة، وحالة شاشات التلفاز' : 'Bandbreiteneinsparung, Cache-Performance & Smart-TV-Status'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm bg-emerald-500/10 px-4 py-2 rounded-xl group-hover:bg-emerald-500 group-hover:text-black transition">
-            <span>{isAr ? 'عرض التحليلات' : 'Dashboard öffnen'}</span>
-            <ChevronRight className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
-          </div>
-        </button>
       </div>
 
     </div>

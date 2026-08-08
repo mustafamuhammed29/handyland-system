@@ -429,7 +429,9 @@ export default function App() {
     const targetPin = pendingAdminBranch === 'alsafi' ? (alsafiPin || '0000') : (adminPin || DEFAULT_PIN);
     if (inputPin === targetPin) {
       setShowPinModal(false);
-      if (pendingAdminBranch) {
+      if (pendingAdminBranch === 'analytics' || pendingAdminBranch === 'admin-analytics') {
+        navigateTo('admin-analytics');
+      } else if (pendingAdminBranch) {
         navigateTo(`admin-${pendingAdminBranch}`);
       } else {
         navigateTo('admin-gateway');
@@ -440,10 +442,6 @@ export default function App() {
   };
 
   const initiateAdminLogin = (branch) => {
-    if (branch === 'analytics') {
-      navigateTo('admin-analytics');
-      return;
-    }
     setPendingAdminBranch(branch);
     setShowPinModal(true);
   };
