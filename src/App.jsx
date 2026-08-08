@@ -19,6 +19,7 @@ import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 import { PinProtectionModal } from './components/common/PinProtectionModal';
 import { useWakeLock } from './hooks/useWakeLock';
+import { screenPresence } from './services/screenPresence';
 
 export default function App() {
   useWakeLock();
@@ -49,6 +50,10 @@ export default function App() {
   const [lang, setLang] = useState(() => localStorage.getItem('handyland_lang') || 'de');
   const [showPinModal, setShowPinModal] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    screenPresence.trackScreen(view);
+  }, [view]);
 
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
