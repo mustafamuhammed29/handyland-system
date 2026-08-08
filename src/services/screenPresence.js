@@ -45,20 +45,21 @@ const getDeviceType = () => {
 let presenceChannel = null;
 const listeners = new Set();
 let currentLiveScreens = [];
+let currentPayload = null;
 
 export const screenPresence = {
   // تتبع وجود الشاشة الحالية وبث حالتها اللحظية إلى السيرفر
   trackScreen: async (currentView) => {
     try {
       const deviceId = getDeviceId();
-      const payload = {
+      currentPayload = {
         id: deviceId,
         view: currentView,
         label: getScreenLabel(currentView),
         system: currentView.startsWith('alsafi') ? 'ALSAFI' : 'HANDYLAND',
         deviceType: getDeviceType(),
         resolution: `${window.innerWidth}x${window.innerHeight}`,
-        onlineSince: Date.now(),
+        onlineSince: currentPayload?.onlineSince || Date.now(),
         lastActive: Date.now(),
       };
 
@@ -66,32 +67,66 @@ export const screenPresence = {
         presenceChannel = supabase.channel('online_screens_live_presence', {
           config: {
             presence: { key: deviceId },
+            broadcast: { self: true },
           },
         });
 
+        // 1. مزامنة حالة الشاشات عند الانضمام والتغيير
         presenceChannel
           .on('presence', { event: 'sync' }, () => {
             const state = presenceChannel.presenceState();
             const flattened = [];
             Object.keys(state).forEach((key) => {
               const presences = state[key];
-              if (Array.isArray(presences) && presences[0]) {
-                flattened.push({ ...presences[0], sessionKey: key });
+              if (Array.isArray(presences) && presences.length > 0) {
+                // نأخذ آخر حالة نشطة
+                const latest = presences[presences.length - 1];
+                flattened.push({ ...latest, sessionKey: key });
               }
             });
             currentLiveScreens = flattened;
             listeners.forEach((fn) => fn([...currentLiveScreens]));
           })
+          // 2. الاستماع لإشارات الـ Ping من لوحة التحليلات
+          .on('broadcast', { event: 'ping_screens' }, async () => {
+            if (currentPayload) {
+              currentPayload.lastActive = Date.now();
+              await presenceChannel.track(currentPayload);
+            }
+          })
           .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-              await presenceChannel.track(payload);
+              await presenceChannel.track(currentPayload);
             }
           });
+
+        // 3. نبض قلبي دوري كل 12 ثانية لتثبيت اتصال البث المباشر
+        setInterval(async () => {
+          if (presenceChannel && currentPayload) {
+            currentPayload.lastActive = Date.now();
+            try {
+              await presenceChannel.track(currentPayload);
+            } catch (e) {}
+          }
+        }, 12000);
       } else {
-        await presenceChannel.track(payload);
+        await presenceChannel.track(currentPayload);
       }
     } catch (e) {
       console.warn('Presence track notice:', e);
+    }
+  },
+
+  // إرسال نداء حي لجميع الشاشات في المحل لتقوم بالرد وتأكيد الاتصال
+  pingAllScreens: async () => {
+    if (presenceChannel) {
+      try {
+        await presenceChannel.send({
+          type: 'broadcast',
+          event: 'ping_screens',
+          payload: { timestamp: Date.now() },
+        });
+      } catch (e) {}
     }
   },
 

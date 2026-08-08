@@ -54,6 +54,9 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
       setLiveScreens(screens);
     });
 
+    screenPresence.pingAllScreens();
+    screenPresence.trackScreen('admin-analytics');
+
     const handleResize = () => {
       setScreenInfo({
         width: window.innerWidth,
