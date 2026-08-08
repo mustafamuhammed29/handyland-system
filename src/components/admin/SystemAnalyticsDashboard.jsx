@@ -162,6 +162,26 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   };
 
   // إرسال إشارة إعادة تحميل وتحديث لجميع الشاشات
+  // إرسال أمر تكبير الشاشة عن بُعد لأجهزة التلفزيون في المحل
+  const handleRemoteFullscreen = async (targetView = null) => {
+    try {
+      const reloadChannel = supabase.channel('public:handyland_tv_signage_v6');
+      await reloadChannel.send({
+        type: 'broadcast',
+        event: 'REMOTE_TRIGGER_FULLSCREEN',
+        payload: { targetView, timestamp: Date.now() },
+      });
+      alert(
+        lang === 'ar'
+          ? (targetView ? `تم إرسال أمر تكبير الشاشة (${targetView}) عن بُعد بنجاح!` : 'تم إرسال إشارة تكبير جميع شاشات التلفزيون في المحل عن بُعد بنجاح!')
+          : (targetView ? `Vollbild-Signal an ${targetView} gesendet!` : 'Vollbild-Signal an alle TV-Geräte gesendet!')
+      );
+    } catch (e) {
+      alert(lang === 'ar' ? 'حدث خطأ أثناء الإرسال.' : 'Fehler beim Senden.');
+    }
+  };
+
+  // إرسال إشارة إعادة تحميل وتحديث لجميع الشاشات
   const handleBroadcastReload = async () => {
     const confirmMsg = lang === 'ar' ? 'هل تريد إرسال إشارة تحديث فوري لجميع الشاشات المتصلة بالبث الآن؟' : 'Möchten Sie alle aktiven Bildschirme jetzt sofort aktualisieren?';
     if (!window.confirm(confirmMsg)) return;
@@ -245,13 +265,24 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {/* زر تكبير كل شاشات التلفزيون عن بعد */}
+            <button
+              onClick={() => handleRemoteFullscreen(null)}
+              className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-emerald-400/40"
+              title={isAr ? 'تكبير جميع شاشات التلفاز في المحل عن بُعد' : 'Alle TV-Bildschirme aus der Ferne auf Vollbild schalten'}
+            >
+              <Maximize className="w-4 h-4 text-emerald-200 animate-pulse" />
+              <span>{isAr ? 'تكبير كل الشاشات عن بُعد' : 'Alle TVs auf Vollbild'}</span>
+            </button>
+
+            {/* زر تكبير اللوحة الحالية */}
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-emerald-400/40"
-              title={isFullscreen ? (isAr ? 'إنهاء وضع ملء الشاشة' : 'Vollbild beenden') : (isAr ? 'تكبير وملء الشاشة' : 'Vollbild aktivieren')}
+              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 active:scale-95 text-gray-200 font-extrabold px-4 py-2.5 rounded-2xl text-sm transition border border-gray-700 cursor-pointer"
+              title={isFullscreen ? (isAr ? 'إنهاء وضع ملء الشاشة' : 'Vollbild beenden') : (isAr ? 'تكبير هذه اللوحة' : 'Dieses Dashboard vergrößern')}
             >
-              {isFullscreen ? <Minimize className="w-4 h-4 text-emerald-200" /> : <Maximize className="w-4 h-4 text-emerald-200 animate-pulse" />}
-              <span>{isFullscreen ? (isAr ? 'تصغير' : 'Verkleinern') : (isAr ? 'تكبير الشاشة' : 'Vollbild')}</span>
+              {isFullscreen ? <Minimize className="w-4 h-4 text-yellow-400" /> : <Maximize className="w-4 h-4 text-yellow-400" />}
+              <span>{isFullscreen ? (isAr ? 'تصغير' : 'Verkleinern') : (isAr ? 'تكبير اللوحة' : 'Vollbild')}</span>
             </button>
 
             <button
@@ -259,7 +290,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
               className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer"
             >
               <Cast className="w-4 h-4" />
-              <span>{isAr ? 'تحديث كل الشاشات فوراً' : 'Alle Bildschirme neuladen'}</span>
+              <span>{isAr ? 'تحديث كل الشاشات' : 'Neuladen'}</span>
             </button>
 
             <button
@@ -364,14 +395,25 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-700/60 flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1 text-cyan-300 font-semibold">
-                      <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                      <span>WakeLock: 24/7 Active</span>
-                    </span>
-                    <span className="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                      {pingResult} ms
-                    </span>
+                  <div className="pt-3 border-t border-gray-700/60 flex items-center justify-between text-xs gap-2">
+                    <button
+                      onClick={() => handleRemoteFullscreen(screen.view)}
+                      className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black border border-emerald-500/40 px-3 py-1.5 rounded-xl font-bold transition cursor-pointer text-[11px]"
+                      title={isAr ? 'تكبير هذه الشاشة عن بُعد' : 'Auf Vollbild schalten'}
+                    >
+                      <Maximize className="w-3 h-3" />
+                      <span>{isAr ? 'تكبير التلفاز عن بُعد' : 'TV Vollbild'}</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-cyan-300 font-semibold text-[10px]">
+                        <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>WakeLock</span>
+                      </span>
+                      <span className="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 text-[11px]">
+                        {pingResult} ms
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

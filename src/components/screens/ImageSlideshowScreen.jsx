@@ -69,6 +69,26 @@ export const ImageSlideshowScreen = ({
     }
   }, [items.length, slideInterval, currentIndex, isCurrentVideo, isPaused, handleNextSlide]);
 
+  const [showRemoteFullscreenBadge, setShowRemoteFullscreenBadge] = useState(false);
+
+  useEffect(() => {
+    const handleRemoteFullscreenEvent = () => {
+      try {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+        else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => {});
+      } catch (e) {}
+
+      setShowRemoteFullscreenBadge(true);
+      const timer = setTimeout(() => setShowRemoteFullscreenBadge(false), 7000);
+      return () => clearTimeout(timer);
+    };
+
+    window.addEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreenEvent);
+    return () => window.removeEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreenEvent);
+  }, []);
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col h-screen items-center justify-center bg-[#050505] text-white font-sans relative overflow-hidden" dir="ltr">
@@ -86,6 +106,22 @@ export const ImageSlideshowScreen = ({
     <div className={`flex flex-col h-screen max-h-screen w-full ${darkBg} text-white overflow-hidden font-sans relative`} dir="ltr">
       <TVScreenControls />
       <TVBackControl onBack={onBack} t={t} />
+
+      {/* زر تأكيد التكبير عن بُعد إن تطلب المتصفح تفاعلاً */}
+      {showRemoteFullscreenBadge && !document.fullscreenElement && (
+        <button
+          onClick={() => {
+            try {
+              document.documentElement.requestFullscreen().catch(() => {});
+            } catch (e) {}
+            setShowRemoteFullscreenBadge(false);
+          }}
+          className="fixed inset-x-0 top-14 mx-auto w-fit z-[9999999] bg-yellow-500 hover:bg-yellow-400 text-black font-black px-8 py-4 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.9)] text-lg animate-bounce border-2 border-white cursor-pointer"
+        >
+          📺 {lang === 'ar' ? 'انقر هنا أو المس الشاشة لتثبيت ملء الشاشة الكامل' : 'Tippen für Vollbild'}
+        </button>
+      )}
+
       <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} systemName={systemName} />
 
       <main className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0">

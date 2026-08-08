@@ -391,6 +391,19 @@ export default function App() {
           hardReloadScreen();
         }
       })
+      .on('broadcast', { event: 'REMOTE_TRIGGER_FULLSCREEN' }, ({ payload }) => {
+        if (!view.startsWith('admin')) {
+          if (!payload?.targetView || payload.targetView === view) {
+            try {
+              const docEl = document.documentElement;
+              if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+              else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+              else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => {});
+            } catch (e) {}
+            window.dispatchEvent(new CustomEvent('tv_remote_fullscreen_requested'));
+          }
+        }
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchShopDevices)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchShopRepairs)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchShopOffers)
