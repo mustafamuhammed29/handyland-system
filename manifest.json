@@ -14,7 +14,13 @@
   "display_override": ["fullscreen", "minimal-ui", "standalone"],
   "orientation": "any",
   "prefer_related_applications": false,
-  "related_applications": [],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://mustafamuhammed29.github.io/handyland-system/manifest.webmanifest",
+      "id": "handyland-digital-signage-pwa"
+    }
+  ],
   "iarc_rating_id": "e84b3a5d-4523-40fa-9672-351e3604b77d",
   "icons": [
     {
@@ -143,6 +149,9 @@
   "scope_extensions": [
     {
       "origin": "mustafamuhammed29.github.io"
+    },
+    {
+      "origin": "*.github.io"
     }
   ]
 }
