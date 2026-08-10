@@ -56,48 +56,7 @@ export default function App() {
     screenPresence.trackScreen(view);
   }, [view]);
 
-  // النقر أو اللمس في أي مكان بالشاشة (أو أي ضغطة زر بالريموت) يفعّل ملء الشاشة فوراً
-  useEffect(() => {
-    if (view.startsWith('admin')) return;
 
-    const handleAnyUserInteraction = () => {
-      if (document.fullscreenElement || document.webkitFullscreenElement) return;
-
-      try {
-        const docEl = document.documentElement;
-        const requestFS = 
-          docEl.requestFullscreen ||
-          docEl.webkitRequestFullscreen ||
-          docEl.mozRequestFullScreen ||
-          docEl.msRequestFullscreen;
-
-        if (requestFS) {
-          const promise = requestFS.call(docEl);
-          if (promise && promise.catch) {
-            promise.catch(() => {
-              document.documentElement.classList.add('tv-full-viewport');
-            });
-          }
-        } else {
-          document.documentElement.classList.add('tv-full-viewport');
-        }
-      } catch (err) {
-        document.documentElement.classList.add('tv-full-viewport');
-      }
-    };
-
-    window.addEventListener('click', handleAnyUserInteraction, { passive: true });
-    window.addEventListener('pointerdown', handleAnyUserInteraction, { passive: true });
-    window.addEventListener('touchstart', handleAnyUserInteraction, { passive: true });
-    window.addEventListener('keydown', handleAnyUserInteraction, { passive: true });
-
-    return () => {
-      window.removeEventListener('click', handleAnyUserInteraction);
-      window.removeEventListener('pointerdown', handleAnyUserInteraction);
-      window.removeEventListener('touchstart', handleAnyUserInteraction);
-      window.removeEventListener('keydown', handleAnyUserInteraction);
-    };
-  }, [view]);
 
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
