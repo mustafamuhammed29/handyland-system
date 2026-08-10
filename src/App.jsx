@@ -56,8 +56,6 @@ export default function App() {
     screenPresence.trackScreen(view);
   }, [view]);
 
-
-
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
   const [offers, setOffers] = useState(() => offlineCache.getOffers());

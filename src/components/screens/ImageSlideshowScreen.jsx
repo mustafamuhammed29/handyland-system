@@ -82,7 +82,32 @@ export const ImageSlideshowScreen = ({
     return () => window.removeEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreenEvent);
   }, []);
 
+  // عند إظهار شارة طلب التكبير، أي كبسة ريموت أو لمس في أي مكان بالشاشة تكبر فوراً
+  useEffect(() => {
+    if (!showRemoteFullscreenBadge) return;
 
+    const triggerFullscreenOnUserAction = () => {
+      if (!document.fullscreenElement) {
+        try {
+          const docEl = document.documentElement;
+          if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+          else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+          else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => {});
+        } catch (e) {}
+      }
+      setShowRemoteFullscreenBadge(false);
+    };
+
+    window.addEventListener('keydown', triggerFullscreenOnUserAction, { capture: true });
+    window.addEventListener('click', triggerFullscreenOnUserAction, { capture: true });
+    window.addEventListener('pointerdown', triggerFullscreenOnUserAction, { capture: true });
+
+    return () => {
+      window.removeEventListener('keydown', triggerFullscreenOnUserAction, { capture: true });
+      window.removeEventListener('click', triggerFullscreenOnUserAction, { capture: true });
+      window.removeEventListener('pointerdown', triggerFullscreenOnUserAction, { capture: true });
+    };
+  }, [showRemoteFullscreenBadge]);
 
   if (items.length === 0) {
     return (

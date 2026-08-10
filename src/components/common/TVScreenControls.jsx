@@ -1,44 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Maximize, Minimize } from 'lucide-react';
 
-/**
- * مكون زر التحكم بالتكبير لجميع واجهات التلفزيون والأجهزة الذكية
- */
 export const TVScreenControls = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const btnRef = useRef(null);
 
-  // متابعة حالة التكبير بدقة لجميع المتصفحات
   useEffect(() => {
-    const updateFSState = () => {
-      const isFS = !!(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      );
-      setIsFullscreen(isFS);
+    let wakeLock = null;
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.log('Wake Lock Error:', err);
+      }
     };
-
-    updateFSState();
-
-    document.addEventListener('fullscreenchange', updateFSState);
-    document.addEventListener('webkitfullscreenchange', updateFSState);
-    document.addEventListener('mozfullscreenchange', updateFSState);
-    document.addEventListener('MSFullscreenChange', updateFSState);
-
+    requestWakeLock();
     return () => {
-      document.removeEventListener('fullscreenchange', updateFSState);
-      document.removeEventListener('webkitfullscreenchange', updateFSState);
-      document.removeEventListener('mozfullscreenchange', updateFSState);
-      document.removeEventListener('MSFullscreenChange', updateFSState);
+      if (wakeLock) wakeLock.release().catch(() => {});
     };
   }, []);
 
-  // الاستماع لحدث التكبير عن بُعد من لوحة الأدمن
+  // الاستماع لحدث التكبير عن بُعد وتشغيل زر التكبير الحقيقي
   useEffect(() => {
     const handleRemoteFullscreen = () => {
-      if (btnRef.current) {
+      if (!document.fullscreenElement && btnRef.current) {
         btnRef.current.click();
       }
     };
@@ -46,54 +33,12 @@ export const TVScreenControls = () => {
     return () => window.removeEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreen);
   }, []);
 
-  const toggleFullscreen = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    const doc = document;
-    const docEl = document.documentElement;
-
-    const activeFS = 
-      doc.fullscreenElement ||
-      doc.webkitFullscreenElement ||
-      doc.mozFullScreenElement ||
-      doc.msFullscreenElement;
-
-    if (!activeFS) {
-      const requestFS = 
-        docEl.requestFullscreen ||
-        docEl.webkitRequestFullscreen ||
-        docEl.mozRequestFullScreen ||
-        docEl.msRequestFullscreen;
-
-      if (requestFS) {
-        try {
-          const promise = requestFS.call(docEl);
-          if (promise && promise.then) {
-            promise.then(() => setIsFullscreen(true)).catch(() => {});
-          } else {
-            setIsFullscreen(true);
-          }
-        } catch (err) {}
-      }
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
     } else {
-      const exitFS = 
-        doc.exitFullscreen ||
-        doc.webkitExitFullscreen ||
-        doc.mozCancelFullScreen ||
-        doc.msExitFullscreen;
-
-      if (exitFS) {
-        try {
-          const promise = exitFS.call(doc);
-          if (promise && promise.then) {
-            promise.then(() => setIsFullscreen(false)).catch(() => {});
-          } else {
-            setIsFullscreen(false);
-          }
-        } catch (err) {}
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
       }
     }
   };
@@ -103,20 +48,34 @@ export const TVScreenControls = () => {
       ref={btnRef}
       onClick={toggleFullscreen}
       title="Vollbild / Fullscreen"
-      className="fixed top-3 right-3 z-[999999] bg-yellow-500 hover:bg-yellow-400 text-black font-black p-3.5 rounded-2xl shadow-[0_0_25px_rgba(234,179,8,0.8)] border-2 border-white flex items-center justify-center cursor-pointer transition-transform active:scale-90"
       style={{
+        position: 'fixed',
         top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
         right: '14px',
-        opacity: 0.95,
-        minWidth: '52px',
-        minHeight: '52px',
+        zIndex: 99999,
+        backgroundColor: isFullscreen ? '#111827' : '#eab308',
+        color: isFullscreen ? '#facc15' : '#000000',
+        padding: '13px',
+        borderRadius: '14px',
+        border: '2px solid #eab308',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(234,179,8,0.5)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        WebkitAppearance: 'none',
+        outline: 'none',
+        minWidth: '50px',
+        minHeight: '50px',
+        visibility: 'visible',
+        opacity: 0.03,
       }}
     >
-      {isFullscreen ? (
-        <Minimize className="w-7 h-7 text-black stroke-[2.5]" />
-      ) : (
-        <Maximize className="w-7 h-7 text-black stroke-[2.5]" />
-      )}
+      {isFullscreen 
+        ? <Minimize style={{ width: 28, height: 28, color: '#facc15', display: 'block' }} /> 
+        : <Maximize style={{ width: 28, height: 28, color: '#000000', display: 'block' }} />}
     </button>
   );
 };
