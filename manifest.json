@@ -5,10 +5,15 @@
   "description": "Digital Signage System for TV Screens & Shop Displays",
   "start_url": "./",
   "scope": "./",
+  "lang": "de",
+  "dir": "ltr",
+  "categories": ["business", "utilities", "productivity", "lifestyle"],
   "background_color": "#050505",
   "theme_color": "#eab308",
   "display": "fullscreen",
+  "display_override": ["fullscreen", "minimal-ui", "standalone"],
   "orientation": "any",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
@@ -49,6 +54,29 @@
       "type": "image/png",
       "form_factor": "narrow",
       "label": "HANDYLAND Mobile Control"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Screen 1 - Smartphones",
+      "short_name": "Screen 1",
+      "description": "Top Offers & Smartphones Display",
+      "url": "./#screen1",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Screen 2 - Repairs",
+      "short_name": "Screen 2",
+      "description": "Repair Center & Pricing Display",
+      "url": "./#screen2",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Screen 3 - Special Offers",
+      "short_name": "Screen 3",
+      "description": "Special Offers & News Display",
+      "url": "./#screen3",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
