@@ -146,10 +146,5 @@
   },
   "note_taking": {
     "new_note_url": "./#screen1"
-  },
-  "scope_extensions": [
-    {
-      "origin": "https://mustafamuhammed29.github.io"
-    }
-  ]
+  }
 }
