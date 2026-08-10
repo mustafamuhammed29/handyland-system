@@ -148,10 +148,8 @@
   },
   "scope_extensions": [
     {
-      "origin": "mustafamuhammed29.github.io"
-    },
-    {
-      "origin": "*.github.io"
+      "type": "document",
+      "origin": "https://mustafamuhammed29.github.io"
     }
   ]
 }
