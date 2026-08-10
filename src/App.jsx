@@ -61,20 +61,29 @@ export default function App() {
     if (view.startsWith('admin')) return;
 
     const handleAnyUserInteraction = () => {
-      if (document.fullscreenElement) return;
+      if (document.fullscreenElement || document.webkitFullscreenElement) return;
 
       try {
         const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen().catch(() => {});
-        } else if (docEl.mozRequestFullScreen) {
-          docEl.mozRequestFullScreen().catch(() => {});
-        } else if (docEl.msRequestFullscreen) {
-          docEl.msRequestFullscreen().catch(() => {});
+        const requestFS = 
+          docEl.requestFullscreen ||
+          docEl.webkitRequestFullscreen ||
+          docEl.mozRequestFullScreen ||
+          docEl.msRequestFullscreen;
+
+        if (requestFS) {
+          const promise = requestFS.call(docEl);
+          if (promise && promise.catch) {
+            promise.catch(() => {
+              document.documentElement.classList.add('tv-full-viewport');
+            });
+          }
+        } else {
+          document.documentElement.classList.add('tv-full-viewport');
         }
-      } catch (err) {}
+      } catch (err) {
+        document.documentElement.classList.add('tv-full-viewport');
+      }
     };
 
     window.addEventListener('click', handleAnyUserInteraction, { passive: true });
