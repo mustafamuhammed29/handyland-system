@@ -23,9 +23,17 @@ export default defineConfig({
         theme_color: '#eab308',
         background_color: '#050505',
         display: 'fullscreen',
-        display_override: ['fullscreen', 'minimal-ui', 'standalone'],
+        display_override: ['window-controls-overlay', 'tabbed', 'fullscreen', 'minimal-ui', 'standalone'],
         orientation: 'any',
         prefer_related_applications: false,
+        related_applications: [
+          {
+            platform: 'webapp',
+            url: 'https://mustafamuhammed29.github.io/handyland-system/manifest.webmanifest',
+            id: 'handyland-digital-signage-pwa'
+          }
+        ],
+        iarc_rating_id: 'e84b3a5d-4523-40fa-9672-351e3604b77d',
         icons: [
           {
             src: 'icon-192.png',
@@ -55,14 +63,14 @@ export default defineConfig({
         screenshots: [
           {
             src: 'screenshot-wide.png',
-            sizes: '1280x720',
+            sizes: '1920x1080',
             type: 'image/png',
             form_factor: 'wide',
             label: 'HANDYLAND TV Screen Display'
           },
           {
             src: 'screenshot-narrow.png',
-            sizes: '720x1280',
+            sizes: '1080x1920',
             type: 'image/png',
             form_factor: 'narrow',
             label: 'HANDYLAND Mobile Control'
@@ -89,6 +97,73 @@ export default defineConfig({
             description: 'Special Offers & News Display',
             url: './#screen3',
             icons: [{ src: 'icon-192.png', sizes: '192x192' }]
+          }
+        ],
+        file_handlers: [
+          {
+            action: './',
+            accept: {
+              'image/png': ['.png'],
+              'image/jpeg': ['.jpg', '.jpeg']
+            }
+          }
+        ],
+        launch_handler: {
+          client_mode: ['navigate-existing', 'auto']
+        },
+        protocol_handlers: [
+          {
+            protocol: 'web+handyland',
+            url: './?url=%s'
+          }
+        ],
+        share_target: {
+          action: './',
+          method: 'GET',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url'
+          }
+        },
+        widgets: [
+          {
+            name: 'HANDYLAND Status',
+            short_name: 'HANDYLAND',
+            description: 'HANDYLAND Digital Signage Status Widget',
+            tag: 'handyland_widget',
+            template: 'widget_template',
+            ms_ac_template: 'widget_template.json',
+            data: 'widget_data.json',
+            type: 'application/json',
+            screenshots: [
+              {
+                src: 'screenshot-wide.png',
+                sizes: '1920x1080',
+                label: 'Widget Preview'
+              }
+            ],
+            icons: [
+              {
+                src: 'icon-192.png',
+                sizes: '192x192'
+              }
+            ],
+            author: 'HANDYLAND'
+          }
+        ],
+        edge_side_panel: {
+          preferred_width: 400
+        },
+        note_taking: {
+          new_note_url: './#screen1'
+        },
+        scope_extensions: [
+          {
+            origin: 'mustafamuhammed29.github.io'
+          },
+          {
+            origin: '*.github.io'
           }
         ]
       },

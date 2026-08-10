@@ -56,6 +56,40 @@ export default function App() {
     screenPresence.trackScreen(view);
   }, [view]);
 
+  // النقر أو اللمس في أي مكان بالشاشة (أو أي ضغطة زر بالريموت) يفعّل ملء الشاشة فوراً
+  useEffect(() => {
+    if (view.startsWith('admin')) return;
+
+    const handleAnyUserInteraction = () => {
+      if (document.fullscreenElement) return;
+
+      try {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen().catch(() => {});
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen().catch(() => {});
+        } else if (docEl.mozRequestFullScreen) {
+          docEl.mozRequestFullScreen().catch(() => {});
+        } else if (docEl.msRequestFullscreen) {
+          docEl.msRequestFullscreen().catch(() => {});
+        }
+      } catch (err) {}
+    };
+
+    window.addEventListener('click', handleAnyUserInteraction, { passive: true });
+    window.addEventListener('pointerdown', handleAnyUserInteraction, { passive: true });
+    window.addEventListener('touchstart', handleAnyUserInteraction, { passive: true });
+    window.addEventListener('keydown', handleAnyUserInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener('click', handleAnyUserInteraction);
+      window.removeEventListener('pointerdown', handleAnyUserInteraction);
+      window.removeEventListener('touchstart', handleAnyUserInteraction);
+      window.removeEventListener('keydown', handleAnyUserInteraction);
+    };
+  }, [view]);
+
   const [devices, setDevices] = useState(() => offlineCache.getDevices());
   const [repairs, setRepairs] = useState(() => offlineCache.getRepairs());
   const [offers, setOffers] = useState(() => offlineCache.getOffers());
