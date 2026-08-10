@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Settings, Smartphone, Wrench, Tag, Plus, Trash2,
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
-  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut, Activity
+  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut, Activity, Bot
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -16,7 +16,8 @@ import {
 export const AdminPanel = ({
   devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t
+  maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t,
+  showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting
 }) => {
   const [activeTab, setActiveTab] = useState('devices');
   const [loading, setLoading] = useState(false);
@@ -42,6 +43,8 @@ export const AdminPanel = ({
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
   const [timerDuration, setTimerDuration] = useState('none');
+  const [editableShowMascot, setEditableShowMascot] = useState(showMascotRobot !== false);
+  const [editableMascotGreeting, setEditableMascotGreeting] = useState(customMascotGreeting || '');
 
   useEffect(() => { setEditableTicker(tickerText || DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
@@ -54,6 +57,31 @@ export const AdminPanel = ({
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
+  useEffect(() => { setEditableShowMascot(showMascotRobot !== false); }, [showMascotRobot]);
+  useEffect(() => { setEditableMascotGreeting(customMascotGreeting || ''); }, [customMascotGreeting]);
+
+  const handleSaveMascotSettings = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({
+        id: 'config',
+        showMascotRobot: editableShowMascot,
+        customMascotGreeting: editableMascotGreeting
+      });
+      if (error) throw error;
+      if (setShowMascotRobot) setShowMascotRobot(editableShowMascot);
+      if (setCustomMascotGreeting) setCustomMascotGreeting(editableMascotGreeting);
+      localStorage.setItem('handyland_mascot_visible', editableShowMascot);
+      localStorage.setItem('handyland_mascot_greeting', editableMascotGreeting);
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError);
+    }
+    setLoading(false);
+  };
 
   const handleFaviconSelect = (e) => {
     const file = e.target.files[0];
@@ -652,6 +680,72 @@ export const AdminPanel = ({
           ) : (
             /* تبويب الإعدادات المتقدمة */
             <div className="space-y-10">
+
+              {/* قسم التحكم بالروبوت التفاعلي ومحرك منع انطفاء الشاشة */}
+              <div className="bg-gradient-to-br from-gray-900 via-black to-gray-950 p-8 rounded-3xl border-2 border-yellow-400 shadow-xl text-white">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-800 pb-4 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-yellow-500/20 rounded-2xl border border-yellow-400">
+                      <Bot className="w-8 h-8 text-yellow-400 animate-pulse" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black text-yellow-400">
+                        {lang === 'ar' ? 'الروبوت التفاعلي ومنع انطفاء الشاشة 🤖' : 'Interaktiver Roboter & Bildschirm-Keep-Alive 🤖'}
+                      </h3>
+                      <p className="text-gray-400 text-xs mt-1">
+                        {lang === 'ar' ? 'تفعيل الروبوت العائم وحماية حيوية الشاشة 100% من وضع السكون' : 'Mascot-Robot anzeigen und Display-Timeout dauerhaft verhindern'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="bg-emerald-500/20 border border-emerald-400 text-emerald-400 px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    {lang === 'ar' ? 'حماية الشاشة مفعّلة' : 'Wake Lock Aktiv'}
+                  </span>
+                </div>
+
+                <form onSubmit={handleSaveMascotSettings} className="space-y-6">
+                  <div className="flex items-center justify-between bg-gray-800/80 p-5 rounded-2xl border border-gray-700">
+                    <div>
+                      <span className="text-lg font-bold text-white block">
+                        {lang === 'ar' ? 'إظهار الروبوت المتحرك والتلويح للجمهور' : 'Roboter-Mascot auf allen Bildschirmen anzeigen'}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        {lang === 'ar' ? 'يتجول عبر الشاشات الثلاث ويلوح للعملاء مع عبارات ترحيبية' : 'Winkt Kunden zu und wechselt automatisch die Position'}
+                      </span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editableShowMascot}
+                        onChange={(e) => setEditableShowMascot(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      {lang === 'ar' ? 'نص الترحيب المخصص للروبوت (اختياري)' : 'Benutzerdefinierter Roboter-Begrüßungstext (Optional)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={editableMascotGreeting}
+                      onChange={(e) => setEditableMascotGreeting(e.target.value)}
+                      placeholder={lang === 'ar' ? 'مثال: أهلاً بكم في عروض هاندي لاند المميزة! 🚀' : 'Z.B.: Herzlich Willkommen bei unseren Handyland-Angeboten! 🚀'}
+                      className="w-full p-4 border-2 border-yellow-500/50 rounded-2xl text-base font-bold text-white bg-gray-950 placeholder-gray-600 focus:outline-none focus:border-yellow-400"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-lg rounded-2xl transition shadow-[0_0_20px_rgba(234,179,8,0.4)] flex justify-center items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-6 h-6" /> {lang === 'ar' ? 'حفظ إعدادات الروبوت والشاشة' : 'Roboter-Einstellungen speichern'}
+                  </button>
+                </form>
+              </div>
 
               {/* قسم مؤقتات الشاشات المنفصلة */}
               <div className="bg-gray-50 p-8 rounded-3xl border-2 border-yellow-500/40 shadow-sm">

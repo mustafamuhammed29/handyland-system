@@ -73,21 +73,41 @@ export const ImageSlideshowScreen = ({
 
   useEffect(() => {
     const handleRemoteFullscreenEvent = () => {
-      try {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
-        else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => {});
-      } catch (e) {}
-
       setShowRemoteFullscreenBadge(true);
-      const timer = setTimeout(() => setShowRemoteFullscreenBadge(false), 7000);
+      const timer = setTimeout(() => setShowRemoteFullscreenBadge(false), 12000);
       return () => clearTimeout(timer);
     };
 
     window.addEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreenEvent);
     return () => window.removeEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreenEvent);
   }, []);
+
+  // عند إظهار شارة طلب التكبير، أي كبسة ريموت أو لمس في أي مكان بالشاشة تكبر فوراً
+  useEffect(() => {
+    if (!showRemoteFullscreenBadge) return;
+
+    const triggerFullscreenOnUserAction = () => {
+      if (!document.fullscreenElement) {
+        try {
+          const docEl = document.documentElement;
+          if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+          else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+          else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => {});
+        } catch (e) {}
+      }
+      setShowRemoteFullscreenBadge(false);
+    };
+
+    window.addEventListener('keydown', triggerFullscreenOnUserAction, { capture: true });
+    window.addEventListener('click', triggerFullscreenOnUserAction, { capture: true });
+    window.addEventListener('pointerdown', triggerFullscreenOnUserAction, { capture: true });
+
+    return () => {
+      window.removeEventListener('keydown', triggerFullscreenOnUserAction, { capture: true });
+      window.removeEventListener('click', triggerFullscreenOnUserAction, { capture: true });
+      window.removeEventListener('pointerdown', triggerFullscreenOnUserAction, { capture: true });
+    };
+  }, [showRemoteFullscreenBadge]);
 
   if (items.length === 0) {
     return (
@@ -116,9 +136,9 @@ export const ImageSlideshowScreen = ({
             } catch (e) {}
             setShowRemoteFullscreenBadge(false);
           }}
-          className="fixed inset-x-0 top-14 mx-auto w-fit z-[9999999] bg-yellow-500 hover:bg-yellow-400 text-black font-black px-8 py-4 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.9)] text-lg animate-bounce border-2 border-white cursor-pointer"
+          className="fixed inset-x-0 top-14 mx-auto w-fit z-[9999999] bg-yellow-500 hover:bg-yellow-400 text-black font-black px-8 py-4 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.9)] text-lg lg:text-xl animate-bounce border-4 border-black cursor-pointer"
         >
-          📺 {lang === 'ar' ? 'انقر هنا أو المس الشاشة لتثبيت ملء الشاشة الكامل' : 'Tippen für Vollbild'}
+          📺 {lang === 'ar' ? 'انقر هنا أو اضغط أي زر بالريموت لتثبيت ملء الشاشة' : 'Tippen oder OK am TV drücken für Vollbild'}
         </button>
       )}
 

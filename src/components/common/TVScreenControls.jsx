@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Maximize, Minimize } from 'lucide-react';
 
 export const TVScreenControls = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const btnRef = useRef(null);
 
   useEffect(() => {
     let wakeLock = null;
@@ -21,6 +22,17 @@ export const TVScreenControls = () => {
     };
   }, []);
 
+  // الاستماع لحدث التكبير عن بُعد وتشغيل زر التكبير الحقيقي
+  useEffect(() => {
+    const handleRemoteFullscreen = () => {
+      if (!document.fullscreenElement && btnRef.current) {
+        btnRef.current.click();
+      }
+    };
+    window.addEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreen);
+    return () => window.removeEventListener('tv_remote_fullscreen_requested', handleRemoteFullscreen);
+  }, []);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
@@ -33,6 +45,7 @@ export const TVScreenControls = () => {
 
   return (
     <button 
+      ref={btnRef}
       onClick={toggleFullscreen}
       title="Vollbild / Fullscreen"
       style={{

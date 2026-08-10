@@ -9,25 +9,86 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'HANDYLAND Digital Signage',
+        id: 'handyland-digital-signage-pwa',
+        name: 'HANDYLAND Digital Signage System',
         short_name: 'HANDYLAND',
-        description: 'Digital Signage System for Handyland Store',
+        description: 'Digital Signage System for TV Screens & Shop Displays',
+        start_url: './',
+        scope: './',
+        lang: 'de',
+        dir: 'ltr',
+        categories: ['business', 'utilities', 'productivity', 'lifestyle'],
         theme_color: '#eab308',
-        background_color: '#000000',
+        background_color: '#050505',
         display: 'fullscreen',
+        display_override: ['fullscreen', 'minimal-ui', 'standalone'],
         orientation: 'any',
+        prefer_related_applications: false,
         icons: [
           {
-            src: 'logo.png',
+            src: 'icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'logo.png',
+            src: 'icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: 'icon-512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: 'screenshot-wide.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'HANDYLAND TV Screen Display'
+          },
+          {
+            src: 'screenshot-narrow.png',
+            sizes: '720x1280',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'HANDYLAND Mobile Control'
+          }
+        ],
+        shortcuts: [
+          {
+            name: 'Screen 1 - Smartphones',
+            short_name: 'Screen 1',
+            description: 'Top Offers & Smartphones Display',
+            url: './#screen1',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Screen 2 - Repairs',
+            short_name: 'Screen 2',
+            description: 'Repair Center & Pricing Display',
+            url: './#screen2',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Screen 3 - Special Offers',
+            short_name: 'Screen 3',
+            description: 'Special Offers & News Display',
+            url: './#screen3',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }]
           }
         ]
       },

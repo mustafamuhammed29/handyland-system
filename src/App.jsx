@@ -18,6 +18,7 @@ import { SystemAnalyticsDashboard } from './components/admin/SystemAnalyticsDash
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
 import { PinProtectionModal } from './components/common/PinProtectionModal';
+import { MascotRobot } from './components/common/MascotRobot';
 import { useWakeLock } from './hooks/useWakeLock';
 import { screenPresence } from './services/screenPresence';
 
@@ -79,6 +80,8 @@ export default function App() {
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [storeStatusMode, setStoreStatusMode] = useState('active');
   const [statusTimerTarget, setStatusTimerTarget] = useState('');
+  const [showMascotRobot, setShowMascotRobot] = useState(() => localStorage.getItem('handyland_mascot_visible') !== 'false');
+  const [customMascotGreeting, setCustomMascotGreeting] = useState(() => localStorage.getItem('handyland_mascot_greeting') || '');
 
   // Alsafi Settings
   const [alsafiLogo, setAlsafiLogo] = useState(null);
@@ -216,6 +219,8 @@ export default function App() {
         setMaintenanceMessage(data.maintenanceMessage || '');
         setStoreStatusMode(data.storeStatusMode || 'active');
         setStatusTimerTarget(data.statusTimerTarget || '');
+        if (data.showMascotRobot !== undefined) setShowMascotRobot(data.showMascotRobot);
+        if (data.customMascotGreeting !== undefined) setCustomMascotGreeting(data.customMascotGreeting);
         
         if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
           hardReloadScreen();
@@ -476,6 +481,8 @@ export default function App() {
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
         storeStatusMode={storeStatusMode} statusTimerTarget={statusTimerTarget}
+        showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
+        customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
       />
     );
 
@@ -488,6 +495,8 @@ export default function App() {
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={alsafiMaint} maintenanceMessage={alsafiMaintMsg}
         storeStatusMode={alsafiStatusMode} statusTimerTarget={alsafiTimerTarget}
+        showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
+        customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
       />
     );
 
@@ -580,6 +589,13 @@ export default function App() {
     <>
       <AutoMemoryRefresh />
       {renderActiveView()}
+      {!view.startsWith('admin') && (
+        <MascotRobot 
+          lang={lang} 
+          customGreeting={customMascotGreeting} 
+          isVisible={showMascotRobot} 
+        />
+      )}
       {showPinModal && (
         <PinProtectionModal 
           onClose={() => setShowPinModal(false)}
