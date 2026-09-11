@@ -6,6 +6,7 @@ import { TVBackControl } from '../common/TVBackControl';
 import { isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 import { DEFAULT_TICKER, DEFAULT_TICKER_SPEED } from '../../constants/defaults';
 import { requestUniversalFullscreen, exitUniversalFullscreen } from '../../utils/fullscreenHelpers';
+import { KankaSmokeOverlay } from '../common/KankaSmokeOverlay';
 
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
 const darkBg = "bg-[#050505]";
@@ -20,6 +21,7 @@ export const ImageSlideshowScreen = ({
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef(null);
   const lastTapRef = useRef(0);
+  const isKanka = systemName === 'KANKA';
 
   // دالة النقر المزدوج للتكبير/التصغير ملء الشاشة
   const handleToggleFullscreen = useCallback((e) => {
@@ -271,14 +273,14 @@ export const ImageSlideshowScreen = ({
                         muted
                         playsInline
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                        style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
+                        style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1, height: '100%', width: '100%', maxHeight: '100%' }}
                       />
                     ) : (
                       <img 
                         src={mediaSrc} 
                         alt="" 
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                        style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1 }}
+                        style={{ filter: 'blur(40px) brightness(0.7) saturate(1.4)', transform: 'scale(2)', opacity: 1, height: '100%', width: '100%', maxHeight: '100%' }}
                       />
                     )}
                     <div className="absolute inset-0 bg-black/30 pointer-events-none" />
@@ -294,12 +296,14 @@ export const ImageSlideshowScreen = ({
                         playsInline
                         onEnded={handleNextSlide}
                         className="absolute inset-0 w-full h-full object-fill z-10"
+                        style={{ height: '100%', width: '100%', maxHeight: '100%', objectFit: 'fill' }}
                       />
                     ) : (
                       <img 
                         src={mediaSrc} 
                         alt="Poster" 
                         className="absolute inset-0 w-full h-full object-fill z-10" 
+                        style={{ height: '100%', width: '100%', maxHeight: '100%', objectFit: 'fill' }}
                       />
                     )}
                  </div>
@@ -309,6 +313,9 @@ export const ImageSlideshowScreen = ({
             </div>
           );
         })}
+
+        {/* تأثير دخان الشيشة الساحر والجمالي الحصري لشاشات كانكا */}
+        {isKanka && <KankaSmokeOverlay />}
 
       </main>
       
