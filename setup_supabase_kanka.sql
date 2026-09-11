@@ -46,6 +46,7 @@ CREATE TABLE public.kanka_settings (
     "tickerSpeed" INTEGER DEFAULT 25,
     "fontSize" TEXT DEFAULT '100%',
     "showClock" BOOLEAN DEFAULT true,
+    "smokeIntensity" INTEGER DEFAULT 50,
     "maintenanceMode" BOOLEAN DEFAULT false,
     "maintenanceMessage" TEXT DEFAULT '',
     "storeStatusMode" TEXT DEFAULT 'active',

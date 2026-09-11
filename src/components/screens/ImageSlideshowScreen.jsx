@@ -15,7 +15,8 @@ export const ImageSlideshowScreen = ({
   items, title, icon, showNewsTicker = false, showHeader = true, customLogo, 
   tickerText, tickerSpeed = DEFAULT_TICKER_SPEED, headerSubtitle, 
   slideInterval = 6, cityName, onBack, t, lang, isOffline,
-  systemName = "HANDYLAND" 
+  systemName = "HANDYLAND",
+  smokeIntensity = 50
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -187,6 +188,9 @@ export const ImageSlideshowScreen = ({
           </div>
         </div>
 
+        {/* تأثير الدخان في وضع الانتظار */}
+        {isKanka && <KankaSmokeOverlay intensity={smokeIntensity} />}
+
         {showNewsTicker && (
           <footer className="w-full bg-yellow-400 text-black py-3.5 shadow-2xl z-30 flex border-t-4 border-yellow-500 overflow-hidden relative shrink-0">
             <div className="flex items-center px-8 bg-yellow-500 z-40 font-black text-2xl lg:text-3xl gap-4 whitespace-nowrap border-r-4 border-yellow-600 shadow-xl tracking-wider">
@@ -314,8 +318,8 @@ export const ImageSlideshowScreen = ({
           );
         })}
 
-        {/* تأثير دخان الشيشة الساحر والجمالي الحصري لشاشات كانكا */}
-        {isKanka && <KankaSmokeOverlay />}
+        {/* تأثير دخان الشيشة الساحر والجمالي الحصري لشاشات كانكا مع دعم قوة الظهور والتباين */}
+        {isKanka && <KankaSmokeOverlay intensity={smokeIntensity} />}
 
       </main>
       

@@ -135,6 +135,14 @@ export default function App() {
   const [kankaTicker, setKankaTicker] = useState(KANKA_DEFAULT_TICKER);
   const [kankaTickerSpeed, setKankaTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [kankaFontSize, setKankaFontSize] = useState(DEFAULT_FONT_SIZE);
+  const [kankaSmokeIntensity, setKankaSmokeIntensity] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kanka_smoke_intensity');
+      return saved !== null && !isNaN(parseInt(saved, 10)) ? parseInt(saved, 10) : 50;
+    } catch (e) {
+      return 50;
+    }
+  });
   const [kankaSubtitle, setKankaSubtitle] = useState(KANKA_DEFAULT_SUBTITLE);
   const [kankaInt1, setKankaInt1] = useState(6);
   const [kankaInt2, setKankaInt2] = useState(6);
@@ -424,6 +432,17 @@ export default function App() {
         setKankaTicker(data.tickerText || KANKA_DEFAULT_TICKER);
         setKankaTickerSpeed(data.tickerSpeed || DEFAULT_TICKER_SPEED);
         setKankaFontSize(data.fontSize || DEFAULT_FONT_SIZE);
+        if (data.fontSize && typeof data.fontSize === 'string' && data.fontSize.startsWith('smoke_')) {
+          const parsedSmoke = parseInt(data.fontSize.replace('smoke_', ''), 10);
+          if (!isNaN(parsedSmoke)) {
+            setKankaSmokeIntensity(parsedSmoke);
+            try { localStorage.setItem('kanka_smoke_intensity', String(parsedSmoke)); } catch (e) {}
+          }
+        } else if (data.smokeIntensity !== undefined && !isNaN(parseInt(data.smokeIntensity, 10))) {
+          const parsedSmoke = parseInt(data.smokeIntensity, 10);
+          setKankaSmokeIntensity(parsedSmoke);
+          try { localStorage.setItem('kanka_smoke_intensity', String(parsedSmoke)); } catch (e) {}
+        }
         setKankaSubtitle(data.headerSubtitle || KANKA_DEFAULT_SUBTITLE);
         setKankaInt1(data.intervalScreen1 || 6);
         setKankaInt2(data.intervalScreen2 || 6);
@@ -545,7 +564,16 @@ export default function App() {
         if (kankaCacheSet.logoData) setKankaLogo(kankaCacheSet.logoData);
         if (kankaCacheSet.tickerText) setKankaTicker(kankaCacheSet.tickerText);
         if (kankaCacheSet.tickerSpeed) setKankaTickerSpeed(kankaCacheSet.tickerSpeed);
-        if (kankaCacheSet.fontSize) setKankaFontSize(kankaCacheSet.fontSize);
+        if (kankaCacheSet.fontSize) {
+          setKankaFontSize(kankaCacheSet.fontSize);
+          if (typeof kankaCacheSet.fontSize === 'string' && kankaCacheSet.fontSize.startsWith('smoke_')) {
+            const pSmoke = parseInt(kankaCacheSet.fontSize.replace('smoke_', ''), 10);
+            if (!isNaN(pSmoke)) setKankaSmokeIntensity(pSmoke);
+          }
+        }
+        if (kankaCacheSet.smokeIntensity !== undefined && !isNaN(parseInt(kankaCacheSet.smokeIntensity, 10))) {
+          setKankaSmokeIntensity(parseInt(kankaCacheSet.smokeIntensity, 10));
+        }
         if (kankaCacheSet.headerSubtitle) setKankaSubtitle(kankaCacheSet.headerSubtitle);
         if (kankaCacheSet.intervalScreen1) setKankaInt1(kankaCacheSet.intervalScreen1);
         if (kankaCacheSet.intervalScreen2) setKankaInt2(kankaCacheSet.intervalScreen2);
@@ -649,6 +677,15 @@ export default function App() {
           if (payload.customMascotPhrases && Array.isArray(payload.customMascotPhrases)) {
             setCustomMascotPhrases(payload.customMascotPhrases);
             localStorage.setItem('handyland_mascot_phrases', JSON.stringify(payload.customMascotPhrases));
+          }
+        }
+      })
+      .on('broadcast', { event: 'KANKA_SMOKE_UPDATED' }, ({ payload }) => {
+        if (payload && payload.smokeIntensity !== undefined) {
+          const parsed = parseInt(payload.smokeIntensity, 10);
+          if (!isNaN(parsed)) {
+            setKankaSmokeIntensity(parsed);
+            try { localStorage.setItem('kanka_smoke_intensity', String(parsed)); } catch (e) {}
           }
         }
       })
@@ -782,6 +819,7 @@ export default function App() {
         adminPin={kankaPin} cityName={kankaCity}
         titleScreen1={kankaTitle1} titleScreen2={kankaTitle2} titleScreen3={kankaTitle3}
         showClock={kankaShowClock}
+        smokeIntensity={kankaSmokeIntensity} setSmokeIntensity={setKankaSmokeIntensity}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMessage={kankaMaintMsg} storeStatusMode={kankaStatusMode} statusTimerTarget={kankaTimerTarget}
         showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
@@ -903,6 +941,7 @@ export default function App() {
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
         showHeader={kankaShowClock}
+        smokeIntensity={kankaSmokeIntensity}
       />
     );
 
@@ -914,6 +953,7 @@ export default function App() {
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
         showHeader={kankaShowClock}
+        smokeIntensity={kankaSmokeIntensity}
       />
     );
 
@@ -925,6 +965,7 @@ export default function App() {
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
         showHeader={kankaShowClock}
+        smokeIntensity={kankaSmokeIntensity}
       />
     );
 

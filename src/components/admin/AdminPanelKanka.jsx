@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
+import { KankaSmokeOverlay } from '../common/KankaSmokeOverlay';
 import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
 import {
@@ -38,6 +39,7 @@ export const AdminPanelKanka = ({
   adminPin, cityName,
   titleScreen1 = '', titleScreen2 = '', titleScreen3 = '',
   showClock = true,
+  smokeIntensity = 50, setSmokeIntensity,
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '',
   onBack, onRefresh, lang, setLang, t,
   showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting,
@@ -70,6 +72,7 @@ export const AdminPanelKanka = ({
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
   const [editableShowClock, setEditableShowClock] = useState(showClock !== false);
+  const [editableSmokeIntensity, setEditableSmokeIntensity] = useState(smokeIntensity ?? 50);
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
   const [timerDuration, setTimerDuration] = useState('none');
@@ -102,6 +105,7 @@ export const AdminPanelKanka = ({
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableShowClock(showClock !== false); }, [showClock]);
+  useEffect(() => { if (smokeIntensity !== undefined) setEditableSmokeIntensity(smokeIntensity); }, [smokeIntensity]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
   useEffect(() => { setEditableShowMascot(showMascotRobot !== false); }, [showMascotRobot]);
@@ -457,6 +461,50 @@ export const AdminPanelKanka = ({
       alert(t.saveSuccess || 'تم الحفظ');
       if (onRefresh) onRefresh();
     } catch (err) { console.error(err); }
+    setLoading(false);
+  };
+
+  const broadcastSmoke = async (val) => {
+    try {
+      await supabase.channel('public:handyland_tv_signage_v6').send({
+        type: 'broadcast',
+        event: 'KANKA_SMOKE_UPDATED',
+        payload: { smokeIntensity: val }
+      });
+    } catch (e) {
+      console.warn('Broadcast smoke notice:', e);
+    }
+  };
+
+  const handleSmokeChange = (newVal) => {
+    const clamped = Math.max(0, Math.min(100, parseInt(newVal, 10) || 0));
+    setEditableSmokeIntensity(clamped);
+    if (setSmokeIntensity) setSmokeIntensity(clamped);
+    try { localStorage.setItem('kanka_smoke_intensity', String(clamped)); } catch (e) {}
+    broadcastSmoke(clamped);
+  };
+
+  const handleSaveSmokeIntensity = async (e) => {
+    if (e) e.preventDefault();
+    setLoading(true);
+    try {
+      const clamped = Math.max(0, Math.min(100, parseInt(editableSmokeIntensity, 10) || 0));
+      const { error } = await supabase.from('kanka_settings').upsert({
+        id: 'config',
+        fontSize: 'smoke_' + clamped
+      });
+      if (error) throw error;
+
+      await broadcastSmoke(clamped);
+      try { localStorage.setItem('kanka_smoke_intensity', String(clamped)); } catch (e) {}
+      if (setSmokeIntensity) setSmokeIntensity(clamped);
+
+      alert(t.saveSuccess || (isAr ? 'تم حفظ قوة الدخان وتحديث جميع الشاشات بنجاح!' : 'Rauchstärke erfolgreich gespeichert!'));
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError || (isAr ? 'حدث خطأ أثناء الحفظ' : 'Fehler beim Speichern'));
+    }
     setLoading(false);
   };
 
@@ -1197,7 +1245,123 @@ export const AdminPanelKanka = ({
                 </div>
               </div>
 
-              {/* 6. Store Status & Force Reload */}
+              {/* 6. Shisha Smoke Overlay Intensity & Contrast Control */}
+              <div className="bg-black/60 p-6 rounded-3xl border border-amber-500/20 space-y-5 backdrop-blur-md">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-amber-400 animate-pulse" />
+                    <span>{t.smokeIntensityTitle || (isAr ? 'التحكم في ظهور وتباين دخان الشيشة' : 'Shisha-Raucheffekt & Kontrast')}</span>
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-black border transition-all ${
+                      editableSmokeIntensity === 0
+                        ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                        : editableSmokeIntensity <= 30
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                        : editableSmokeIntensity <= 65
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        : 'bg-orange-500/20 text-orange-300 border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.3)]'
+                    }`}>
+                      {editableSmokeIntensity === 0 
+                        ? (isAr ? '🚫 معطل (0%)' : '🚫 Aus (0%)') 
+                        : editableSmokeIntensity <= 30
+                        ? `${isAr ? '💨 خفيف' : '💨 Leicht'} (${editableSmokeIntensity}%)`
+                        : editableSmokeIntensity <= 65
+                        ? `${isAr ? '✨ متوازن' : '✨ Normal'} (${editableSmokeIntensity}%)`
+                        : `${isAr ? '🔥 كثيف وقوي التباين' : '🔥 Stark'} (${editableSmokeIntensity}%)`}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  {t.smokeIntensityDesc || (isAr ? 'تحكم بدقة في قوة سحب الدخان وشفافيتها وتباينها على شاشات كانكا، مع معاينة فورية وحفظ سحابي متزامن لجميع الشاشات.' : 'Regulieren Sie die Dichte und Sichtbarkeit des Raucheffekts live auf den Displays.')}
+                </p>
+
+                {/* Live interactive miniature preview */}
+                <div className="relative w-full h-36 rounded-2xl overflow-hidden bg-gradient-to-b from-neutral-950 via-[#130b05] to-[#201105] border border-amber-500/30 flex items-center justify-center shadow-inner select-none">
+                  <div className="text-center z-10 pointer-events-none opacity-40">
+                    <span className="text-2xl font-black text-amber-200 tracking-wider block">KANKA ORIENT DELUXE</span>
+                    <span className="text-[11px] text-amber-400 tracking-widest font-semibold">{isAr ? 'معاينة حية لتأثير الدخان' : 'Live-Rauchvorschau'}</span>
+                  </div>
+
+                  {/* Kanka Smoke Overlay running live inside preview box */}
+                  <KankaSmokeOverlay intensity={editableSmokeIntensity} />
+
+                  <div className="absolute top-2 right-2 z-30 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-amber-500/30 text-[11px] font-bold text-amber-300">
+                    {editableSmokeIntensity > 0 ? `💨 ${editableSmokeIntensity}%` : (isAr ? '🚫 معطل' : '🚫 Aus')}
+                  </div>
+                </div>
+
+                {/* Slider Control */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold text-gray-300">
+                    <span>{t.smokeIntensityLevel || (isAr ? 'مستوى الكثافة والتباين:' : 'Rauchstärke:')}</span>
+                    <span className="text-amber-400 text-sm font-black">{editableSmokeIntensity}%</span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={editableSmokeIntensity}
+                    onChange={(e) => handleSmokeChange(e.target.value)}
+                    className="w-full h-2.5 bg-neutral-900 rounded-lg appearance-none cursor-pointer accent-amber-400 border border-white/10 focus:outline-none"
+                  />
+
+                  <div className="flex justify-between text-[10px] text-gray-500 font-semibold px-1">
+                    <span>0% ({isAr ? 'إيقاف' : 'Aus'})</span>
+                    <span>25%</span>
+                    <span>50% ({isAr ? 'افتراضي' : 'Standard'})</span>
+                    <span>75%</span>
+                    <span>100% ({isAr ? 'أقصى تباين' : 'Maximal'})</span>
+                  </div>
+                </div>
+
+                {/* Quick Presets */}
+                <div>
+                  <label className="text-xs text-gray-400 font-semibold block mb-2">
+                    {isAr ? 'إعدادات سريعة جاهزة:' : 'Schnellauswahl:'}
+                  </label>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {[
+                      { label: isAr ? 'إيقاف 0%' : 'Aus 0%', val: 0 },
+                      { label: isAr ? 'خفيف 30%' : 'Leicht 30%', val: 30 },
+                      { label: isAr ? 'متوازن 50%' : 'Normal 50%', val: 50 },
+                      { label: isAr ? 'واضح 75%' : 'Stark 75%', val: 75 },
+                      { label: isAr ? 'كثيف 100%' : 'Max 100%', val: 100 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.val}
+                        type="button"
+                        onClick={() => handleSmokeChange(preset.val)}
+                        className={`py-1.5 px-1 rounded-xl text-[11px] font-bold transition-all border cursor-pointer text-center ${
+                          editableSmokeIntensity === preset.val
+                            ? 'bg-amber-500 text-black border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] font-black'
+                            : 'bg-neutral-900 hover:bg-neutral-800 text-gray-300 border-white/10 hover:border-amber-500/40'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Save button */}
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveSmokeIntensity}
+                    disabled={loading}
+                    className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black px-6 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer disabled:opacity-50"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{t.saveSmokeBtn || (isAr ? 'حفظ قوة الدخان وتحديث الشاشات' : 'Rauchstärke speichern')}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 7. Store Status & Force Reload */}
               <div className="bg-black/60 p-6 rounded-3xl border border-amber-500/20 space-y-4 backdrop-blur-md">
                 <h3 className="text-lg font-black text-amber-400 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5" />
