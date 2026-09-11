@@ -157,15 +157,7 @@ export default defineConfig({
         },
         note_taking: {
           new_note_url: './#screen1'
-        },
-        scope_extensions: [
-          {
-            origin: 'mustafamuhammed29.github.io'
-          },
-          {
-            origin: '*.github.io'
-          }
-        ]
+        }
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

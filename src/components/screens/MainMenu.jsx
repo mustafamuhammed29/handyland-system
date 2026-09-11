@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent } from 'lucide-react';
+import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent, Flame } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 
@@ -8,7 +8,8 @@ const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-ye
 export const MainMenu = ({ 
   navigateTo, customLogo, lang, setLang, t, 
   showPinModal, setShowPinModal, handleVerifyPin,
-  alsafiTitle1, alsafiTitle2, alsafiTitle3
+  alsafiTitle1, alsafiTitle2, alsafiTitle3,
+  kankaTitle1, kankaTitle2, kankaTitle3
 }) => {
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -34,10 +35,10 @@ export const MainMenu = ({
             )}
             <div>
               <h1 className={`text-3xl md:text-5xl font-black tracking-wider uppercase ${goldTextGradient}`}>
-                HANDYLAND & ALSAFI
+                HANDYLAND • ALSAFI • KANKA
               </h1>
               <p className="text-gray-400 font-medium text-sm md:text-base mt-1">
-                {t.systemTagline}
+                {t.systemTagline || 'نظام إدارة شاشات العرض الذكية'}
               </p>
             </div>
           </div>
@@ -111,6 +112,39 @@ export const MainMenu = ({
           </div>
         </div>
 
+        {/* Kanka Orient Deluxe Section */}
+        <div className="bg-black/40 p-8 rounded-[3rem] border border-amber-500/20 backdrop-blur-md">
+          <h2 className="text-3xl font-black text-amber-400 mb-8 flex items-center gap-3">
+            <Flame className="w-8 h-8" />
+            {lang === 'ar' ? 'شاشات عرض كافتيريا وشيشة لاونج (Kanka Orient Deluxe)' : 'Kanka Orient Deluxe Bildschirme'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button onClick={() => navigateTo('kanka-screen1')} className="group bg-black/90 hover:bg-black border-2 border-amber-500/40 hover:border-amber-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
+              <div className="bg-amber-500/10 group-hover:bg-amber-500 p-6 rounded-full mb-6 transition-colors border border-amber-500/20 shadow-inner">
+                 <Flame className="w-12 h-12 text-amber-400 group-hover:text-black" />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{kankaTitle1 || (lang === 'ar' ? 'قائمة الشيشة والمعسل' : 'Shisha & Tabak Menü')}</h2>
+              <p className="text-amber-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'نكهات وتبغ فاخر' : 'Premium Shisha'}</p>
+            </button>
+
+            <button onClick={() => navigateTo('kanka-screen2')} className="group bg-black/90 hover:bg-black border-2 border-amber-500/40 hover:border-amber-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
+              <div className="bg-amber-500/10 group-hover:bg-amber-500 p-6 rounded-full mb-6 transition-colors border border-amber-500/20 shadow-inner">
+                <Coffee className="w-12 h-12 text-amber-400 group-hover:text-black" />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{kankaTitle2 || (lang === 'ar' ? 'المشروبات والكوكتيلات' : 'Getränke & Cocktails')}</h2>
+              <p className="text-amber-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'مشروبات ساخنة وباردة' : 'Drinks & Coffee'}</p>
+            </button>
+
+            <button onClick={() => navigateTo('kanka-screen3')} className="group bg-black/90 hover:bg-black border-2 border-amber-500/40 hover:border-amber-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
+              <div className="bg-amber-500/10 group-hover:bg-amber-500 p-6 rounded-full mb-6 transition-colors border border-amber-500/20 shadow-inner">
+                <Percent className="w-12 h-12 text-amber-400 group-hover:text-black" />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{kankaTitle3 ? kankaTitle3 : (lang === 'ar' ? 'العروض وسهرات الويكند' : 'Specials & Events')}</h2>
+              <p className="text-amber-400 font-bold tracking-wider uppercase text-sm lg:text-base">{kankaTitle3 || (lang === 'ar' ? 'عروض خاصة وشريط الأخبار' : 'Sonderangebote & News')}</p>
+            </button>
+          </div>
+        </div>
+
         {/* Unified Admin Gateway Button */}
         <div className="flex justify-center mt-6">
           <button onClick={() => navigateTo('admin-gateway')} className="group bg-gradient-to-br from-yellow-600 via-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 border-2 border-yellow-300 rounded-[2.5rem] px-16 py-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-[0_0_40px_rgba(234,179,8,0.4)] relative cursor-pointer">
@@ -121,12 +155,14 @@ export const MainMenu = ({
               <Smartphone className="w-10 h-10 text-yellow-400" />
               <div className="w-1 h-10 bg-yellow-600/50 rounded-full"></div>
               <Utensils className="w-10 h-10 text-orange-400" />
+              <div className="w-1 h-10 bg-yellow-600/50 rounded-full"></div>
+              <Flame className="w-10 h-10 text-amber-400" />
             </div>
             <h2 className="text-2xl lg:text-3xl font-black mb-2 text-black leading-tight px-2 break-words w-full text-center">
               {lang === 'ar' ? 'بوابة الإدارة الموحدة' : 'Zentrales Verwaltungsportal'}
             </h2>
             <p className="text-black/80 font-extrabold text-base lg:text-lg leading-snug">
-              {lang === 'ar' ? 'إدارة الهواتف والمطعم' : 'Handys & Restaurant verwalten'}
+              {lang === 'ar' ? 'إدارة الهواتف والمطعم والكافتيريا' : 'Handys, Restaurant & Shisha Lounge'}
             </p>
           </button>
         </div>

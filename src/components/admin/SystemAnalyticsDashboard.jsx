@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Activity, Database, Wifi, ShieldCheck, Zap, Server, 
-  HardDrive, RefreshCw, CheckCircle2, ArrowLeft,
-  Smartphone, Utensils, Tag, Wrench, BarChart3, Radio, Gauge,
-  TrendingDown, Globe2, Eye, Clock, Cpu, Monitor, Signal,
-  Tv, Cast, Laptop, ExternalLink, KeyRound, AlertTriangle,
-  Play, Coffee, Percent, Layers, PowerOff, Maximize, Minimize
+  Activity, ShieldCheck, Zap, ArrowLeft,
+  Smartphone, Utensils, Tag, Wrench, Gauge,
+  TrendingDown, Monitor, Tv, Cast, ExternalLink,
+  Play, Coffee, Percent, Layers, Maximize, Minimize,
+  Bot, CheckCircle2, Clock, Moon, Sun, RefreshCw,
+  Flame, Sparkles
 } from 'lucide-react';
 import { networkTelemetry } from '../../services/networkTelemetry';
 import { offlineCache } from '../../services/offlineCache';
@@ -13,7 +13,6 @@ import { screenPresence } from '../../services/screenPresence';
 import { supabase } from '../../services/supabase';
 
 const SUPABASE_PROJECT_REF = 'qgvdwrmbbuzyxymanocl';
-const SUPABASE_ORG_ID = 'zhhrswgxuqszlsmuglmh';
 const OFFICIAL_USAGE_URL = `https://supabase.com/dashboard/project/${SUPABASE_PROJECT_REF}/settings/usage`;
 
 export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
@@ -22,25 +21,30 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const [pingLoading, setPingLoading] = useState(false);
   const [pingResult, setPingResult] = useState(stats.lastLatencyMs || 38);
   const [showAllLinks, setShowAllLinks] = useState(false);
-  
-  // مفتاح Supabase Management API
-  const [apiToken, setApiToken] = useState(() => localStorage.getItem('supabase_mgmt_token') || '');
-  const [fetchingApi, setFetchingApi] = useState(false);
-  const [apiError, setApiError] = useState(null);
 
-  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
-  
+  // حالة الروبوت والوجه المخصص من localStorage للتتبع اللحظي
+  const [mascotStatus, setMascotStatus] = useState(() => ({
+    visible: localStorage.getItem('handyland_mascot_visible') !== 'false',
+    greeting: localStorage.getItem('handyland_mascot_greeting') || '',
+    customFace: Boolean(localStorage.getItem('handyland_mascot_face'))
+  }));
+
+  const [isFullscreen, setIsFullscreen] = useState(
+    Boolean(document.fullscreenElement || document.webkitFullscreenElement)
+  );
+
   const [screenInfo, setScreenInfo] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-    dpr: typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
     screenW: typeof window !== 'undefined' ? window.screen.width : 1920,
     screenH: typeof window !== 'undefined' ? window.screen.height : 1080,
   });
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+      setIsFullscreen(
+        Boolean(document.fullscreenElement || document.webkitFullscreenElement)
+      );
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -63,48 +67,52 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     } catch (e) {}
   }, []);
 
-  // جلب إحصائيات المخزون المحلي الحقيقي
-  const [inventory, setInventory] = useState({
+  // إحصائيات المخزون المحلي الحقيقي
+  const [inventory] = useState({
     devices: offlineCache.getDevices().length,
     repairs: offlineCache.getRepairs().length,
     offers: offlineCache.getOffers().length,
     alsafiMenu: offlineCache.getAlsafiMenu().length,
     alsafiDrinks: offlineCache.getAlsafiDrinks().length,
     alsafiOffers: offlineCache.getAlsafiOffers().length,
+    kankaScreen1: offlineCache.getKankaScreen1().length,
+    kankaScreen2: offlineCache.getKankaScreen2().length,
+    kankaScreen3: offlineCache.getKankaScreen3().length,
   });
 
-  // قائمة جميع شاشات النظام المتاحة للتشغيل
   const ALL_SYSTEM_SCREENS = [
     { id: 'screen1', system: 'HANDYLAND', nameAr: 'شاشة 1 - عروض الهواتف والأجهزة', nameDe: 'Bildschirm 1 - Top Angebote', icon: Smartphone, count: inventory.devices },
     { id: 'screen2', system: 'HANDYLAND', nameAr: 'شاشة 2 - مركز الصيانة والأسعار', nameDe: 'Bildschirm 2 - Reparaturpreise', icon: Wrench, count: inventory.repairs },
     { id: 'screen3', system: 'HANDYLAND', nameAr: 'شاشة 3 - العروض وشريط الأخبار', nameDe: 'Bildschirm 3 - Spezielle Angebote', icon: Tag, count: inventory.offers },
     { id: 'alsafi-screen1', system: 'ALSAFI', nameAr: 'شاشة 1 - المنيو الرئيسي للوجبات', nameDe: 'Bildschirm 1 - Hauptmenü', icon: Utensils, count: inventory.alsafiMenu },
     { id: 'alsafi-screen2', system: 'ALSAFI', nameAr: 'شاشة 2 - قائمة المشروبات والعصائر', nameDe: 'Bildschirm 2 - Getränke', icon: Coffee, count: inventory.alsafiDrinks },
-    { id: 'alsafi-screen3', system: 'ALSAFI', nameAr: 'شاشة 3 - العروض والخصومات', nameDe: 'Bildschirm 3 - Sonderangebote', icon: Percent, count: inventory.alsafiOffers }
+    { id: 'alsafi-screen3', system: 'ALSAFI', nameAr: 'شاشة 3 - العروض والخصومات', nameDe: 'Bildschirm 3 - Sonderangebote', icon: Percent, count: inventory.alsafiOffers },
+    { id: 'kanka-screen1', system: 'KANKA', nameAr: 'شاشة 1 - الشيشة والتبغ الفاخر', nameDe: 'Bildschirm 1 - Shisha & Tabak', icon: Flame, count: inventory.kankaScreen1 },
+    { id: 'kanka-screen2', system: 'KANKA', nameAr: 'شاشة 2 - المشروبات والكوكتيلات', nameDe: 'Bildschirm 2 - Getränke & Cocktails', icon: Coffee, count: inventory.kankaScreen2 },
+    { id: 'kanka-screen3', system: 'KANKA', nameAr: 'شاشة 3 - العروض والفعاليات', nameDe: 'Bildschirm 3 - Angebote & Events', icon: Sparkles, count: inventory.kankaScreen3 }
   ];
 
   useEffect(() => {
-    const unsubTelemetry = networkTelemetry.subscribe((newStats) => {
-      setStats(newStats);
-    });
-
-    const unsubPresence = screenPresence.subscribeToLiveScreens((screens) => {
-      setLiveScreens(screens);
-    });
+    const unsubTelemetry = networkTelemetry.subscribe((newStats) => setStats(newStats));
+    const unsubPresence = screenPresence.subscribeToLiveScreens((screens) => setLiveScreens(screens));
 
     screenPresence.pingAllScreens();
     screenPresence.trackScreen('admin-analytics');
 
-    // إرسال نداء استكشاف دوري كل 4 ثوانٍ لجمع جميع الشاشات النشطة فوراً
     const pingInterval = setInterval(() => {
       screenPresence.pingAllScreens();
+      // استحديث حالة الروبوت محلياً
+      setMascotStatus({
+        visible: localStorage.getItem('handyland_mascot_visible') !== 'false',
+        greeting: localStorage.getItem('handyland_mascot_greeting') || '',
+        customFace: Boolean(localStorage.getItem('handyland_mascot_face'))
+      });
     }, 4000);
 
     const handleResize = () => {
       setScreenInfo({
         width: window.innerWidth,
         height: window.innerHeight,
-        dpr: window.devicePixelRatio || 1,
         screenW: window.screen.width,
         screenH: window.screen.height,
       });
@@ -119,7 +127,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     };
   }, []);
 
-  // اختبار سرعة الاستجابة الحقيقية
   const testPing = useCallback(async () => {
     setPingLoading(true);
     const start = performance.now();
@@ -134,35 +141,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     setPingLoading(false);
   }, []);
 
-  // جلب بيانات الاستهلاك الحقيقية عبر Supabase Management API
-  const fetchOfficialSupabaseUsage = async () => {
-    if (!apiToken.trim()) {
-      alert(lang === 'ar' ? 'الرجاء إدخال رمز Supabase Management Token أو الضغط على زر فتح لوحة التحكم الرسمية مباشرة' : 'Bitte Token eingeben oder offizielles Dashboard direkt öffnen');
-      return;
-    }
-
-    setFetchingApi(true);
-    setApiError(null);
-    try {
-      localStorage.setItem('supabase_mgmt_token', apiToken.trim());
-      const res = await fetch(`https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/usage`, {
-        headers: {
-          'Authorization': `Bearer ${apiToken.trim()}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!res.ok) {
-        throw new Error(`API Error: ${res.status}`);
-      }
-      alert(lang === 'ar' ? 'تم جلب البيانات بنجاح من سيرفر سوبابيز!' : 'Erfolgreich von Supabase-Servern synchronisiert!');
-    } catch (err) {
-      setApiError(err.message);
-    }
-    setFetchingApi(false);
-  };
-
-  // إرسال إشارة إعادة تحميل وتحديث لجميع الشاشات
-  // إرسال أمر تكبير الشاشة عن بُعد لأجهزة التلفزيون في المحل
   const handleRemoteFullscreen = async (targetView = null) => {
     try {
       const reloadChannel = supabase.channel('public:handyland_tv_signage_v6');
@@ -181,7 +159,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     }
   };
 
-  // إرسال إشارة إعادة تحميل وتحديث لجميع الشاشات
   const handleBroadcastReload = async () => {
     const confirmMsg = lang === 'ar' ? 'هل تريد إرسال إشارة تحديث فوري لجميع الشاشات المتصلة بالبث الآن؟' : 'Möchten Sie alle aktiven Bildschirme jetzt sofort aktualisieren?';
     if (!window.confirm(confirmMsg)) return;
@@ -209,13 +186,9 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const cacheHitRatio = totalHits > 0 ? ((stats.cacheHits / totalHits) * 100).toFixed(1) : '98.5';
   const totalSavedMb = (stats.bytesSaved / (1024 * 1024)).toFixed(1);
   const totalTransferredMb = (stats.bytesTransferred / (1024 * 1024)).toFixed(2);
-  const quotaUsagePercent = ((stats.bytesTransferred / (5.5 * 1024 * 1024 * 1024)) * 100).toFixed(3);
-  const totalMediaCount = inventory.devices + inventory.repairs + inventory.offers + inventory.alsafiMenu + inventory.alsafiDrinks + inventory.alsafiOffers;
-
   const isAr = lang === 'ar';
   const dir = isAr ? 'rtl' : 'ltr';
 
-  // الشاشات المتصلة فعلياً فقط (Active Connected Screens Only)
   const actuallyConnectedScreens = liveScreens.length > 0 ? liveScreens : [
     {
       id: 'current_device',
@@ -230,20 +203,20 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#06080d] text-gray-100 font-sans p-6 md:p-10 relative overflow-hidden selection:bg-yellow-500 selection:text-black" dir={dir}>
+    <div className="min-h-screen bg-[#05070c] text-gray-100 font-sans p-4 md:p-8 relative overflow-hidden selection:bg-yellow-500 selection:text-black" dir={dir}>
       
-      {/* خلفية ضوئية متحركة ناعمة */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
+      {/* خلفية ضوئية متوهجة */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[160px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+      <div className="max-w-7xl mx-auto relative z-10 space-y-6">
         
-        {/* شريط العنوان العلوي والتحكم */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-900/80 backdrop-blur-xl border border-gray-800 p-6 md:p-8 rounded-3xl shadow-2xl">
+        {/* شريط العنوان العلوي وأزرار التحكم بالبث */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-900/90 backdrop-blur-xl border border-gray-800 p-6 md:p-8 rounded-3xl shadow-2xl">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-3 bg-gray-800 hover:bg-gray-700 active:scale-95 text-white rounded-2xl transition border border-gray-700 cursor-pointer"
+              className="p-3.5 bg-gray-800 hover:bg-gray-700 active:scale-95 text-white rounded-2xl transition border border-gray-700 cursor-pointer shadow-md"
               title={isAr ? 'العودة للوحة السابقة' : 'Zurück'}
             >
               <ArrowLeft className={`w-6 h-6 ${isAr ? 'rotate-180' : ''}`} />
@@ -254,12 +227,12 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                   <Activity className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500">
-                  {isAr ? 'لوحة تحليلات وبث الشاشات الحي' : 'Live-Bildschirm- & Datenfluss-Analyse'}
+                  {isAr ? 'مركز مراقبة الشاشات الحي والبث' : 'Live Display & Broadcast Center'}
                 </h1>
               </div>
-              <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{isAr ? 'يعرض بدقة الشاشات المتصلة بالبث المباشر فقط دون أي حصر' : 'Zeigt ausschließlich aktuell verbundene Live-Geräte an'}</span>
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>{isAr ? 'مراقبة فورية 24/7 لجميع أجهزة التلفزيون والبث التفاعلي' : '24/7 Live-Überwachung aller aktiven TV-Geräte'}</span>
               </p>
             </div>
           </div>
@@ -268,8 +241,8 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             {/* زر تكبير كل شاشات التلفزيون عن بعد */}
             <button
               onClick={() => handleRemoteFullscreen(null)}
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-emerald-400/40"
-              title={isAr ? 'تكبير جميع شاشات التلفاز في المحل عن بُعد' : 'Alle TV-Bildschirme aus der Ferne auf Vollbild schalten'}
+              className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold px-4.5 py-3 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-emerald-400/40"
+              title={isAr ? 'إرسال أمر تكبير لجميع شاشات التلفاز عن بُعد' : 'Alle TVs aus der Ferne auf Vollbild schalten'}
             >
               <Maximize className="w-4 h-4 text-emerald-200 animate-pulse" />
               <span>{isAr ? 'تكبير كل الشاشات عن بُعد' : 'Alle TVs auf Vollbild'}</span>
@@ -278,8 +251,8 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             {/* زر تكبير اللوحة الحالية */}
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 active:scale-95 text-gray-200 font-extrabold px-4 py-2.5 rounded-2xl text-sm transition border border-gray-700 cursor-pointer"
-              title={isFullscreen ? (isAr ? 'إنهاء وضع ملء الشاشة' : 'Vollbild beenden') : (isAr ? 'تكبير هذه اللوحة' : 'Dieses Dashboard vergrößern')}
+              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 active:scale-95 text-gray-200 font-extrabold px-4 py-3 rounded-2xl text-sm transition border border-gray-700 cursor-pointer"
+              title={isFullscreen ? (isAr ? 'تصغير اللوحة' : 'Vollbild beenden') : (isAr ? 'تكبير اللوحة' : 'Dieses Dashboard vergrößern')}
             >
               {isFullscreen ? <Minimize className="w-4 h-4 text-yellow-400" /> : <Maximize className="w-4 h-4 text-yellow-400" />}
               <span>{isFullscreen ? (isAr ? 'تصغير' : 'Verkleinern') : (isAr ? 'تكبير اللوحة' : 'Vollbild')}</span>
@@ -287,7 +260,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
 
             <button
               onClick={handleBroadcastReload}
-              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4 py-2.5 rounded-2xl text-sm transition shadow-lg cursor-pointer"
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4.5 py-3 rounded-2xl text-sm transition shadow-lg cursor-pointer border border-yellow-300"
             >
               <Cast className="w-4 h-4" />
               <span>{isAr ? 'تحديث كل الشاشات' : 'Neuladen'}</span>
@@ -296,18 +269,86 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             <button
               onClick={testPing}
               disabled={pingLoading}
-              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 active:scale-95 border border-gray-700 px-4 py-2.5 rounded-2xl text-sm font-bold text-gray-200 transition cursor-pointer"
+              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 active:scale-95 border border-gray-700 px-4 py-3 rounded-2xl text-sm font-bold text-gray-200 transition cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 text-emerald-400 ${pingLoading ? 'animate-spin' : ''}`} />
-              <span>{isAr ? 'فحص الاستجابة' : 'Ping'}</span>
-              <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg font-mono text-xs border border-emerald-500/30">
+              <span className="bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-lg font-mono text-xs border border-emerald-500/30">
                 {pingResult} ms
               </span>
             </button>
           </div>
         </header>
 
-        {/* 🟢 قسم الشاشات المتصلة بالبث المباشر فقط (Only Currently Connected Screens) */}
+        {/* 🤖 كرت حالة الروبوت التفاعلي وساعات العمل */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          
+          {/* كرت حالة الروبوت المخصص والوجه */}
+          <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-black border-2 border-yellow-500/40 p-6 rounded-3xl shadow-xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-yellow-500/20 rounded-2xl border border-yellow-400/50">
+                <Bot className="w-8 h-8 text-yellow-400 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black text-white">
+                    {isAr ? 'حالة الروبوت التفاعلي' : 'Interaktiver Mascot-Status'}
+                  </h3>
+                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${mascotStatus.visible ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-gray-700 text-gray-400'}`}>
+                    {mascotStatus.visible ? (isAr ? 'مفعّل 🟢' : 'Aktiv') : (isAr ? 'مُعطل ⚪' : 'Deaktiviert')}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {mascotStatus.customFace ? (isAr ? '🖼️ يعمل بوجه مخصص مرفوع' : '🖼️ Eigenes Gesicht geladen') : (isAr ? '🤖 يعمل بالوجه السايبر الأصلي' : '🤖 Original-Robotergesicht aktiv')}
+                </p>
+                {mascotStatus.greeting && (
+                  <p className="text-[11px] text-yellow-300/80 font-mono mt-1 truncate max-w-xs">
+                    "{mascotStatus.greeting}"
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="text-end">
+              <span className="text-[11px] text-gray-400 block font-bold">{isAr ? 'نطاق العرض:' : 'Anzeigebereich:'}</span>
+              <span className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 px-3 py-1 rounded-xl text-xs font-black inline-block mt-1">
+                {isAr ? 'شاشات Handyland 3' : '3 Handyland TVs'}
+              </span>
+            </div>
+          </div>
+
+          {/* كرت حالة ساعات العمل واستجابة المحل */}
+          <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-black border-2 border-emerald-500/40 p-6 rounded-3xl shadow-xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-emerald-500/20 rounded-2xl border border-emerald-400/50">
+                <ShieldCheck className="w-8 h-8 text-emerald-400 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black text-white">
+                    {isAr ? 'محرك حماية الشاشة (WakeLock)' : 'Screen Keep-Alive Status'}
+                  </h3>
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>24/7 ACTIVE</span>
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {isAr ? 'حماية مزدوجة صامتة تمنع خمول وانطفاء الشاشة نهائياً' : 'Verhindert automatisch Standby & Display-Timeout'}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-end">
+              <span className="text-[11px] text-gray-400 block font-bold">{isAr ? 'استجابة الاتصال:' : 'Verbindung:'}</span>
+              <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-xl text-xs font-mono font-black inline-block mt-1">
+                {pingResult} ms
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* 🟢 قسم الشاشات المتصلة بالبث المباشر (Active Live TV Displays) */}
         <div className="bg-gradient-to-br from-gray-900/95 via-gray-900/80 to-black border-2 border-emerald-500/40 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-800 pb-5">
             <div className="flex items-center gap-3">
@@ -324,7 +365,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {isAr ? 'يتم عرض الشاشات وأجهزة التلفزيون المفتوحة حالياً فقط في البث الحي' : 'Ausschließlich aktive Bildschirme, die derzeit übertragen'}
+                  {isAr ? 'يتم عرض الشاشات المفتوحة والمشغلة حالياً في المحل فقط' : 'Ausschließlich aktive Bildschirme, die derzeit übertragen'}
                 </p>
               </div>
             </div>
@@ -342,7 +383,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
             </div>
           </div>
 
-          {/* بطاقات الشاشات المتصلة فقط (ديناميكية بالكامل بدون أي عدد ثابت أو حصر) */}
+          {/* بطاقات الشاشات المتصلة فقط */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {actuallyConnectedScreens.map((screen, idx) => {
               const isAlsafi = screen.system === 'ALSAFI' || (screen.view && screen.view.startsWith('alsafi'));
@@ -421,7 +462,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
           </div>
         </div>
 
-        {/* 🌟 زر استعراض روابط جميع شاشات النظام الـ 6 لفتح أي شاشة جديدة */}
+        {/* 🌟 قائمة روابط جميع شاشات النظام الـ 6 لفتح أي شاشة جديدة */}
         <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800 p-6 md:p-8 rounded-3xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
@@ -468,154 +509,6 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* 🌟 بطاقة سوبابيز الرسمية الحقيقية (Official Supabase Live Egress & Usage Portal) */}
-        <div className="bg-gradient-to-br from-emerald-950/40 via-gray-900/90 to-black border-2 border-emerald-500/50 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-gray-800 pb-6 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl border border-emerald-500/40">
-                <Gauge className="w-8 h-8" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <h2 className="text-xl md:text-2xl font-black text-white">
-                    {isAr ? 'استهلاك Supabase Egress الفعلي والرسمي' : 'Offizielles Supabase Egress Dashboard'}
-                  </h2>
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/30">
-                    Project: {SUPABASE_PROJECT_REF}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-300 mt-1">
-                  {isAr ? 'تقوم سيرفرات سوبابيز بحساب الباندويث والميجابايت بدقة على مستوى السيرفر السحابي' : 'Supabase misst Bandbreite und Egress auf Cloud-Server-Ebene'}
-                </p>
-              </div>
-            </div>
-
-            <a
-              href={OFFICIAL_USAGE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black px-6 py-3.5 rounded-2xl transition-all shadow-xl hover:scale-[1.02] cursor-pointer text-sm"
-            >
-              <span>{isAr ? 'فتح لوحة سوبابيز الرسمية للاستهلاك (Usage Dashboard)' : 'Offizielle Supabase-Verbrauchsanzeige öffnen'}</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-gray-900/80 border border-gray-800 p-5 rounded-2xl">
-              <span className="text-xs text-gray-400 block font-bold uppercase">{isAr ? 'الحد الأقصى المجاني (Quota)' : 'Freikontingent'}</span>
-              <span className="text-2xl font-black text-white font-mono mt-1 block">5.5 GB / شهر</span>
-              <span className="text-[11px] text-gray-400 mt-1 block">{isAr ? 'يبدأ تطبيق Fair Use في 7 سبتمبر 2026' : 'Fair-Use-Richtlinie ab 7. Sept 2026'}</span>
-            </div>
-
-            <div className="bg-gray-900/80 border border-gray-800 p-5 rounded-2xl">
-              <span className="text-xs text-gray-400 block font-bold uppercase">{isAr ? 'معرف المنظمة (Org ID)' : 'Organisations-ID'}</span>
-              <span className="text-xl font-black text-yellow-400 font-mono mt-1 block">{SUPABASE_ORG_ID}</span>
-              <span className="text-[11px] text-emerald-400 mt-1 block">✓ {isAr ? 'الحساب مفعل ونشط' : 'Konto aktiv'}</span>
-            </div>
-
-            <div className="bg-gray-900/80 border border-gray-800 p-5 rounded-2xl">
-              <span className="text-xs text-gray-400 block font-bold uppercase">{isAr ? 'حالة التوفير بعد التحديث' : 'Sparstatus nach Update'}</span>
-              <span className="text-2xl font-black text-emerald-400 font-mono mt-1 block">95%+ {isAr ? 'توفير' : 'Ersparnis'}</span>
-              <span className="text-[11px] text-gray-300 mt-1 block">{isAr ? 'تم استبدال النقل الكامل بالـ Cache الذكي' : 'Gezielte Syncs & IndexedDB aktiv'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* المؤشرات الرئيسية الأربعة (KPIs) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          
-          {/* 1. نسبة توفير الباندويث */}
-          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800/80 p-6 rounded-3xl relative overflow-hidden group hover:border-emerald-500/50 transition-all">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                {isAr ? 'نسبة توفير الباندويث' : 'Bandbreiten-Ersparnis'}
-              </span>
-              <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-                <TrendingDown className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-3xl font-black text-emerald-400 flex items-baseline gap-1">
-              <span>{cacheHitRatio}%</span>
-              <span className="text-xs text-gray-400 font-bold">توفير ذكي</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              {isAr ? `تم توفير ${totalSavedMb} MB عبر الـ IndexedDB` : `${totalSavedMb} MB über lokalen Cache eingespart`}
-            </p>
-            <div className="w-full bg-gray-800 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${cacheHitRatio}%` }} />
-            </div>
-          </div>
-
-          {/* 2. استهلاك كوتا سوبابيز */}
-          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800/80 p-6 rounded-3xl relative overflow-hidden group hover:border-yellow-500/50 transition-all">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                {isAr ? 'كوتا الباندويث (Fair Use)' : 'Supabase Egress Quota'}
-              </span>
-              <div className="p-2 bg-yellow-500/10 text-yellow-400 rounded-xl border border-yellow-500/20">
-                <Gauge className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-3xl font-black text-yellow-400 flex items-baseline gap-1">
-              <span>{totalTransferredMb}</span>
-              <span className="text-sm text-gray-400 font-normal">/ 5,500 MB</span>
-            </div>
-            <p className="text-xs text-emerald-400 font-semibold mt-2 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              {isAr ? 'المنطقة الآمنة (أقل من 0.1% استهلاك)' : 'Sicherer Bereich (< 0.1% Verbrauch)'}
-            </p>
-            <div className="w-full bg-gray-800 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-yellow-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(1, parseFloat(quotaUsagePercent))}%` }} />
-            </div>
-          </div>
-
-          {/* 3. حالة قفل الشاشة واليقظة */}
-          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800/80 p-6 rounded-3xl relative overflow-hidden group hover:border-cyan-500/50 transition-all">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                {isAr ? 'حالة الشاشة (WakeLock)' : 'Screen WakeLock'}
-              </span>
-              <div className="p-2 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-cyan-300 flex items-center gap-2">
-              <span className="w-3 h-3 bg-cyan-400 rounded-full animate-ping" />
-              <span>{isAr ? 'نشط ومحمي 24/7' : 'Aktiv & Geschützt'}</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              {isAr ? 'يمنع وضع السكون وشاشات التوقف تلقائياً' : 'Verhindert Standby & Bildschirmschoner'}
-            </p>
-            <div className="w-full bg-gray-800 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-cyan-400 h-full rounded-full w-full" />
-            </div>
-          </div>
-
-          {/* 4. سرعة الاستجابة وزمن الوصول */}
-          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800/80 p-6 rounded-3xl relative overflow-hidden group hover:border-purple-500/50 transition-all">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                {isAr ? 'زمن استجابة السيرفر' : 'Supabase Latenz (Ping)'}
-              </span>
-              <div className="p-2 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
-                <Zap className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-3xl font-black text-purple-300 flex items-baseline gap-1 font-mono">
-              <span>{pingResult}</span>
-              <span className="text-sm text-gray-400 font-normal">ms</span>
-            </div>
-            <p className="text-xs text-purple-400 font-semibold mt-2">
-              {isAr ? 'اتصال سحابي فائق السرعة' : 'Sehr schnelle Verbindung'}
-            </p>
-            <div className="w-full bg-gray-800 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-purple-500 h-full rounded-full w-full" />
-            </div>
-          </div>
-
         </div>
 
       </div>

@@ -5,6 +5,7 @@ import { TVScreenControls } from '../common/TVScreenControls';
 import { TVBackControl } from '../common/TVBackControl';
 import { isVideoMedia, getMediaSrc } from '../../utils/mediaHelpers';
 import { DEFAULT_TICKER, DEFAULT_TICKER_SPEED } from '../../constants/defaults';
+import { requestUniversalFullscreen, exitUniversalFullscreen } from '../../utils/fullscreenHelpers';
 
 const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-600";
 const darkBg = "bg-[#050505]";
@@ -18,6 +19,36 @@ export const ImageSlideshowScreen = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef(null);
+  const lastTapRef = useRef(0);
+
+  // دالة النقر المزدوج للتكبير/التصغير ملء الشاشة
+  const handleToggleFullscreen = useCallback((e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const isFull = Boolean(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+    if (!isFull) {
+      requestUniversalFullscreen();
+    } else {
+      exitUniversalFullscreen();
+    }
+  }, []);
+
+  // دعم النقر المزدوج على الشاشات اللمسية والأجهزة اللوحية
+  const handleTouchEnd = useCallback((e) => {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapRef.current;
+    if (tapLength < 350 && tapLength > 0) {
+      handleToggleFullscreen(e);
+    }
+    lastTapRef.current = currentTime;
+  }, [handleToggleFullscreen]);
 
   const handleNextSlide = useCallback(() => {
     if (items.length <= 1) return;
@@ -142,9 +173,12 @@ export const ImageSlideshowScreen = ({
         </button>
       )}
 
-      <HandylandHeader title={title} icon={icon} customLogo={customLogo} headerSubtitle={headerSubtitle} cityName={cityName} lang={lang} isOffline={isOffline} systemName={systemName} />
-
-      <main className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0">
+      <main 
+        onDoubleClick={handleToggleFullscreen}
+        onTouchEnd={handleTouchEnd}
+        className="flex-1 relative bg-black flex items-center justify-center overflow-hidden w-full h-full min-h-0 cursor-pointer select-none"
+        title={lang === 'ar' ? 'انقر نقراً مزدوجاً للتكبير ملء الشاشة' : 'Doppelklick für Vollbild'}
+      >
         
 
 

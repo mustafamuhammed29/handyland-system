@@ -22,8 +22,12 @@ const getScreenLabel = (view) => {
     case 'alsafi-screen1': return 'شاشة 1 - المنيو الرئيسي (مطعم الصافي)';
     case 'alsafi-screen2': return 'شاشة 2 - المشروبات (مطعم الصافي)';
     case 'alsafi-screen3': return 'شاشة 3 - العروض (مطعم الصافي)';
+    case 'kanka-screen1': return 'شاشة 1 - الشيشة والتبغ (Kanka Orient)';
+    case 'kanka-screen2': return 'شاشة 2 - المشروبات والكوكتيلات (Kanka Orient)';
+    case 'kanka-screen3': return 'شاشة 3 - العروض والفعاليات (Kanka Orient)';
     case 'admin-handyland': return 'لوحة تحكم هانديلاند';
     case 'admin-alsafi': return 'لوحة تحكم مطعم الصافي';
+    case 'admin-kanka': return 'لوحة تحكم كانكا أورينت ديلوكس';
     case 'admin-gateway': return 'بوابة الإدارة المركزية';
     case 'admin-analytics':
     case 'analytics': return 'لوحة التحليلات والمراقبة';
@@ -79,7 +83,7 @@ export const screenPresence = {
         id: deviceId,
         view: currentView,
         label: getScreenLabel(currentView),
-        system: currentView.startsWith('alsafi') ? 'ALSAFI' : 'HANDYLAND',
+        system: currentView.startsWith('alsafi') ? 'ALSAFI' : currentView.startsWith('kanka') ? 'KANKA' : 'HANDYLAND',
         deviceType: getDeviceType(),
         resolution: `${window.innerWidth}x${window.innerHeight}`,
         onlineSince: currentPayload?.onlineSince || Date.now(),

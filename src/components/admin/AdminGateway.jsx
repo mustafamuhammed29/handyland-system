@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Utensils, Lock, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Smartphone, Utensils, Flame, Lock, ChevronRight, ArrowLeft } from 'lucide-react';
 
 export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
   const isAr = lang === 'ar';
@@ -30,7 +30,7 @@ export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full relative z-10 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full relative z-10 mb-4">
         
         {/* Handyland Branch */}
         <button 
@@ -65,6 +65,25 @@ export const AdminGateway = ({ onBranchSelect, onBack, lang }) => {
             {isAr ? 'إدارة شاشات المطعم والتحليلات' : 'Restaurant-Bildschirme & Analytics'}
           </p>
           <div className="flex items-center justify-center gap-2 text-orange-400 bg-orange-400/10 px-5 py-2.5 rounded-full group-hover:bg-orange-500 group-hover:text-white transition-colors z-10 font-bold text-sm">
+            <span>{isAr ? 'تسجيل الدخول بالرمز السري' : 'PIN-geschützter Zugang'}</span>
+            <ChevronRight className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
+
+        {/* Kanka Orient Deluxe Branch */}
+        <button 
+          onClick={() => onBranchSelect('kanka')}
+          className="group bg-gradient-to-br from-gray-900 to-black hover:from-black hover:to-gray-900 border-2 border-amber-500/40 hover:border-amber-400 rounded-3xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2 shadow-2xl cursor-pointer relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-amber-500/5 group-hover:bg-transparent transition-colors"></div>
+          <div className="bg-amber-500/10 group-hover:bg-amber-500 p-5 rounded-full mb-5 transition-colors border border-amber-500/20 shadow-inner z-10">
+            <Flame className="w-12 h-12 text-amber-400 group-hover:text-black" />
+          </div>
+          <h2 className="text-2xl font-black mb-2 text-white z-10">KANKA</h2>
+          <p className="text-amber-400 font-bold tracking-wide uppercase text-xs mb-5 z-10">
+            {isAr ? 'كافتيريا وشيشة لاونج هايدلبرغ' : 'Shisha Lounge & Café Heidelberg'}
+          </p>
+          <div className="flex items-center justify-center gap-2 text-amber-400 bg-amber-400/10 px-5 py-2.5 rounded-full group-hover:bg-amber-400 group-hover:text-black transition-colors z-10 font-bold text-sm">
             <span>{isAr ? 'تسجيل الدخول بالرمز السري' : 'PIN-geschützter Zugang'}</span>
             <ChevronRight className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
           </div>

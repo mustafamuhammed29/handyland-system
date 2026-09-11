@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Smartphone, Tag, Wrench, Utensils, Coffee, Percent } from 'lucide-react';
+import { Smartphone, Tag, Wrench, Utensils, Coffee, Percent, Flame, Sparkles } from 'lucide-react';
 import { translations } from './constants/translations';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
-  ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE
+  ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE,
+  KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE, KANKA_DEFAULT_PIN
 } from './constants/defaults';
 import { supabase } from './services/supabase';
 import { offlineCache, hydrateCacheFromIndexedDB } from './services/offlineCache';
@@ -14,6 +15,7 @@ import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen'
 import { AdminGateway } from './components/admin/AdminGateway';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
+import { AdminPanelKanka } from './components/admin/AdminPanelKanka';
 import { SystemAnalyticsDashboard } from './components/admin/SystemAnalyticsDashboard';
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
@@ -28,7 +30,13 @@ export default function App() {
   const getInitialView = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const screenParam = urlParams.get('screen');
-    const validViews = ['screen1', 'screen2', 'screen3', 'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-analytics', 'analytics', 'menu'];
+    const validViews = [
+      'screen1', 'screen2', 'screen3', 
+      'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 
+      'kanka-screen1', 'kanka-screen2', 'kanka-screen3', 
+      'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-kanka', 
+      'admin-analytics', 'analytics', 'menu'
+    ];
     
     if (screenParam && validViews.includes(screenParam)) {
       return screenParam;
@@ -82,6 +90,15 @@ export default function App() {
   const [statusTimerTarget, setStatusTimerTarget] = useState('');
   const [showMascotRobot, setShowMascotRobot] = useState(() => localStorage.getItem('handyland_mascot_visible') !== 'false');
   const [customMascotGreeting, setCustomMascotGreeting] = useState(() => localStorage.getItem('handyland_mascot_greeting') || '');
+  const [customMascotFace, setCustomMascotFace] = useState(() => localStorage.getItem('handyland_mascot_face') || '');
+  const [customMascotPhrases, setCustomMascotPhrases] = useState(() => {
+    try {
+      const saved = localStorage.getItem('handyland_mascot_phrases');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   // Alsafi Settings
   const [alsafiLogo, setAlsafiLogo] = useState(null);
@@ -102,6 +119,29 @@ export default function App() {
   const [alsafiTitle1, setAlsafiTitle1] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen1 || '');
   const [alsafiTitle2, setAlsafiTitle2] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen2 || '');
   const [alsafiTitle3, setAlsafiTitle3] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen3 || '');
+
+  // Kanka Orient Deluxe Settings & Data
+  const [kankaScreen1, setKankaScreen1] = useState(() => offlineCache.getKankaScreen1());
+  const [kankaScreen2, setKankaScreen2] = useState(() => offlineCache.getKankaScreen2());
+  const [kankaScreen3, setKankaScreen3] = useState(() => offlineCache.getKankaScreen3());
+  const [kankaLogo, setKankaLogo] = useState(null);
+  const [kankaFavicon, setKankaFavicon] = useState(null);
+  const [kankaTicker, setKankaTicker] = useState(KANKA_DEFAULT_TICKER);
+  const [kankaTickerSpeed, setKankaTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
+  const [kankaFontSize, setKankaFontSize] = useState(DEFAULT_FONT_SIZE);
+  const [kankaSubtitle, setKankaSubtitle] = useState(KANKA_DEFAULT_SUBTITLE);
+  const [kankaInt1, setKankaInt1] = useState(6);
+  const [kankaInt2, setKankaInt2] = useState(6);
+  const [kankaInt3, setKankaInt3] = useState(6);
+  const [kankaPin, setKankaPin] = useState(KANKA_DEFAULT_PIN);
+  const [kankaCity, setKankaCity] = useState(DEFAULT_CITY);
+  const [kankaMaint, setKankaMaint] = useState(false);
+  const [kankaMaintMsg, setKankaMaintMsg] = useState('');
+  const [kankaStatusMode, setKankaStatusMode] = useState('active');
+  const [kankaTimerTarget, setKankaTimerTarget] = useState('');
+  const [kankaTitle1, setKankaTitle1] = useState(() => offlineCache.getKankaSettings()?.titleScreen1 || '');
+  const [kankaTitle2, setKankaTitle2] = useState(() => offlineCache.getKankaSettings()?.titleScreen2 || '');
+  const [kankaTitle3, setKankaTitle3] = useState(() => offlineCache.getKankaSettings()?.titleScreen3 || '');
 
   // Pin Protection State (Tracks which branch they are trying to access)
   const [pendingAdminBranch, setPendingAdminBranch] = useState(null);
@@ -221,6 +261,16 @@ export default function App() {
         setStatusTimerTarget(data.statusTimerTarget || '');
         if (data.showMascotRobot !== undefined) setShowMascotRobot(data.showMascotRobot);
         if (data.customMascotGreeting !== undefined) setCustomMascotGreeting(data.customMascotGreeting);
+        if (data.customMascotFace !== undefined) setCustomMascotFace(data.customMascotFace || '');
+        if (data.customMascotPhrases && Array.isArray(data.customMascotPhrases) && data.customMascotPhrases.length > 0) {
+          setCustomMascotPhrases(data.customMascotPhrases);
+          localStorage.setItem('handyland_mascot_phrases', JSON.stringify(data.customMascotPhrases));
+        } else {
+          const savedLocal = localStorage.getItem('handyland_mascot_phrases');
+          if (savedLocal) {
+            try { setCustomMascotPhrases(JSON.parse(savedLocal)); } catch(e) {}
+          }
+        }
         
         if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
           hardReloadScreen();
@@ -301,18 +351,92 @@ export default function App() {
     }
   }, [view, initialLoadTime, hardReloadScreen]);
 
+  const fetchKankaScreen1 = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('kanka_screen1').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setKankaScreen1(data);
+        offlineCache.saveKankaScreen1(data);
+      }
+    } catch (e) {
+      console.warn("Fetch kanka_screen1 notice:", e);
+    }
+  }, []);
+
+  const fetchKankaScreen2 = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('kanka_screen2').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setKankaScreen2(data);
+        offlineCache.saveKankaScreen2(data);
+      }
+    } catch (e) {
+      console.warn("Fetch kanka_screen2 notice:", e);
+    }
+  }, []);
+
+  const fetchKankaScreen3 = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('kanka_screen3').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setKankaScreen3(data);
+        offlineCache.saveKankaScreen3(data);
+      }
+    } catch (e) {
+      console.warn("Fetch kanka_screen3 notice:", e);
+    }
+  }, []);
+
+  const fetchKankaSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('kanka_settings').select('*').eq('id', 'config').single();
+      if (!error && data) {
+        offlineCache.saveKankaSettings(data);
+        setKankaLogo(data.logoData || null);
+        setKankaFavicon(data.faviconData || null);
+        if (view.startsWith('kanka')) updateFavicon(data.faviconData);
+        setKankaTicker(data.tickerText || KANKA_DEFAULT_TICKER);
+        setKankaTickerSpeed(data.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setKankaFontSize(data.fontSize || DEFAULT_FONT_SIZE);
+        setKankaSubtitle(data.headerSubtitle || KANKA_DEFAULT_SUBTITLE);
+        setKankaInt1(data.intervalScreen1 || 6);
+        setKankaInt2(data.intervalScreen2 || 6);
+        setKankaInt3(data.intervalScreen3 || 6);
+        setKankaPin(data.adminPin || KANKA_DEFAULT_PIN);
+        setKankaCity(data.cityName || DEFAULT_CITY);
+        setKankaMaint(data.maintenanceMode || false);
+        setKankaMaintMsg(data.maintenanceMessage || '');
+        setKankaStatusMode(data.storeStatusMode || 'active');
+        setKankaTimerTarget(data.statusTimerTarget || '');
+        setKankaTitle1(data.titleScreen1 || '');
+        setKankaTitle2(data.titleScreen2 || '');
+        setKankaTitle3(data.titleScreen3 || '');
+
+        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
+          hardReloadScreen();
+        }
+      }
+    } catch (e) {
+      console.warn("Fetch kanka_settings notice:", e);
+    }
+  }, [view, initialLoadTime, hardReloadScreen]);
+
   // جلب البيانات بالكامل بشكل متسلسل وذكي
   const fetchAllData = useCallback(async () => {
     try {
       await Promise.allSettled([
         fetchShopSettings(),
         fetchAlsafiSettings(),
+        fetchKankaSettings(),
         fetchShopDevices(),
         fetchShopRepairs(),
         fetchShopOffers(),
         fetchAlsafiMenu(),
         fetchAlsafiDrinks(),
         fetchAlsafiOffers(),
+        fetchKankaScreen1(),
+        fetchKankaScreen2(),
+        fetchKankaScreen3(),
       ]);
       setIsOffline(false);
     } catch (err) {
@@ -344,11 +468,25 @@ export default function App() {
         if (alsCacheSet.adminPin) setAlsafiPin(alsCacheSet.adminPin);
         if (alsCacheSet.cityName) setAlsafiCity(alsCacheSet.cityName);
       }
+      const kankaCacheSet = offlineCache.getKankaSettings();
+      if (kankaCacheSet) {
+        if (kankaCacheSet.logoData) setKankaLogo(kankaCacheSet.logoData);
+        if (kankaCacheSet.tickerText) setKankaTicker(kankaCacheSet.tickerText);
+        if (kankaCacheSet.tickerSpeed) setKankaTickerSpeed(kankaCacheSet.tickerSpeed);
+        if (kankaCacheSet.fontSize) setKankaFontSize(kankaCacheSet.fontSize);
+        if (kankaCacheSet.headerSubtitle) setKankaSubtitle(kankaCacheSet.headerSubtitle);
+        if (kankaCacheSet.intervalScreen1) setKankaInt1(kankaCacheSet.intervalScreen1);
+        if (kankaCacheSet.intervalScreen2) setKankaInt2(kankaCacheSet.intervalScreen2);
+        if (kankaCacheSet.intervalScreen3) setKankaInt3(kankaCacheSet.intervalScreen3);
+        if (kankaCacheSet.adminPin) setKankaPin(kankaCacheSet.adminPin);
+        if (kankaCacheSet.cityName) setKankaCity(kankaCacheSet.cityName);
+      }
     }
   }, [
-    fetchShopSettings, fetchAlsafiSettings,
+    fetchShopSettings, fetchAlsafiSettings, fetchKankaSettings,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers,
-    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers
+    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers,
+    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3
   ]);
 
   // استرجاع الذاكرة المحلية عند الإقلاع
@@ -367,6 +505,13 @@ export default function App() {
       if (cachedDrinks?.length) setAlsafiDrinks(cachedDrinks);
       const cachedAlsOff = offlineCache.getAlsafiOffers();
       if (cachedAlsOff?.length) setAlsafiOffers(cachedAlsOff);
+
+      const cachedKanka1 = offlineCache.getKankaScreen1();
+      if (cachedKanka1?.length) setKankaScreen1(cachedKanka1);
+      const cachedKanka2 = offlineCache.getKankaScreen2();
+      if (cachedKanka2?.length) setKankaScreen2(cachedKanka2);
+      const cachedKanka3 = offlineCache.getKankaScreen3();
+      if (cachedKanka3?.length) setKankaScreen3(cachedKanka3);
     });
   }, []);
 
@@ -409,6 +554,17 @@ export default function App() {
           }
         }
       })
+      .on('broadcast', { event: 'MASCOT_UPDATED' }, ({ payload }) => {
+        if (payload) {
+          if (payload.showMascotRobot !== undefined) setShowMascotRobot(payload.showMascotRobot);
+          if (payload.customMascotGreeting !== undefined) setCustomMascotGreeting(payload.customMascotGreeting);
+          if (payload.customMascotFace !== undefined) setCustomMascotFace(payload.customMascotFace || '');
+          if (payload.customMascotPhrases && Array.isArray(payload.customMascotPhrases)) {
+            setCustomMascotPhrases(payload.customMascotPhrases);
+            localStorage.setItem('handyland_mascot_phrases', JSON.stringify(payload.customMascotPhrases));
+          }
+        }
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_devices' }, fetchShopDevices)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_repairs' }, fetchShopRepairs)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_offers' }, fetchShopOffers)
@@ -417,12 +573,22 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_drinks' }, fetchAlsafiDrinks)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_offers' }, fetchAlsafiOffers)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAlsafiSettings)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen1' }, fetchKankaScreen1)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen2' }, fetchKankaScreen2)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen3' }, fetchKankaScreen3)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_settings' }, fetchKankaSettings)
       .subscribe();
 
     // فاحص نبض دوري كل 15 ثانية لشاشات التلفزيون لضمان استلام أمر التحديث حتى لو سكن المتصفح
     const tvPollerInterval = setInterval(() => {
       if (view.startsWith('admin')) return;
-      supabase.from('shop_settings').select('forceReload').eq('id', 'config').single().then(({ data }) => {
+      const targetSettingsTable = view.startsWith('kanka') 
+        ? 'kanka_settings' 
+        : view.startsWith('alsafi') 
+          ? 'alsafi_settings' 
+          : 'shop_settings';
+
+      supabase.from(targetSettingsTable).select('forceReload').eq('id', 'config').single().then(({ data }) => {
         if (data?.forceReload && data.forceReload > initialLoadTime) {
           hardReloadScreen();
         }
@@ -440,11 +606,18 @@ export default function App() {
     view, initialLoadTime, hardReloadScreen,
     fetchAllData,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers, fetchShopSettings,
-    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiSettings
+    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiSettings,
+    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3, fetchKankaSettings
   ]);
 
   const handleVerifyPin = (inputPin) => {
-    const targetPin = pendingAdminBranch === 'alsafi' ? (alsafiPin || '0000') : (adminPin || DEFAULT_PIN);
+    let targetPin = adminPin || DEFAULT_PIN;
+    if (pendingAdminBranch === 'alsafi') {
+      targetPin = alsafiPin || '0000';
+    } else if (pendingAdminBranch === 'kanka') {
+      targetPin = kankaPin || KANKA_DEFAULT_PIN;
+    }
+
     if (inputPin === targetPin) {
       setShowPinModal(false);
       if (pendingAdminBranch === 'analytics' || pendingAdminBranch === 'admin-analytics') {
@@ -483,6 +656,8 @@ export default function App() {
         storeStatusMode={storeStatusMode} statusTimerTarget={statusTimerTarget}
         showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
         customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
+        customMascotFace={customMascotFace} setCustomMascotFace={setCustomMascotFace}
+        customMascotPhrases={customMascotPhrases} setCustomMascotPhrases={setCustomMascotPhrases}
       />
     );
 
@@ -497,15 +672,37 @@ export default function App() {
         storeStatusMode={alsafiStatusMode} statusTimerTarget={alsafiTimerTarget}
         showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
         customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
+        customMascotFace={customMascotFace} setCustomMascotFace={setCustomMascotFace}
+        customMascotPhrases={customMascotPhrases} setCustomMascotPhrases={setCustomMascotPhrases}
+      />
+    );
+
+    if (view === 'admin-kanka') return (
+      <AdminPanelKanka 
+        screen1Items={kankaScreen1} screen2Items={kankaScreen2} screen3Items={kankaScreen3}
+        customLogo={kankaLogo} customFavicon={kankaFavicon}
+        tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} fontSize={kankaFontSize} headerSubtitle={kankaSubtitle}
+        intervalScreen1={kankaInt1} intervalScreen2={kankaInt2} intervalScreen3={kankaInt3}
+        adminPin={kankaPin} cityName={kankaCity}
+        titleScreen1={kankaTitle1} titleScreen2={kankaTitle2} titleScreen3={kankaTitle3}
+        onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+        maintenanceMessage={kankaMaintMsg} storeStatusMode={kankaStatusMode} statusTimerTarget={kankaTimerTarget}
+        showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
+        customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
+        customMascotFace={customMascotFace} setCustomMascotFace={setCustomMascotFace}
+        customMascotPhrases={customMascotPhrases} setCustomMascotPhrases={setCustomMascotPhrases}
       />
     );
 
     const isHandylandView = ['screen1', 'screen2', 'screen3'].includes(view);
-    const activeStoreStatus = isHandylandView ? storeStatusMode : alsafiStatusMode;
-    const activeMaint = isHandylandView ? maintenanceMode : alsafiMaint;
-    const activeMaintMsg = isHandylandView ? maintenanceMessage : alsafiMaintMsg;
-    const activeTimer = isHandylandView ? statusTimerTarget : alsafiTimerTarget;
-    const activeLogo = isHandylandView ? customLogo : alsafiLogo;
+    const isAlsafiView = ['alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3'].includes(view);
+    const isKankaView = ['kanka-screen1', 'kanka-screen2', 'kanka-screen3'].includes(view);
+
+    const activeStoreStatus = isHandylandView ? storeStatusMode : isAlsafiView ? alsafiStatusMode : kankaStatusMode;
+    const activeMaint = isHandylandView ? maintenanceMode : isAlsafiView ? alsafiMaint : kankaMaint;
+    const activeMaintMsg = isHandylandView ? maintenanceMessage : isAlsafiView ? alsafiMaintMsg : kankaMaintMsg;
+    const activeTimer = isHandylandView ? statusTimerTarget : isAlsafiView ? alsafiTimerTarget : kankaTimerTarget;
+    const activeLogo = isHandylandView ? customLogo : isAlsafiView ? alsafiLogo : (kankaLogo || '/kanka-logo.jpg');
 
     if (activeMaint || (activeStoreStatus && activeStoreStatus !== 'active')) return (
       <StoreStatusScreen 
@@ -576,11 +773,42 @@ export default function App() {
       />
     );
 
+    if (view === 'kanka-screen1') return (
+      <ImageSlideshowScreen 
+        items={kankaScreen1} title={kankaTitle1 || (lang === 'ar' ? 'قائمة الشيشة والمعسل' : 'Shisha & Tabak Menü')} icon={Flame} systemName="KANKA" 
+        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        headerSubtitle={kankaSubtitle} slideInterval={kankaInt1} cityName={kankaCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={false}
+      />
+    );
+
+    if (view === 'kanka-screen2') return (
+      <ImageSlideshowScreen 
+        items={kankaScreen2} title={kankaTitle2 || (lang === 'ar' ? 'المشروبات والكوكتيلات' : 'Getränke & Cocktails')} icon={Coffee} systemName="KANKA" 
+        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        headerSubtitle={kankaSubtitle} slideInterval={kankaInt2} cityName={kankaCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={false}
+      />
+    );
+
+    if (view === 'kanka-screen3') return (
+      <ImageSlideshowScreen 
+        items={kankaScreen3} title={kankaTitle3 || (lang === 'ar' ? 'العروض وسهرات الويكند' : 'Sonderangebote & Events')} icon={Sparkles} systemName="KANKA" 
+        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        headerSubtitle={kankaSubtitle} slideInterval={kankaInt3} cityName={kankaCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
+      />
+    );
+
     return (
       <MainMenu 
         navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
         setLang={handleSetLang} t={t}
         alsafiTitle1={alsafiTitle1} alsafiTitle2={alsafiTitle2} alsafiTitle3={alsafiTitle3}
+        kankaTitle1={kankaTitle1} kankaTitle2={kankaTitle2} kankaTitle3={kankaTitle3}
       />
     );
   };
@@ -589,10 +817,11 @@ export default function App() {
     <>
       <AutoMemoryRefresh />
       {renderActiveView()}
-      {!view.startsWith('admin') && (
+      {['screen1', 'screen2', 'screen3'].includes(view) && (
         <MascotRobot 
           lang={lang} 
           customGreeting={customMascotGreeting} 
+          customMascotFace={customMascotFace}
           isVisible={showMascotRobot} 
         />
       )}

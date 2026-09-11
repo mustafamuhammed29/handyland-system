@@ -5,7 +5,7 @@ import { Sparkles, Bot, Heart, X, MessageSquare } from 'lucide-react';
  * مكون الروبوت التفاعلي الممتع (Mascot Robot)
  * يتجول بمرونة في الشاشة ويلوح للجمهور ويظهر عبارات ترحيبية باللغات الثلاث
  */
-export const MascotRobot = ({ lang = 'de', customGreeting = null, isVisible = true, onToggleVisibility }) => {
+export const MascotRobot = ({ lang = 'de', customGreeting = null, customMascotFace = null, customPhrases = [], isVisible = true, onToggleVisibility }) => {
   const [positionIndex, setPositionIndex] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [showBubble, setShowBubble] = useState(true);
@@ -38,8 +38,21 @@ export const MascotRobot = ({ lang = 'de', customGreeting = null, isVisible = tr
     ],
   };
 
-  const activeList = greetings[lang] || greetings.de;
-  const currentMessage = customGreeting || activeList[messageIndex % activeList.length];
+  const localSavedPhrases = (() => {
+    try {
+      const saved = localStorage.getItem('handyland_mascot_phrases');
+      return saved ? JSON.parse(saved) : null;
+    } catch(e) { return null; }
+  })();
+
+  const defaultList = greetings[lang] || greetings.de;
+  const activeList = (customPhrases && Array.isArray(customPhrases) && customPhrases.length > 0)
+    ? customPhrases
+    : ((localSavedPhrases && Array.isArray(localSavedPhrases) && localSavedPhrases.length > 0)
+        ? localSavedPhrases
+        : (customGreeting ? [customGreeting, ...defaultList] : defaultList));
+
+  const currentMessage = activeList[messageIndex % activeList.length];
 
   // التبديل الدوري للمواقع الـ 3 على الشاشة كل 15 ثانية
   useEffect(() => {
@@ -172,16 +185,37 @@ export const MascotRobot = ({ lang = 'de', customGreeting = null, isVisible = tr
               <rect x="22" y="18" width="56" height="38" rx="14" fill="url(#headGradient)" stroke="#facc15" strokeWidth="3" />
               
               {/* الشاشة / الوجه Face Screen */}
-              <rect x="28" y="24" width="44" height="26" rx="8" fill="#09090b" stroke="#3f3f46" strokeWidth="1.5" />
+              {customMascotFace ? (
+                <g>
+                  <clipPath id="robotFaceClip">
+                    <rect x="28" y="24" width="44" height="26" rx="8" />
+                  </clipPath>
+                  <rect x="28" y="24" width="44" height="26" rx="8" fill="#09090b" stroke="#facc15" strokeWidth="1.5" />
+                  <image
+                    href={customMascotFace}
+                    x="28"
+                    y="24"
+                    width="44"
+                    height="26"
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#robotFaceClip)"
+                  />
+                  <rect x="28" y="24" width="44" height="26" rx="8" fill="none" stroke="#facc15" strokeWidth="1.5" className="animate-pulse" />
+                </g>
+              ) : (
+                <g>
+                  <rect x="28" y="24" width="44" height="26" rx="8" fill="#09090b" stroke="#3f3f46" strokeWidth="1.5" />
 
-              {/* العيون Glowing Eyes */}
-              <circle cx="40" cy="37" r="5.5" fill="#38bdf8" className="animate-pulse" />
-              <circle cx="40" cy="37" r="2" fill="#ffffff" />
-              <circle cx="60" cy="37" r="5.5" fill="#38bdf8" className="animate-pulse" />
-              <circle cx="60" cy="37" r="2" fill="#ffffff" />
+                  {/* العيون Glowing Eyes */}
+                  <circle cx="40" cy="37" r="5.5" fill="#38bdf8" className="animate-pulse" />
+                  <circle cx="40" cy="37" r="2" fill="#ffffff" />
+                  <circle cx="60" cy="37" r="5.5" fill="#38bdf8" className="animate-pulse" />
+                  <circle cx="60" cy="37" r="2" fill="#ffffff" />
 
-              {/* الفم المبتسم Smiling Mouth */}
-              <path d="M43 44 Q50 48 57 44" stroke="#facc15" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                  {/* الفم المبتسم Smiling Mouth */}
+                  <path d="M43 44 Q50 48 57 44" stroke="#facc15" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                </g>
+              )}
 
               {/* الجسم Body */}
               <rect x="26" y="58" width="48" height="42" rx="12" fill="url(#bodyGradient)" stroke="#facc15" strokeWidth="3" />

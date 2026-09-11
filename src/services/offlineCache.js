@@ -12,6 +12,10 @@ const CACHE_KEYS = {
   ALSAFI_DRINKS: 'alsafi_cache_drinks',
   ALSAFI_OFFERS: 'alsafi_cache_offers',
   ALSAFI_SETTINGS: 'alsafi_cache_settings',
+  KANKA_SCREEN1: 'kanka_cache_screen1',
+  KANKA_SCREEN2: 'kanka_cache_screen2',
+  KANKA_SCREEN3: 'kanka_cache_screen3',
+  KANKA_SETTINGS: 'kanka_cache_settings',
 };
 
 // ذاكرة وصول عشوائي محلية سريعة جداً (RAM Cache) للوصول المتزامن
@@ -138,4 +142,16 @@ export const offlineCache = {
 
   saveAlsafiSettings: (data) => persistItem(CACHE_KEYS.ALSAFI_SETTINGS, data),
   getAlsafiSettings: () => memoryCache.get(CACHE_KEYS.ALSAFI_SETTINGS) || null,
+
+  saveKankaScreen1: (data) => persistItem(CACHE_KEYS.KANKA_SCREEN1, data),
+  getKankaScreen1: () => memoryCache.get(CACHE_KEYS.KANKA_SCREEN1) || [],
+
+  saveKankaScreen2: (data) => persistItem(CACHE_KEYS.KANKA_SCREEN2, data),
+  getKankaScreen2: () => memoryCache.get(CACHE_KEYS.KANKA_SCREEN2) || [],
+
+  saveKankaScreen3: (data) => persistItem(CACHE_KEYS.KANKA_SCREEN3, data),
+  getKankaScreen3: () => memoryCache.get(CACHE_KEYS.KANKA_SCREEN3) || [],
+
+  saveKankaSettings: (data) => persistItem(CACHE_KEYS.KANKA_SETTINGS, data),
+  getKankaSettings: () => memoryCache.get(CACHE_KEYS.KANKA_SETTINGS) || null,
 };

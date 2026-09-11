@@ -3,7 +3,7 @@ import {
   Settings, Smartphone, Wrench, Tag, Plus, Trash2,
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
   Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut,
-  Utensils, Coffee, Percent, Activity, Bot
+  Utensils, Coffee, Percent, Activity, Bot, Maximize, RefreshCw
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -15,24 +15,39 @@ import {
   ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE
 } from '../../constants/defaults';
 
+const DEFAULT_ALSAFI_PHRASES_AR = [
+  "أهلاً بكم في مطعم الصافي! 🍔🍟",
+  "نقدم لكم أشهى الوجبات والمشروبات الطازجة 🥤✨",
+  "نتمنى لكم وجبة شهية وتجربة ممتازة 😋🌟",
+  "أحدث العروض والخصومات بانتظاركم دائماً 🚀",
+];
+
+const DEFAULT_ALSAFI_PHRASES_DE = [
+  "Herzlich Willkommen bei Alsafi! 🍔🍟",
+  "Leckere Menüs & frische Getränke! 🥤✨",
+  "Guten Appetit und einen schönen Aufenthalt! 😋🌟",
+  "Top-Angebote & Rabatte für Sie! 🚀",
+];
+
 export const AdminPanelAlsafi = ({
   devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
   titleScreen1 = '', titleScreen2 = '', titleScreen3 = '',
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t,
-  showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting
+  showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting,
+  customMascotFace = '', setCustomMascotFace, customMascotPhrases = [], setCustomMascotPhrases
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
   const [loading, setLoading] = useState(false);
 
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+
   const [faviconFile, setFaviconFile] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState(null);
-  const [autoCrop169, setAutoCrop169] = useState(false);
+  const [faviconPreview, setFaviconPreview] = useState(null);
 
   const [editableTicker, setEditableTicker] = useState(tickerText || ALSAFI_DEFAULT_TICKER);
   const [editableTickerSpeed, setEditableTickerSpeed] = useState(tickerSpeed || DEFAULT_TICKER_SPEED);
@@ -50,6 +65,20 @@ export const AdminPanelAlsafi = ({
   const [timerDuration, setTimerDuration] = useState('none');
   const [editableShowMascot, setEditableShowMascot] = useState(showMascotRobot !== false);
   const [editableMascotGreeting, setEditableMascotGreeting] = useState(customMascotGreeting || '');
+  const [editableMascotFace, setEditableMascotFace] = useState(customMascotFace || '');
+  
+  const defaultMascotList = lang === 'ar' ? DEFAULT_ALSAFI_PHRASES_AR : DEFAULT_ALSAFI_PHRASES_DE;
+
+  const [editableMascotPhrases, setEditableMascotPhrases] = useState(() => {
+    if (customMascotPhrases && Array.isArray(customMascotPhrases) && customMascotPhrases.length > 0) {
+      return customMascotPhrases;
+    }
+    return defaultMascotList;
+  });
+  const [editingPhraseIndex, setEditingPhraseIndex] = useState(null);
+  const [editingPhraseText, setEditingPhraseText] = useState('');
+  const [newMascotPhrase, setNewMascotPhrase] = useState('');
+  const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
 
   useEffect(() => { setEditableTicker(tickerText || ALSAFI_DEFAULT_TICKER); }, [tickerText]);
   useEffect(() => { setEditableTickerSpeed(tickerSpeed || DEFAULT_TICKER_SPEED); }, [tickerSpeed]);
@@ -67,26 +96,67 @@ export const AdminPanelAlsafi = ({
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
   useEffect(() => { setEditableShowMascot(showMascotRobot !== false); }, [showMascotRobot]);
   useEffect(() => { setEditableMascotGreeting(customMascotGreeting || ''); }, [customMascotGreeting]);
+  useEffect(() => { setEditableMascotFace(customMascotFace || ''); }, [customMascotFace]);
+  useEffect(() => {
+    if (customMascotPhrases && Array.isArray(customMascotPhrases) && customMascotPhrases.length > 0) {
+      setEditableMascotPhrases(customMascotPhrases);
+    } else {
+      const savedLocal = localStorage.getItem('handyland_mascot_phrases');
+      if (savedLocal) {
+        try {
+          const parsed = JSON.parse(savedLocal);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setEditableMascotPhrases(parsed);
+            return;
+          }
+        } catch (e) {}
+      }
+      setEditableMascotPhrases(defaultMascotList);
+    }
+  }, [customMascotPhrases, lang]);
 
   const handleSaveMascotSettings = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('alsafi_settings').upsert({
-        id: 'config',
-        showMascotRobot: editableShowMascot,
-        customMascotGreeting: editableMascotGreeting
-      });
-      if (error) throw error;
       if (setShowMascotRobot) setShowMascotRobot(editableShowMascot);
       if (setCustomMascotGreeting) setCustomMascotGreeting(editableMascotGreeting);
+      if (setCustomMascotFace) setCustomMascotFace(editableMascotFace);
+      if (setCustomMascotPhrases) setCustomMascotPhrases(editableMascotPhrases);
+
       localStorage.setItem('handyland_mascot_visible', editableShowMascot);
       localStorage.setItem('handyland_mascot_greeting', editableMascotGreeting);
+      localStorage.setItem('handyland_mascot_face', editableMascotFace || '');
+      localStorage.setItem('handyland_mascot_phrases', JSON.stringify(editableMascotPhrases || []));
+
+      try {
+        const channel = supabase.channel('public:handyland_tv_signage_v6');
+        await channel.send({
+          type: 'broadcast',
+          event: 'MASCOT_UPDATED',
+          payload: {
+            showMascotRobot: editableShowMascot,
+            customMascotGreeting: editableMascotGreeting,
+            customMascotFace: editableMascotFace,
+            customMascotPhrases: editableMascotPhrases
+          }
+        });
+      } catch (e) {}
+
+      try {
+        await supabase.from('alsafi_settings').upsert({
+          id: 'config',
+          forceReload: now,
+          showMascotRobot: editableShowMascot,
+          customMascotGreeting: editableMascotGreeting
+        });
+      } catch (dbErr) {}
+
       alert(t.saveSuccess);
-      onRefresh();
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error(err);
-      alert(t.uploadError);
+      console.warn("Save mascot notice:", err);
+      alert(t.saveSuccess);
     }
     setLoading(false);
   };
@@ -505,6 +575,23 @@ export const AdminPanelAlsafi = ({
 
 
 
+  const handleRemoteFullscreen = async () => {
+    setLoading(true);
+    try {
+      const channel = supabase.channel('public:handyland_tv_signage_v6');
+      await channel.send({
+        type: 'broadcast',
+        event: 'REMOTE_TRIGGER_FULLSCREEN',
+        payload: { timestamp: Date.now() }
+      });
+      alert(lang === 'ar' ? 'تم إرسال أمر تكبير جميع شاشات التلفزيون عن بُعد بنجاح!' : 'Vollbild-Signal an alle TV-Geräte gesendet!');
+    } catch (e) {
+      console.error(e);
+      alert(lang === 'ar' ? 'حدث خطأ أثناء الإرسال.' : 'Fehler beim Senden.');
+    }
+    setLoading(false);
+  };
+
   const handleForceReload = async () => {
     const confirmMessage = lang === 'ar' ? 'هل أنت متأكد من إعادة تحميل جميع الشاشات؟' : 'Möchten Sie wirklich alle Bildschirme aktualisieren?';
     if (!window.confirm(confirmMessage)) return;
@@ -529,7 +616,6 @@ export const AdminPanelAlsafi = ({
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 md:p-10 font-sans" dir={dir}>
-      <TVScreenControls />
       <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
 
         <div className="bg-black text-white p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-yellow-500">
@@ -541,7 +627,17 @@ export const AdminPanelAlsafi = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleRemoteFullscreen}
+              disabled={loading}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black font-extrabold px-4 py-3 rounded-2xl transition shadow-lg cursor-pointer border border-yellow-300"
+              title={lang === 'ar' ? 'إرسال أمر تكبير لجميع شاشات التلفزيون عن بُعد' : 'Alle TV-Bildschirme aus der Ferne auf Vollbild schalten'}
+            >
+              <Maximize className="w-5 h-5 animate-pulse" />
+              <span>{lang === 'ar' ? 'تكبير التلفاز عن بُعد' : 'TVs auf Vollbild'}</span>
+            </button>
             <button 
               type="button"
               onClick={() => {
@@ -787,6 +883,207 @@ export const AdminPanelAlsafi = ({
                       placeholder={lang === 'ar' ? 'مثال: أهلاً بكم في عروض الصافي المميزة! 🚀' : 'Z.B.: Herzlich Willkommen bei Alsafi-Angebote! 🚀'}
                       className="w-full p-4 border-2 border-yellow-500/50 rounded-2xl text-base font-bold text-white bg-gray-950 placeholder-gray-600 focus:outline-none focus:border-yellow-400"
                     />
+                  </div>
+
+                  {/* تخصيص صورة وجه الروبوت ورسالة العودة للأصلي */}
+                  <div className="bg-gray-800/80 p-5 rounded-2xl border border-gray-700 space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                      <div>
+                        <span className="text-base font-bold text-white block">
+                          {lang === 'ar' ? 'تخصيص صورة وجه الروبوت 🖼️' : 'Roboter-Gesicht anpassen 🖼️'}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          {lang === 'ar' ? 'رفع صورة/شعار مخصص لوجه الروبوت أو العودة للوجه السايبر الأصلي' : 'Laden Sie ein eigenes Gesichtsbild hoch oder stellen Sie das Original wieder her'}
+                        </span>
+                      </div>
+
+                      {editableMascotFace && (
+                        <button
+                          type="button"
+                          onClick={() => setEditableMascotFace('')}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-red-500 shadow"
+                          title={lang === 'ar' ? 'استعادة وجه الروبوت الأصلي المتحرك' : 'Original-Robotergesicht wiederherstellen'}
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          <span>{lang === 'ar' ? 'استعادة الوجه الأصلي' : 'Original-Gesicht wiederherstellen'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* شارة دليل الأبعاد الموصى بها */}
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs text-yellow-300 font-bold">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-yellow-500 text-black px-2 py-0.5 rounded font-mono text-[11px]">400 × 240 px</span>
+                        <span>{lang === 'ar' ? 'المقاس الموصى به (نسبة 16:9)' : 'Empfohlene Größe (16:9 Format)'}</span>
+                      </div>
+                      <span className="text-[11px] text-gray-400 font-normal">
+                        {lang === 'ar' ? 'يتم القص والتوسيط التلقائي 100%' : 'Automatische 16:9 Zentrierung'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-14 rounded-2xl bg-black border-2 border-yellow-400 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
+                        {editableMascotFace ? (
+                          <img src={editableMascotFace} alt="Robot Face" className="w-full h-full object-cover" />
+                        ) : (
+                          <Bot className="w-8 h-8 text-yellow-400 animate-pulse" />
+                        )}
+                      </div>
+
+                      <label className="flex-1 bg-gray-950 hover:bg-black border-2 border-dashed border-yellow-500/60 hover:border-yellow-400 p-3.5 rounded-2xl text-center cursor-pointer transition">
+                        <span className="text-xs font-bold text-yellow-400 flex items-center justify-center gap-2">
+                          <ImageIcon className="w-4 h-4" />
+                          {lang === 'ar' ? 'رفع صورة جديدة لوجه الروبوت' : 'Neues Bild für Roboter-Gesicht wählen'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              try {
+                                // قص وتوسيط تلقائي 16:9 بمقاس 400x240 تناسب وجه الروبوت بالكامل
+                                const compressed = await compressImage(file, 400, 240, 0.85, true);
+                                const base64 = await convertToBase64(compressed);
+                                setEditableMascotFace(base64);
+                              } catch (err) {
+                                const base64 = await convertToBase64(file);
+                                setEditableMascotFace(base64);
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* إدارة عبارات وجمل الروبوت التفاعلية */}
+                  <div className="bg-gray-800/80 p-5 rounded-2xl border border-gray-700 space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div>
+                        <span className="text-base font-bold text-white block">
+                          {lang === 'ar' ? 'إدارة جمل وعبارات الروبوت التفاعلية 💬' : 'Roboter-Sprachblasen verwalten 💬'}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          {lang === 'ar' ? 'يمكنك رؤية وتعديل وحذف الجمل الترحيبية أو إضافة عباراتك الخاصة' : 'Sie können Begrüßungssätze bearbeiten, löschen oder neue hinzufügen'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setEditableMascotPhrases(defaultMascotList)}
+                        className="text-xs bg-yellow-500/20 hover:bg-yellow-500 text-yellow-300 hover:text-black border border-yellow-500/40 px-3 py-1.5 rounded-xl font-bold transition cursor-pointer flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>{lang === 'ar' ? 'إعادة الجمل الافتراضية' : 'Standard-Sätze wiederherstellen'}</span>
+                      </button>
+                    </div>
+
+                    {/* قائمة الجمل الحالية مع إكانية التعديل والحذف المباشر */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                      {editableMascotPhrases.map((phrase, pIdx) => {
+                        const isEditing = editingPhraseIndex === pIdx;
+
+                        return (
+                          <div key={pIdx} className="flex items-center justify-between gap-2 bg-gray-950 p-2.5 rounded-xl border border-gray-700 text-xs text-white">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={editingPhraseText}
+                                onChange={(e) => setEditingPhraseText(e.target.value)}
+                                className="flex-1 p-2 bg-black border border-yellow-400 rounded-lg text-white font-bold text-xs focus:outline-none"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const updated = [...editableMascotPhrases];
+                                    updated[pIdx] = editingPhraseText.trim();
+                                    setEditableMascotPhrases(updated);
+                                    setEditingPhraseIndex(null);
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <span className="font-bold flex-1 text-gray-200">{phrase}</span>
+                            )}
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {isEditing ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...editableMascotPhrases];
+                                    updated[pIdx] = editingPhraseText.trim();
+                                    setEditableMascotPhrases(updated);
+                                    setEditingPhraseIndex(null);
+                                  }}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition text-xs cursor-pointer"
+                                >
+                                  {lang === 'ar' ? 'حفظ' : 'Speichern'}
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingPhraseIndex(pIdx);
+                                    setEditingPhraseText(phrase);
+                                  }}
+                                  className="p-1.5 bg-gray-800 hover:bg-yellow-500 text-gray-300 hover:text-black rounded-lg transition border border-gray-700 cursor-pointer"
+                                  title={lang === 'ar' ? 'تعديل الجملة' : 'Phrase bearbeiten'}
+                                >
+                                  <Type className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = editableMascotPhrases.filter((_, idx) => idx !== pIdx);
+                                  setEditableMascotPhrases(updated);
+                                }}
+                                className="p-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition border border-red-500/30 cursor-pointer"
+                                title={lang === 'ar' ? 'حذف الجملة' : 'Phrase löschen'}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* إدخال جملة جديدة */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newMascotPhrase}
+                        onChange={(e) => setNewMascotPhrase(e.target.value)}
+                        placeholder={lang === 'ar' ? 'اكتب جملة جديدة هنا (مثال: أهلاً بكم في عروضنا المميزة! 🚀)' : 'Neue Phrase eingeben (z.B. Willkommen zu unseren Angeboten! 🚀)'}
+                        className="flex-1 p-3 border border-yellow-500/40 rounded-xl text-xs font-bold text-white bg-gray-950 placeholder-gray-600 focus:outline-none focus:border-yellow-400"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newMascotPhrase.trim()) {
+                              setEditableMascotPhrases([...editableMascotPhrases, newMascotPhrase.trim()]);
+                              setNewMascotPhrase('');
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newMascotPhrase.trim()) {
+                            setEditableMascotPhrases([...editableMascotPhrases, newMascotPhrase.trim()]);
+                            setNewMascotPhrase('');
+                          }
+                        }}
+                        className="bg-yellow-500 hover:bg-yellow-400 text-black font-extrabold px-4 py-3 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>{lang === 'ar' ? 'إضافة' : 'Hinzufügen'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <button

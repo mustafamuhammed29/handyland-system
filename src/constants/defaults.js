@@ -3,6 +3,11 @@ export const DEFAULT_SUBTITLE = "An- und Verkauf • Reparatur";
 
 export const ALSAFI_DEFAULT_TICKER = "*** Willkommen bei ALSAFI! *** Frisch zubereitete Speisen *** Heiße Getränke *** Besondere Angebote jeden Tag ***";
 export const ALSAFI_DEFAULT_SUBTITLE = "Frische Speisen • Heiße Getränke";
+
+export const KANKA_DEFAULT_TICKER = "*** Willkommen bei Kanka Orient Deluxe Heidelberg! *** Shisha Lounge & Café *** Exklusive Atmosphäre, Premium Tabak & Cocktails ***";
+export const KANKA_DEFAULT_SUBTITLE = "Shisha Lounge • Café • Heidelberg";
+export const KANKA_DEFAULT_PIN = "0000";
+
 export const DEFAULT_PIN = "1234";
 export const DEFAULT_CITY = "Heidelberg";
 export const DEFAULT_TICKER_SPEED = 25; // ثواني لدورة الشريط الإخباري الكاملة
