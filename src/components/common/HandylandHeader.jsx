@@ -51,7 +51,12 @@ export const HandylandHeader = ({
         <div className="flex items-center gap-2 lg:gap-3 shrink-0">
           {customLogo ? (
             <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 p-0.5 bg-white flex items-center justify-center ${logoBorder}`}>
-              <img src={customLogo} alt={`${systemName} Logo`} className="w-full h-full object-contain rounded-full" />
+              <img 
+                src={customLogo} 
+                alt={`${systemName} Logo`} 
+                className="w-full h-full object-contain rounded-full" 
+                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+              />
             </div>
           ) : (
             <Globe className={`w-10 h-10 lg:w-12 lg:h-12 ${iconColor} drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]`} />

@@ -135,7 +135,7 @@ export const AdminPanelAlsafi = ({
 
       try {
         const channel = supabase.channel('public:handyland_tv_signage_v6');
-        await channel.send({
+        const mascotPayload = {
           type: 'broadcast',
           event: 'MASCOT_UPDATED',
           payload: {
@@ -144,8 +144,15 @@ export const AdminPanelAlsafi = ({
             customMascotFace: editableMascotFace,
             customMascotPhrases: editableMascotPhrases
           }
-        });
-      } catch (e) {}
+        };
+        if (typeof channel.httpSend === 'function') {
+          await channel.httpSend(mascotPayload);
+        } else {
+          await channel.send(mascotPayload);
+        }
+      } catch (e) {
+        console.warn("Mascot broadcast notice:", e);
+      }
 
       try {
         await supabase.from('alsafi_settings').upsert({
@@ -596,11 +603,16 @@ export const AdminPanelAlsafi = ({
     setLoading(true);
     try {
       const channel = supabase.channel('public:handyland_tv_signage_v6');
-      await channel.send({
+      const fsPayload = {
         type: 'broadcast',
         event: 'REMOTE_TRIGGER_FULLSCREEN',
         payload: { timestamp: Date.now() }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(fsPayload);
+      } else {
+        await channel.send(fsPayload);
+      }
       alert(lang === 'ar' ? 'تم إرسال أمر تكبير جميع شاشات التلفزيون عن بُعد بنجاح!' : 'Vollbild-Signal an alle TV-Geräte gesendet!');
     } catch (e) {
       console.error(e);

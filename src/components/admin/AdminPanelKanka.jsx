@@ -14,7 +14,7 @@ import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
 import {
   DEFAULT_PIN, DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
-  KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE
+  KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE, DEFAULT_LOGO, KANKA_DEFAULT_LOGO
 } from '../../constants/defaults';
 
 const DEFAULT_KANKA_PHRASES_AR = [
@@ -466,11 +466,17 @@ export const AdminPanelKanka = ({
 
   const broadcastSmoke = async (val) => {
     try {
-      await supabase.channel('public:handyland_tv_signage_v6').send({
+      const channel = supabase.channel('public:handyland_tv_signage_v6');
+      const payload = {
         type: 'broadcast',
         event: 'KANKA_SMOKE_UPDATED',
         payload: { smokeIntensity: val }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(payload);
+      } else {
+        await channel.send(payload);
+      }
     } catch (e) {
       console.warn('Broadcast smoke notice:', e);
     }
@@ -548,11 +554,16 @@ export const AdminPanelKanka = ({
       await supabase.from('kanka_settings').upsert({ id: 'config', forceReload: now });
 
       const channel = supabase.channel('public:handyland_tv_signage_v6');
-      await channel.send({
+      const reloadPayload = {
         type: 'broadcast',
         event: 'FORCE_RELOAD_ALL_SCREENS',
         payload: { targetSystem: 'KANKA', timestamp: now }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(reloadPayload);
+      } else {
+        await channel.send(reloadPayload);
+      }
 
       alert(isAr ? 'تم إرسال أمر التحديث الفوري لجميع الشاشات!' : 'Aktualisierungsbefehl gesendet!');
     } catch (e) {
@@ -564,11 +575,16 @@ export const AdminPanelKanka = ({
   const handleTriggerFullscreen = async (targetScreen) => {
     try {
       const channel = supabase.channel('public:handyland_tv_signage_v6');
-      await channel.send({
+      const fsPayload = {
         type: 'broadcast',
         event: 'REMOTE_TRIGGER_FULLSCREEN',
         payload: { targetView: targetScreen, system: 'KANKA' }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(fsPayload);
+      } else {
+        await channel.send(fsPayload);
+      }
       alert(isAr ? `تم إرسال أمر ملء الشاشة لـ (${targetScreen})!` : `Vollbild-Signal an (${targetScreen}) gesendet!`);
     } catch (e) {
       console.error(e);
@@ -633,10 +649,10 @@ export const AdminPanelKanka = ({
 
           <div className="flex items-center gap-3">
             <img 
-              src={customLogo || '/kanka-logo.jpg'} 
+              src={customLogo || KANKA_DEFAULT_LOGO} 
               alt="Kanka Logo" 
               className="h-10 w-10 object-contain rounded-full border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.3)] bg-black"
-              onError={(e) => { e.target.src = '/logo.png'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_LOGO; }}
             />
             <div>
               <h1 className="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-600">
@@ -906,10 +922,10 @@ export const AdminPanelKanka = ({
                   </label>
                   <div className="flex items-center gap-4 mb-3">
                     <img
-                      src={logoPreview || customLogo || '/kanka-logo.jpg'}
+                      src={logoPreview || customLogo || KANKA_DEFAULT_LOGO}
                       alt="Logo"
                       className="h-16 w-16 object-contain rounded-2xl bg-black border border-amber-500/40 p-1"
-                      onError={(e) => { e.target.src = '/logo.png'; }}
+                      onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_LOGO; }}
                     />
                     <div className="flex flex-col gap-2">
                       <input

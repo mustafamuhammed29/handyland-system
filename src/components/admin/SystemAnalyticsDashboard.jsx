@@ -146,11 +146,16 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
   const handleRemoteFullscreen = async (targetView = null) => {
     try {
       const reloadChannel = supabase.channel('public:handyland_tv_signage_v6');
-      await reloadChannel.send({
+      const fsPayload = {
         type: 'broadcast',
         event: 'REMOTE_TRIGGER_FULLSCREEN',
         payload: { targetView, timestamp: Date.now() },
-      });
+      };
+      if (typeof reloadChannel.httpSend === 'function') {
+        await reloadChannel.httpSend(fsPayload);
+      } else {
+        await reloadChannel.send(fsPayload);
+      }
       alert(
         lang === 'ar'
           ? (targetView ? `تم إرسال أمر تكبير الشاشة (${targetView}) عن بُعد بنجاح!` : 'تم إرسال إشارة تكبير جميع شاشات التلفزيون في المحل عن بُعد بنجاح!')
@@ -169,11 +174,16 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
       const now = Date.now();
       try {
         const reloadChannel = supabase.channel('public:handyland_tv_signage_v6');
-        await reloadChannel.send({
+        const reloadPayload = {
           type: 'broadcast',
           event: 'FORCE_RELOAD_ALL_SCREENS',
           payload: { timestamp: now },
-        });
+        };
+        if (typeof reloadChannel.httpSend === 'function') {
+          await reloadChannel.httpSend(reloadPayload);
+        } else {
+          await reloadChannel.send(reloadPayload);
+        }
       } catch (e) {}
 
       await supabase.from('shop_settings').upsert({ id: 'config', forceReload: now });

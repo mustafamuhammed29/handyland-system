@@ -16,3 +16,9 @@ export const DEFAULT_PIN = "1234";
 export const DEFAULT_CITY = "Heidelberg";
 export const DEFAULT_TICKER_SPEED = 25; // ثواني لدورة الشريط الإخباري الكاملة
 export const DEFAULT_FONT_SIZE = "100%"; // حجم الخط الافتراضي
+
+const BASE = import.meta.env.BASE_URL || './';
+export const DEFAULT_LOGO = `${BASE}logo.png`;
+export const KANKA_DEFAULT_LOGO = `${BASE}kanka-logo.jpg`;
+export const HSP_DEFAULT_LOGO = `${BASE}hsp-logo.jpg`;
+

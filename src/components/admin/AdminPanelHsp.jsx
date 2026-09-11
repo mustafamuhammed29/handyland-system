@@ -13,7 +13,7 @@ import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
 import {
   DEFAULT_PIN, DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
-  HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE
+  HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE, DEFAULT_LOGO, HSP_DEFAULT_LOGO
 } from '../../constants/defaults';
 
 export const AdminPanelHsp = ({
@@ -433,11 +433,16 @@ export const AdminPanelHsp = ({
       await supabase.from('hsp_settings').upsert({ id: 'config', forceReload: now });
 
       const channel = supabase.channel('public:handyland_tv_signage_v6');
-      await channel.send({
+      const reloadPayload = {
         type: 'broadcast',
         event: 'FORCE_RELOAD_ALL_SCREENS',
         payload: { targetSystem: 'HSP', timestamp: now }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(reloadPayload);
+      } else {
+        await channel.send(reloadPayload);
+      }
 
       alert(isAr ? 'تم إرسال أمر التحديث الفوري للشاشة!' : 'Aktualisierungsbefehl gesendet!');
     } catch (e) {
@@ -449,11 +454,16 @@ export const AdminPanelHsp = ({
   const handleTriggerFullscreen = async () => {
     try {
       const channel = supabase.channel('public:handyland_tv_signage_v6');
-      await channel.send({
+      const fsPayload = {
         type: 'broadcast',
         event: 'REMOTE_TRIGGER_FULLSCREEN',
         payload: { targetView: 'hsp-screen1', system: 'HSP' }
-      });
+      };
+      if (typeof channel.httpSend === 'function') {
+        await channel.httpSend(fsPayload);
+      } else {
+        await channel.send(fsPayload);
+      }
       alert(isAr ? 'تم إرسال أمر ملء الشاشة للتلفزيون!' : 'Vollbild-Signal an TV gesendet!');
     } catch (e) {
       console.error(e);
@@ -481,10 +491,10 @@ export const AdminPanelHsp = ({
 
           <div className="flex items-center gap-3">
             <img 
-              src={customLogo || '/hsp-logo.jpg'} 
+              src={customLogo || HSP_DEFAULT_LOGO} 
               alt="HSP Logo" 
               className="h-10 w-10 object-contain rounded-full border border-[#C49A6C]/50 shadow-[0_0_10px_rgba(196,154,108,0.4)] bg-[#C49A6C]"
-              onError={(e) => { e.target.src = '/logo.png'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_LOGO; }}
             />
             <div>
               <h1 className="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-[#D2B48C] to-[#C49A6C]">
@@ -722,10 +732,10 @@ export const AdminPanelHsp = ({
                   </label>
                   <div className="flex items-center gap-4 mb-3">
                     <img
-                      src={logoPreview || customLogo || '/hsp-logo.jpg'}
+                      src={logoPreview || customLogo || HSP_DEFAULT_LOGO}
                       alt="Logo"
                       className="h-16 w-16 object-contain rounded-full bg-[#C49A6C] border border-[#C49A6C]/50 p-1 shadow-md"
-                      onError={(e) => { e.target.src = '/logo.png'; }}
+                      onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_LOGO; }}
                     />
                     <div className="flex flex-col gap-2">
                       <input

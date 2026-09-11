@@ -82,7 +82,12 @@ export const StoreStatusScreen = ({ lang, customLogo, storeStatusMode, maintenan
 
       <div className={`z-10 bg-gray-900/80 p-12 rounded-3xl border-2 ${modeConfig.borderClass} ${modeConfig.shadowClass} max-w-2xl w-full backdrop-blur-sm transition-all duration-1000`}>
         {customLogo ? (
-          <img src={customLogo} alt="Logo" className="h-32 mx-auto mb-8 object-contain" />
+          <img 
+            src={customLogo} 
+            alt="Logo" 
+            className="h-32 mx-auto mb-8 object-contain" 
+            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+          />
         ) : (
           <Settings className={`w-24 h-24 ${modeConfig.textClass} mx-auto mb-8 animate-spin-slow`} style={{ animationDuration: '4s' }} />
         )}

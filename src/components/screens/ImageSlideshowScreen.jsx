@@ -171,7 +171,12 @@ export const ImageSlideshowScreen = ({
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10">
           {customLogo ? (
             <div className="w-32 h-32 lg:w-44 lg:h-44 rounded-full overflow-hidden border-4 border-yellow-400 p-2 bg-white flex items-center justify-center shadow-[0_0_50px_rgba(234,179,8,0.5)] mb-6 animate-pulse">
-              <img src={customLogo} alt={`${systemName} Logo`} className="w-full h-full object-contain rounded-full" />
+              <img 
+                src={customLogo} 
+                alt={`${systemName} Logo`} 
+                className="w-full h-full object-contain rounded-full" 
+                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+              />
             </div>
           ) : (
             <span className={`text-6xl lg:text-8xl font-black tracking-widest mb-6 ${goldTextGradient} animate-pulse`}>

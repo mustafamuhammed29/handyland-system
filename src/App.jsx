@@ -6,7 +6,8 @@ import {
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
   ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE,
   KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE, KANKA_DEFAULT_PIN,
-  HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE, HSP_DEFAULT_PIN
+  HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE, HSP_DEFAULT_PIN,
+  DEFAULT_LOGO, KANKA_DEFAULT_LOGO, HSP_DEFAULT_LOGO
 } from './constants/defaults';
 import { supabase } from './services/supabase';
 import { offlineCache, hydrateCacheFromIndexedDB } from './services/offlineCache';
@@ -856,7 +857,7 @@ export default function App() {
     const activeMaint = isHandylandView ? maintenanceMode : isAlsafiView ? alsafiMaint : isKankaView ? kankaMaint : hspMaint;
     const activeMaintMsg = isHandylandView ? maintenanceMessage : isAlsafiView ? alsafiMaintMsg : isKankaView ? kankaMaintMsg : hspMaintMsg;
     const activeTimer = isHandylandView ? statusTimerTarget : isAlsafiView ? alsafiTimerTarget : isKankaView ? kankaTimerTarget : hspTimerTarget;
-    const activeLogo = isHandylandView ? customLogo : isAlsafiView ? alsafiLogo : isKankaView ? (kankaLogo || '/kanka-logo.jpg') : (hspLogo || '/hsp-logo.jpg');
+    const activeLogo = isHandylandView ? customLogo : isAlsafiView ? alsafiLogo : isKankaView ? (kankaLogo || KANKA_DEFAULT_LOGO) : (hspLogo || HSP_DEFAULT_LOGO);
 
     if (activeMaint || (activeStoreStatus && activeStoreStatus !== 'active')) return (
       <StoreStatusScreen 
@@ -870,7 +871,7 @@ export default function App() {
     if (view === 'screen1') return (
       <ImageSlideshowScreen 
         items={devices} title="Top Angebote & Smartphones" icon={Smartphone} systemName="HANDYLAND"
-        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || DEFAULT_LOGO} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -881,7 +882,7 @@ export default function App() {
     if (view === 'screen2') return (
       <ImageSlideshowScreen 
         items={repairs} title="Reparaturzentrum & Preise" icon={Wrench} systemName="HANDYLAND"
-        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || DEFAULT_LOGO} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -892,7 +893,7 @@ export default function App() {
     if (view === 'screen3') return (
       <ImageSlideshowScreen 
         items={offers} title="Spezielle Angebote" icon={Tag} systemName="HANDYLAND" 
-        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || DEFAULT_LOGO} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
@@ -903,7 +904,7 @@ export default function App() {
     if (view === 'alsafi-screen1') return (
       <ImageSlideshowScreen 
         items={alsafiMenu} title={alsafiTitle1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü')} icon={Utensils} systemName="ALSAFI" 
-        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || DEFAULT_LOGO} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -914,7 +915,7 @@ export default function App() {
     if (view === 'alsafi-screen2') return (
       <ImageSlideshowScreen 
         items={alsafiDrinks} title={alsafiTitle2 || (lang === 'ar' ? 'المشروبات' : 'Getränke')} icon={Coffee} systemName="ALSAFI" 
-        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || DEFAULT_LOGO} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -925,7 +926,7 @@ export default function App() {
     if (view === 'alsafi-screen3') return (
       <ImageSlideshowScreen 
         items={alsafiOffers} title={alsafiTitle3 || (lang === 'ar' ? 'العروض المميزة' : 'Sonderangebote')} icon={Percent} systemName="ALSAFI" 
-        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || DEFAULT_LOGO} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
@@ -936,7 +937,7 @@ export default function App() {
     if (view === 'kanka-screen1') return (
       <ImageSlideshowScreen 
         items={kankaScreen1} title={kankaTitle1 || (lang === 'ar' ? 'قائمة الشيشة والمعسل' : 'Shisha & Tabak Menü')} icon={Flame} systemName="KANKA" 
-        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        customLogo={kankaLogo || KANKA_DEFAULT_LOGO} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt1} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -948,7 +949,7 @@ export default function App() {
     if (view === 'kanka-screen2') return (
       <ImageSlideshowScreen 
         items={kankaScreen2} title={kankaTitle2 || (lang === 'ar' ? 'المشروبات والكوكتيلات' : 'Getränke & Cocktails')} icon={Coffee} systemName="KANKA" 
-        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        customLogo={kankaLogo || KANKA_DEFAULT_LOGO} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt2} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
@@ -960,7 +961,7 @@ export default function App() {
     if (view === 'kanka-screen3') return (
       <ImageSlideshowScreen 
         items={kankaScreen3} title={kankaTitle3 || (lang === 'ar' ? 'العروض وسهرات الويكند' : 'Sonderangebote & Events')} icon={Sparkles} systemName="KANKA" 
-        customLogo={kankaLogo || '/kanka-logo.jpg'} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
+        customLogo={kankaLogo || KANKA_DEFAULT_LOGO} tickerText={kankaTicker} tickerSpeed={kankaTickerSpeed} 
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt3} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
@@ -972,7 +973,7 @@ export default function App() {
     if (view === 'hsp-screen1') return (
       <ImageSlideshowScreen 
         items={hspScreen1} title={hspTitle1 || (lang === 'ar' ? 'عروض وتصفيف الشعر والتجميل' : 'HSP Hair & Beauty Styling')} icon={Scissors} systemName="HSP" 
-        customLogo={hspLogo || '/hsp-logo.jpg'} tickerText={hspTicker} tickerSpeed={hspTickerSpeed} 
+        customLogo={hspLogo || HSP_DEFAULT_LOGO} tickerText={hspTicker} tickerSpeed={hspTickerSpeed} 
         headerSubtitle={hspSubtitle} slideInterval={hspInt1} cityName={hspCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
