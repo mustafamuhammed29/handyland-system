@@ -1,23 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * تأثير دخان الشيشة الساحر والواضح (Kanka Luxury Hookah Smoke)
- * مصمم خصيصاً لشاشات كافتيريا كانكا أورينت ديلوكس:
- * - يدعم التحكم التام في قوة الظهور والكثافة والتباين (0% إلى 100%).
- * - وضوح بصري جميل وملحوظ (واضح للعين كأنه شخص يدخن وينثر سحب الدخان برقة).
- * - لا يحجب نصوص القائمة أو المنتجات نهائياً بفضل الشفافية المتدرجة ونمط الدمج الذكي (screen/lighten).
- * - أداء فائق 60fps عبر Offscreen Canvas Sprites بدون أي ثقل على التلفزيون.
+ * تأثير دخان الشيشة السينمائي الفاخر لشاشات التلفزيون (Kanka TV Cinema Hookah Smoke)
+ * مصمم ومُعاير خصيصاً ليظهر بوضوح فائق وملموس على شاشات التلفزيون الكبيرة (Smart TVs):
+ * - حل مشكلة شاشات التلفزيون: الاستغناء التام عن CSS mix-blend-mode المعطوب في متصفحات التلفزيونات،
+ *   والاعتماد على رسم الكانفاس الحقيقي (Direct Alpha Compositing) ليظهر الدخان بوضوح وجلاء فائقين.
+ * - حجم جسيمات سينمائي كبير (TV-Scale Plumes) يُرى بوضوح على بُعد 3 إلى 5 أمتار من الشاشة.
+ * - سحب دخان ثلاثية الأبعاد ذات كثافة ملموسة وتباين ممتاز فوق الصور والفيديوهات الفاتحة والداكنة.
+ * - استجابة فورية 100% لمستوى التباين والكثافة المحدد في لوحة التحكم (0% - 100%).
+ * - أداء فائق وسلس 60fps خفيف تماماً على معالجات التلفزيونات الذكية.
  */
 export const KankaSmokeOverlay = ({ intensity = 50 }) => {
   const canvasRef = useRef(null);
   const intensityRef = useRef(intensity);
 
-  // تحديث النسبة المئوية في الوقت الفعلي فور تحريك شريط التباين
   useEffect(() => {
     intensityRef.current = Math.max(0, Math.min(100, Number(intensity) ?? 50));
   }, [intensity]);
 
-  // في حال تم إيقاف الدخان نهائياً (0%)، لا نقوم باستهلاك المعالج
   const numericIntensity = Math.max(0, Math.min(100, Number(intensity) ?? 50));
   if (numericIntensity <= 0) {
     return null;
@@ -35,10 +35,10 @@ export const KankaSmokeOverlay = ({ intensity = 50 }) => {
     let width = (canvas.width = parent ? parent.clientWidth || window.innerWidth : window.innerWidth);
     let height = (canvas.height = parent ? parent.clientHeight || window.innerHeight : window.innerHeight);
 
-    // تجهيز سحابتين مختلفتين من الدخان المسبق (Offscreen Sprites) لتنوع بصري وأداء فائق
-    const spriteSize = 320;
-    
-    // سحابة 1: دخان أبيض ناعم وغني في المركز
+    // تجهيز سحابات دخان مسبقة عالية الجودة (Offscreen Sprites) بحجم مناسب للتلفزيونات (480px)
+    const spriteSize = 480;
+
+    // سحابة 1: سحابة شيشة بيضاء ممتلئة وواضحة جداً (Dense Shisha Plume)
     const sprite1 = document.createElement('canvas');
     sprite1.width = spriteSize;
     sprite1.height = spriteSize;
@@ -46,70 +46,95 @@ export const KankaSmokeOverlay = ({ intensity = 50 }) => {
     if (s1Ctx) {
       const rad = spriteSize / 2;
       const grad = s1Ctx.createRadialGradient(rad, rad, 0, rad, rad, rad);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 0.90)');
-      grad.addColorStop(0.2, 'rgba(252, 248, 240, 0.70)');
-      grad.addColorStop(0.45, 'rgba(242, 232, 218, 0.38)');
-      grad.addColorStop(0.75, 'rgba(225, 215, 200, 0.12)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+      grad.addColorStop(0.18, 'rgba(252, 250, 245, 0.90)');
+      grad.addColorStop(0.40, 'rgba(245, 240, 235, 0.72)');
+      grad.addColorStop(0.65, 'rgba(235, 228, 220, 0.40)');
+      grad.addColorStop(0.85, 'rgba(220, 215, 205, 0.15)');
+      grad.addColorStop(1, 'rgba(200, 200, 200, 0)');
       s1Ctx.fillStyle = grad;
       s1Ctx.beginPath();
       s1Ctx.arc(rad, rad, rad, 0, Math.PI * 2);
       s1Ctx.fill();
     }
 
-    // سحابة 2: دخان منثور أكثر نعومة وتموجاً
+    // سحابة 2: سحابة متموجة بمركز غير متماثل لمحاكاة حركة الهواء الواقعية (Turbulent Swirl)
     const sprite2 = document.createElement('canvas');
     sprite2.width = spriteSize;
     sprite2.height = spriteSize;
     const s2Ctx = sprite2.getContext('2d');
     if (s2Ctx) {
       const rad = spriteSize / 2;
-      const grad = s2Ctx.createRadialGradient(rad * 0.85, rad * 0.85, 0, rad, rad, rad);
-      grad.addColorStop(0, 'rgba(255, 252, 245, 0.80)');
-      grad.addColorStop(0.3, 'rgba(248, 240, 228, 0.55)');
-      grad.addColorStop(0.6, 'rgba(235, 225, 210, 0.22)');
-      grad.addColorStop(0.85, 'rgba(220, 210, 195, 0.06)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const grad = s2Ctx.createRadialGradient(rad * 0.75, rad * 0.8, 0, rad, rad, rad);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+      grad.addColorStop(0.25, 'rgba(250, 245, 240, 0.82)');
+      grad.addColorStop(0.52, 'rgba(240, 235, 228, 0.52)');
+      grad.addColorStop(0.78, 'rgba(225, 220, 210, 0.22)');
+      grad.addColorStop(1, 'rgba(200, 200, 200, 0)');
       s2Ctx.fillStyle = grad;
       s2Ctx.beginPath();
       s2Ctx.arc(rad, rad, rad, 0, Math.PI * 2);
       s2Ctx.fill();
     }
 
-    const sprites = [sprite1, sprite2];
+    // سحابة 3: غيمة دائرية لولبية ناعمة توفر خلفية ضبابية غنية
+    const sprite3 = document.createElement('canvas');
+    sprite3.width = spriteSize;
+    sprite3.height = spriteSize;
+    const s3Ctx = sprite3.getContext('2d');
+    if (s3Ctx) {
+      const rad = spriteSize / 2;
+      const grad = s3Ctx.createRadialGradient(rad * 1.1, rad * 0.9, 0, rad, rad, rad);
+      grad.addColorStop(0, 'rgba(255, 252, 248, 0.92)');
+      grad.addColorStop(0.30, 'rgba(248, 242, 235, 0.75)');
+      grad.addColorStop(0.60, 'rgba(238, 230, 222, 0.42)');
+      grad.addColorStop(0.85, 'rgba(220, 212, 202, 0.12)');
+      grad.addColorStop(1, 'rgba(200, 200, 200, 0)');
+      s3Ctx.fillStyle = grad;
+      s3Ctx.beginPath();
+      s3Ctx.arc(rad, rad, rad, 0, Math.PI * 2);
+      s3Ctx.fill();
+    }
 
-    // عدد الجسيمات للحصول على مظهر غني وواضح بدون حجب المحتوى
-    const PARTICLE_COUNT = 34;
+    const sprites = [sprite1, sprite2, sprite3];
+
+    // عدد الجسيمات ومقاساتها بحجم تلفزيوني واضح وكبير
+    const PARTICLE_COUNT = 36;
     const particles = [];
 
     const createParticle = (initialRandomY = false) => {
-      // تتولد سحب الدخان أساساً من الثلثين السفليين (كأنها صاعدة من طاولة الشيشة)
-      const spawnX = width * 0.05 + Math.random() * (width * 0.9);
+      // تتوزع سحب الدخان على امتداد عرض الشاشة مع تركيز رائع في الجوانب والوسط
+      const spawnX = width * 0.02 + Math.random() * (width * 0.96);
       const spawnY = initialRandomY 
-        ? height * 0.15 + Math.random() * (height * 0.85) 
-        : height + 20 + Math.random() * 80;
+        ? height * 0.1 + Math.random() * (height * 0.9) 
+        : height + 30 + Math.random() * 120;
+
+      // حجم سحابة الدخان يبدأ كبيراً للتلفزيون ويتمدد بشكل فخم أثناء الارتفاع
+      const baseInitialSize = Math.max(260, width * 0.18) + Math.random() * 220;
+      const baseTargetSize = Math.max(550, width * 0.45) + Math.random() * 450;
 
       return {
         x: spawnX,
         y: spawnY,
         baseX: spawnX,
         sprite: sprites[Math.floor(Math.random() * sprites.length)],
-        size: 160 + Math.random() * 180,
-        targetSize: 420 + Math.random() * 320, // تتمدد سحابة الدخان بشكل كبير كلما ارتفعت
-        speedY: 0.45 + Math.random() * 0.65, // سرعة الصعود الانسيابي
+        size: baseInitialSize,
+        targetSize: baseTargetSize,
+        speedY: 0.55 + Math.random() * 0.75, // سرعة صعود هادئة وطبيعية
         swirlAngle: Math.random() * Math.PI * 2,
-        swirlSpeed: 0.008 + Math.random() * 0.015,
-        swirlRadius: 35 + Math.random() * 65, // تموج جانبي يماثل نثر الهواء
+        swirlSpeed: 0.007 + Math.random() * 0.014,
+        swirlRadius: 40 + Math.random() * 75, // تموج جانبي يماثل حركة الدخان الحقيقي
         rotation: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.005,
+        rotSpeed: (Math.random() - 0.5) * 0.006,
         alpha: 0,
-        baseMaxAlpha: 0.28 + Math.random() * 0.24, // الشفافية المرجعية (عند 50%)
+        // شفافية أساسية عالية وملموسة للعين على شاشات التلفزيون الكبيرة (45% - 75%)
+        baseMaxAlpha: 0.48 + Math.random() * 0.32,
         life: 0,
-        maxLife: 420 + Math.random() * 300
+        maxLife: 460 + Math.random() * 320
       };
     };
 
-    // تعبئة الشاشة تدريجياً في البداية
+    // تعبئة الشاشة في البداية لتظهر السحب فوراً بدون انتظار
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push(createParticle(true));
     }
@@ -134,33 +159,34 @@ export const KankaSmokeOverlay = ({ intensity = 50 }) => {
           const p = particles[i];
           p.life++;
 
-          // حركة الصعود
+          // حركة الصعود المستمر
           p.y -= p.speedY;
 
-          // التموج والانعطاف الجانبي الواقعي
+          // التموج اللولبي في الهواء
           p.swirlAngle += p.swirlSpeed;
           p.x = p.baseX + Math.sin(p.swirlAngle) * p.swirlRadius;
 
-          // دوران السحابة البطيء
+          // الدوران البطيء للسحابة
           p.rotation += p.rotSpeed;
 
-          // تمدد السحابة مع الصعود
+          // التمدد التدريجي للسحابة كلما ارتفعت
           const progress = p.life / p.maxLife;
           const currentSize = p.size + (p.targetSize - p.size) * progress;
 
-          // الحد الأقصى للشفافية وفق معامل القوة المطلوب
-          const targetMaxAlpha = Math.min(0.92, p.baseMaxAlpha * intensityFactor);
+          // الشفافية والظهور وفق الكثافة والتباين المطلوبين
+          // نقوم بزيادة الكثافة حتى تصل لـ 0.90 عند أقصى تباين
+          const targetAlpha = Math.min(0.92, p.baseMaxAlpha * intensityFactor);
 
-          // منحنى الشفافية: تصاعد ناعم ثم ظهور كامل ثم تلاشٍ سلس في الأعلى
-          if (progress < 0.2) {
-            p.alpha = (progress / 0.2) * targetMaxAlpha;
-          } else if (progress > 0.65) {
-            p.alpha = ((1 - progress) / 0.35) * targetMaxAlpha;
+          // منحنى الشفافية: صعود ناعم ⬅️ وضوح كامل وممتلئ ⬅️ تلاشٍ هادئ في الأعلى
+          if (progress < 0.15) {
+            p.alpha = (progress / 0.15) * targetAlpha;
+          } else if (progress > 0.60) {
+            p.alpha = ((1 - progress) / 0.40) * targetAlpha;
           } else {
-            p.alpha = targetMaxAlpha;
+            p.alpha = targetAlpha;
           }
 
-          if (p.alpha > 0.005) {
+          if (p.alpha > 0.01) {
             ctx.save();
             ctx.globalAlpha = p.alpha;
             ctx.translate(p.x, p.y);
@@ -169,7 +195,7 @@ export const KankaSmokeOverlay = ({ intensity = 50 }) => {
             ctx.restore();
           }
 
-          // إعادة تدوير السحابة عندما تنتهي أو تتجاوز الشاشة
+          // إعادة تدوير السحابة عندما تنتهي مدتها أو تتجاوز أعلى الشاشة
           if (p.life >= p.maxLife || p.y < -currentSize) {
             particles[i] = createParticle(false);
           }
@@ -187,30 +213,41 @@ export const KankaSmokeOverlay = ({ intensity = 50 }) => {
     };
   }, []);
 
-  const contrastFilter = numericIntensity > 60 
-    ? `contrast(${1 + (numericIntensity - 60) * 0.008}) brightness(${1 + (numericIntensity - 60) * 0.003})`
-    : 'none';
+  // حساب شفافية الكانفاس العامة وفق مستوى التباين
+  const canvasOpacity = Math.min(1, Math.max(0.3, (numericIntensity / 50) * 0.95));
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none">
-      {/* طبقة كانفاس دخان الشيشة الواقعي الصاعد والمتحرك مع دعم التباين العالي */}
+      {/* طبقة كانفاس دخان الشيشة الحقيقي - بدون mix-blend-mode لضمان ظهور ساطع وقوي على كل متصفحات التلفزيونات الذكية */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-300"
         style={{ 
-          mixBlendMode: 'screen', 
-          opacity: Math.min(1, Math.max(0.2, (numericIntensity / 50) * 0.95)),
-          filter: contrastFilter
+          opacity: canvasOpacity,
+          // تأثير فلتر خفيف لرفع البياض والتباين عند الرغبة
+          filter: numericIntensity > 50 
+            ? `contrast(${1 + (numericIntensity - 50) * 0.008}) brightness(${1 + (numericIntensity - 50) * 0.005})` 
+            : 'none'
         }}
       />
 
-      {/* لمسة سحابية هادئة عند أسفل الشاشة توحي باستقرار الدخان على الطاولة */}
+      {/* طبقة ضباب سفلي واضحة توحي بدخان الشيشة المستقر على الطاولات */}
       <div 
-        className="absolute inset-x-0 bottom-0 h-48 pointer-events-none bg-gradient-to-t from-white/20 via-white/5 to-transparent transition-opacity duration-500"
+        className="absolute inset-x-0 bottom-0 h-64 pointer-events-none bg-gradient-to-t from-white/30 via-white/12 to-transparent transition-opacity duration-500"
         style={{ 
-          filter: 'blur(35px)',
-          opacity: Math.min(0.85, (numericIntensity / 100) * 0.7)
+          filter: 'blur(45px)',
+          opacity: Math.min(0.9, (numericIntensity / 100) * 0.85)
         }}
+      />
+
+      {/* طبقة توهج ناعمة في الزوايا السفلية لعمق سينمائي إضافي */}
+      <div 
+        className="absolute -bottom-10 left-10 w-96 h-48 rounded-full bg-white/20 pointer-events-none transition-opacity duration-500"
+        style={{ filter: 'blur(60px)', opacity: (numericIntensity / 100) * 0.7 }}
+      />
+      <div 
+        className="absolute -bottom-10 right-10 w-96 h-48 rounded-full bg-white/20 pointer-events-none transition-opacity duration-500"
+        style={{ filter: 'blur(60px)', opacity: (numericIntensity / 100) * 0.7 }}
       />
     </div>
   );
