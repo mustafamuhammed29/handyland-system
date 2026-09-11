@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent, Flame } from 'lucide-react';
+import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent, Flame, Scissors } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 
@@ -9,7 +9,8 @@ export const MainMenu = ({
   navigateTo, customLogo, lang, setLang, t, 
   showPinModal, setShowPinModal, handleVerifyPin,
   alsafiTitle1, alsafiTitle2, alsafiTitle3,
-  kankaTitle1, kankaTitle2, kankaTitle3
+  kankaTitle1, kankaTitle2, kankaTitle3,
+  hspTitle1
 }) => {
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -34,8 +35,8 @@ export const MainMenu = ({
               </div>
             )}
             <div>
-              <h1 className={`text-3xl md:text-5xl font-black tracking-wider uppercase ${goldTextGradient}`}>
-                HANDYLAND • ALSAFI • KANKA
+              <h1 className={`text-2xl sm:text-3xl md:text-5xl font-black tracking-wider uppercase ${goldTextGradient}`}>
+                HANDYLAND • ALSAFI • KANKA • HSP
               </h1>
               <p className="text-gray-400 font-medium text-sm md:text-base mt-1">
                 {t.systemTagline || 'نظام إدارة شاشات العرض الذكية'}
@@ -145,24 +146,43 @@ export const MainMenu = ({
           </div>
         </div>
 
+        {/* HSP Hair & Beauty Section */}
+        <div className="bg-black/40 p-8 rounded-[3rem] border border-[#C49A6C]/30 backdrop-blur-md">
+          <h2 className="text-3xl font-black text-[#D2B48C] mb-8 flex items-center gap-3">
+            <Scissors className="w-8 h-8" />
+            {lang === 'ar' ? 'شاشة عرض صالون الحلاقة والتجميل (HSP Hair & Beauty)' : 'HSP Hair & Beauty Salon Bildschirm'}
+          </h2>
+          <div className="flex justify-center">
+            <button onClick={() => navigateTo('hsp-screen1')} className="group bg-black/90 hover:bg-black border-2 border-[#C49A6C]/40 hover:border-[#D2B48C] rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer max-w-md w-full">
+              <div className="bg-[#C49A6C]/10 group-hover:bg-[#C49A6C] p-6 rounded-full mb-6 transition-colors border border-[#C49A6C]/20 shadow-inner">
+                 <Scissors className="w-12 h-12 text-[#D2B48C] group-hover:text-black" />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{hspTitle1 || 'HSP Hair & Beauty'}</h2>
+              <p className="text-[#D2B48C] font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'شاشة الصالون والعروض والتصفيف' : 'Styling, Trends & Angebote'}</p>
+            </button>
+          </div>
+        </div>
+
         {/* Unified Admin Gateway Button */}
         <div className="flex justify-center mt-6">
           <button onClick={() => navigateTo('admin-gateway')} className="group bg-gradient-to-br from-yellow-600 via-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 border-2 border-yellow-300 rounded-[2.5rem] px-16 py-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-[0_0_40px_rgba(234,179,8,0.4)] relative cursor-pointer">
             <div className="absolute top-4 right-4 bg-black/60 p-2 rounded-full border border-yellow-400/40">
               <Lock className="w-5 h-5 text-yellow-400" />
             </div>
-            <div className="bg-black p-6 rounded-full mb-4 transition-colors shadow-2xl flex items-center justify-center gap-4">
-              <Smartphone className="w-10 h-10 text-yellow-400" />
-              <div className="w-1 h-10 bg-yellow-600/50 rounded-full"></div>
-              <Utensils className="w-10 h-10 text-orange-400" />
-              <div className="w-1 h-10 bg-yellow-600/50 rounded-full"></div>
-              <Flame className="w-10 h-10 text-amber-400" />
+            <div className="bg-black p-6 rounded-full mb-4 transition-colors shadow-2xl flex items-center justify-center gap-4 flex-wrap">
+              <Smartphone className="w-8 h-8 text-yellow-400" />
+              <div className="w-1 h-8 bg-yellow-600/50 rounded-full"></div>
+              <Utensils className="w-8 h-8 text-orange-400" />
+              <div className="w-1 h-8 bg-yellow-600/50 rounded-full"></div>
+              <Flame className="w-8 h-8 text-amber-400" />
+              <div className="w-1 h-8 bg-yellow-600/50 rounded-full"></div>
+              <Scissors className="w-8 h-8 text-[#D2B48C]" />
             </div>
             <h2 className="text-2xl lg:text-3xl font-black mb-2 text-black leading-tight px-2 break-words w-full text-center">
               {lang === 'ar' ? 'بوابة الإدارة الموحدة' : 'Zentrales Verwaltungsportal'}
             </h2>
             <p className="text-black/80 font-extrabold text-base lg:text-lg leading-snug">
-              {lang === 'ar' ? 'إدارة الهواتف والمطعم والكافتيريا' : 'Handys, Restaurant & Shisha Lounge'}
+              {lang === 'ar' ? 'إدارة الهواتف والمطعم والكافتيريا والصالون' : 'Handys, Restaurant, Lounge & Salon verwalten'}
             </p>
           </button>
         </div>

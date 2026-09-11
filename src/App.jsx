@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Smartphone, Tag, Wrench, Utensils, Coffee, Percent, Flame, Sparkles } from 'lucide-react';
+import { Smartphone, Tag, Wrench, Utensils, Coffee, Percent, Flame, Sparkles, Scissors } from 'lucide-react';
 import { translations } from './constants/translations';
 import { 
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN, 
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
   ALSAFI_DEFAULT_TICKER, ALSAFI_DEFAULT_SUBTITLE,
-  KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE, KANKA_DEFAULT_PIN
+  KANKA_DEFAULT_TICKER, KANKA_DEFAULT_SUBTITLE, KANKA_DEFAULT_PIN,
+  HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE, HSP_DEFAULT_PIN
 } from './constants/defaults';
 import { supabase } from './services/supabase';
 import { offlineCache, hydrateCacheFromIndexedDB } from './services/offlineCache';
@@ -16,6 +17,7 @@ import { AdminGateway } from './components/admin/AdminGateway';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
 import { AdminPanelKanka } from './components/admin/AdminPanelKanka';
+import { AdminPanelHsp } from './components/admin/AdminPanelHsp';
 import { SystemAnalyticsDashboard } from './components/admin/SystemAnalyticsDashboard';
 import { StoreStatusScreen } from './components/screens/StoreStatusScreen';
 import { AutoMemoryRefresh } from './components/common/AutoMemoryRefresh';
@@ -34,7 +36,8 @@ export default function App() {
       'screen1', 'screen2', 'screen3', 
       'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 
       'kanka-screen1', 'kanka-screen2', 'kanka-screen3', 
-      'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-kanka', 
+      'hsp-screen1',
+      'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-kanka', 'admin-hsp',
       'admin-analytics', 'analytics', 'menu'
     ];
     
@@ -142,6 +145,23 @@ export default function App() {
   const [kankaTitle1, setKankaTitle1] = useState(() => offlineCache.getKankaSettings()?.titleScreen1 || '');
   const [kankaTitle2, setKankaTitle2] = useState(() => offlineCache.getKankaSettings()?.titleScreen2 || '');
   const [kankaTitle3, setKankaTitle3] = useState(() => offlineCache.getKankaSettings()?.titleScreen3 || '');
+
+  // HSP Hair & Beauty Settings & Data
+  const [hspScreen1, setHspScreen1] = useState(() => offlineCache.getHspScreen1());
+  const [hspLogo, setHspLogo] = useState(null);
+  const [hspFavicon, setHspFavicon] = useState(null);
+  const [hspTicker, setHspTicker] = useState(HSP_DEFAULT_TICKER);
+  const [hspTickerSpeed, setHspTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
+  const [hspFontSize, setHspFontSize] = useState(DEFAULT_FONT_SIZE);
+  const [hspSubtitle, setHspSubtitle] = useState(HSP_DEFAULT_SUBTITLE);
+  const [hspInt1, setHspInt1] = useState(6);
+  const [hspPin, setHspPin] = useState(HSP_DEFAULT_PIN);
+  const [hspCity, setHspCity] = useState(DEFAULT_CITY);
+  const [hspMaint, setHspMaint] = useState(false);
+  const [hspMaintMsg, setHspMaintMsg] = useState('');
+  const [hspStatusMode, setHspStatusMode] = useState('active');
+  const [hspTimerTarget, setHspTimerTarget] = useState('');
+  const [hspTitle1, setHspTitle1] = useState(() => offlineCache.getHspSettings()?.titleScreen1 || '');
 
   // Pin Protection State (Tracks which branch they are trying to access)
   const [pendingAdminBranch, setPendingAdminBranch] = useState(null);
@@ -421,6 +441,48 @@ export default function App() {
     }
   }, [view, initialLoadTime, hardReloadScreen]);
 
+  const fetchHspScreen1 = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('hsp_screen1').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setHspScreen1(data);
+        offlineCache.saveHspScreen1(data);
+      }
+    } catch (e) {
+      console.warn("Fetch hsp_screen1 notice:", e);
+    }
+  }, []);
+
+  const fetchHspSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('hsp_settings').select('*').eq('id', 'config').single();
+      if (!error && data) {
+        offlineCache.saveHspSettings(data);
+        setHspLogo(data.logoData || null);
+        setHspFavicon(data.faviconData || null);
+        if (view.startsWith('hsp')) updateFavicon(data.faviconData);
+        setHspTicker(data.tickerText || HSP_DEFAULT_TICKER);
+        setHspTickerSpeed(data.tickerSpeed || DEFAULT_TICKER_SPEED);
+        setHspFontSize(data.fontSize || DEFAULT_FONT_SIZE);
+        setHspSubtitle(data.headerSubtitle || HSP_DEFAULT_SUBTITLE);
+        setHspInt1(data.intervalScreen1 || 6);
+        setHspPin(data.adminPin || HSP_DEFAULT_PIN);
+        setHspCity(data.cityName || DEFAULT_CITY);
+        setHspMaint(data.maintenanceMode || false);
+        setHspMaintMsg(data.maintenanceMessage || '');
+        setHspStatusMode(data.storeStatusMode || 'active');
+        setHspTimerTarget(data.statusTimerTarget || '');
+        setHspTitle1(data.titleScreen1 || '');
+
+        if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
+          hardReloadScreen();
+        }
+      }
+    } catch (e) {
+      console.warn("Fetch hsp_settings notice:", e);
+    }
+  }, [view, initialLoadTime, hardReloadScreen]);
+
   // جلب البيانات بالكامل بشكل متسلسل وذكي
   const fetchAllData = useCallback(async () => {
     try {
@@ -428,6 +490,7 @@ export default function App() {
         fetchShopSettings(),
         fetchAlsafiSettings(),
         fetchKankaSettings(),
+        fetchHspSettings(),
         fetchShopDevices(),
         fetchShopRepairs(),
         fetchShopOffers(),
@@ -437,6 +500,7 @@ export default function App() {
         fetchKankaScreen1(),
         fetchKankaScreen2(),
         fetchKankaScreen3(),
+        fetchHspScreen1(),
       ]);
       setIsOffline(false);
     } catch (err) {
@@ -481,12 +545,24 @@ export default function App() {
         if (kankaCacheSet.adminPin) setKankaPin(kankaCacheSet.adminPin);
         if (kankaCacheSet.cityName) setKankaCity(kankaCacheSet.cityName);
       }
+      const hspCacheSet = offlineCache.getHspSettings();
+      if (hspCacheSet) {
+        if (hspCacheSet.logoData) setHspLogo(hspCacheSet.logoData);
+        if (hspCacheSet.tickerText) setHspTicker(hspCacheSet.tickerText);
+        if (hspCacheSet.tickerSpeed) setHspTickerSpeed(hspCacheSet.tickerSpeed);
+        if (hspCacheSet.fontSize) setHspFontSize(hspCacheSet.fontSize);
+        if (hspCacheSet.headerSubtitle) setHspSubtitle(hspCacheSet.headerSubtitle);
+        if (hspCacheSet.intervalScreen1) setHspInt1(hspCacheSet.intervalScreen1);
+        if (hspCacheSet.adminPin) setHspPin(hspCacheSet.adminPin);
+        if (hspCacheSet.cityName) setHspCity(hspCacheSet.cityName);
+      }
     }
   }, [
-    fetchShopSettings, fetchAlsafiSettings, fetchKankaSettings,
+    fetchShopSettings, fetchAlsafiSettings, fetchKankaSettings, fetchHspSettings,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers,
     fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers,
-    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3
+    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3,
+    fetchHspScreen1
   ]);
 
   // استرجاع الذاكرة المحلية عند الإقلاع
@@ -512,6 +588,9 @@ export default function App() {
       if (cachedKanka2?.length) setKankaScreen2(cachedKanka2);
       const cachedKanka3 = offlineCache.getKankaScreen3();
       if (cachedKanka3?.length) setKankaScreen3(cachedKanka3);
+
+      const cachedHsp1 = offlineCache.getHspScreen1();
+      if (cachedHsp1?.length) setHspScreen1(cachedHsp1);
     });
   }, []);
 
@@ -577,16 +656,20 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen2' }, fetchKankaScreen2)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen3' }, fetchKankaScreen3)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_settings' }, fetchKankaSettings)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hsp_screen1' }, fetchHspScreen1)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hsp_settings' }, fetchHspSettings)
       .subscribe();
 
     // فاحص نبض دوري كل 15 ثانية لشاشات التلفزيون لضمان استلام أمر التحديث حتى لو سكن المتصفح
     const tvPollerInterval = setInterval(() => {
       if (view.startsWith('admin')) return;
-      const targetSettingsTable = view.startsWith('kanka') 
-        ? 'kanka_settings' 
-        : view.startsWith('alsafi') 
-          ? 'alsafi_settings' 
-          : 'shop_settings';
+      const targetSettingsTable = view.startsWith('hsp')
+        ? 'hsp_settings'
+        : view.startsWith('kanka') 
+          ? 'kanka_settings' 
+          : view.startsWith('alsafi') 
+            ? 'alsafi_settings' 
+            : 'shop_settings';
 
       supabase.from(targetSettingsTable).select('forceReload').eq('id', 'config').single().then(({ data }) => {
         if (data?.forceReload && data.forceReload > initialLoadTime) {
@@ -607,7 +690,8 @@ export default function App() {
     fetchAllData,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers, fetchShopSettings,
     fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiSettings,
-    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3, fetchKankaSettings
+    fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3, fetchKankaSettings,
+    fetchHspScreen1, fetchHspSettings
   ]);
 
   const handleVerifyPin = (inputPin) => {
@@ -616,6 +700,8 @@ export default function App() {
       targetPin = alsafiPin || '0000';
     } else if (pendingAdminBranch === 'kanka') {
       targetPin = kankaPin || KANKA_DEFAULT_PIN;
+    } else if (pendingAdminBranch === 'hsp') {
+      targetPin = hspPin || HSP_DEFAULT_PIN;
     }
 
     if (inputPin === targetPin) {
@@ -694,15 +780,33 @@ export default function App() {
       />
     );
 
+    if (view === 'admin-hsp') return (
+      <AdminPanelHsp 
+        screen1Items={hspScreen1}
+        customLogo={hspLogo} customFavicon={hspFavicon}
+        tickerText={hspTicker} tickerSpeed={hspTickerSpeed} fontSize={hspFontSize} headerSubtitle={hspSubtitle}
+        intervalScreen1={hspInt1}
+        adminPin={hspPin} cityName={hspCity}
+        titleScreen1={hspTitle1}
+        onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
+        maintenanceMessage={hspMaintMsg} storeStatusMode={hspStatusMode} statusTimerTarget={hspTimerTarget}
+        showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
+        customMascotGreeting={customMascotGreeting} setCustomMascotGreeting={setCustomMascotGreeting}
+        customMascotFace={customMascotFace} setCustomMascotFace={setCustomMascotFace}
+        customMascotPhrases={customMascotPhrases} setCustomMascotPhrases={setCustomMascotPhrases}
+      />
+    );
+
     const isHandylandView = ['screen1', 'screen2', 'screen3'].includes(view);
     const isAlsafiView = ['alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3'].includes(view);
     const isKankaView = ['kanka-screen1', 'kanka-screen2', 'kanka-screen3'].includes(view);
+    const isHspView = ['hsp-screen1'].includes(view);
 
-    const activeStoreStatus = isHandylandView ? storeStatusMode : isAlsafiView ? alsafiStatusMode : kankaStatusMode;
-    const activeMaint = isHandylandView ? maintenanceMode : isAlsafiView ? alsafiMaint : kankaMaint;
-    const activeMaintMsg = isHandylandView ? maintenanceMessage : isAlsafiView ? alsafiMaintMsg : kankaMaintMsg;
-    const activeTimer = isHandylandView ? statusTimerTarget : isAlsafiView ? alsafiTimerTarget : kankaTimerTarget;
-    const activeLogo = isHandylandView ? customLogo : isAlsafiView ? alsafiLogo : (kankaLogo || '/kanka-logo.jpg');
+    const activeStoreStatus = isHandylandView ? storeStatusMode : isAlsafiView ? alsafiStatusMode : isKankaView ? kankaStatusMode : hspStatusMode;
+    const activeMaint = isHandylandView ? maintenanceMode : isAlsafiView ? alsafiMaint : isKankaView ? kankaMaint : hspMaint;
+    const activeMaintMsg = isHandylandView ? maintenanceMessage : isAlsafiView ? alsafiMaintMsg : isKankaView ? kankaMaintMsg : hspMaintMsg;
+    const activeTimer = isHandylandView ? statusTimerTarget : isAlsafiView ? alsafiTimerTarget : isKankaView ? kankaTimerTarget : hspTimerTarget;
+    const activeLogo = isHandylandView ? customLogo : isAlsafiView ? alsafiLogo : isKankaView ? (kankaLogo || '/kanka-logo.jpg') : (hspLogo || '/hsp-logo.jpg');
 
     if (activeMaint || (activeStoreStatus && activeStoreStatus !== 'active')) return (
       <StoreStatusScreen 
@@ -716,60 +820,66 @@ export default function App() {
     if (view === 'screen1') return (
       <ImageSlideshowScreen 
         items={devices} title="Top Angebote & Smartphones" icon={Smartphone} systemName="HANDYLAND"
-        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
     if (view === 'screen2') return (
       <ImageSlideshowScreen 
         items={repairs} title="Reparaturzentrum & Preise" icon={Wrench} systemName="HANDYLAND"
-        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
     if (view === 'screen3') return (
       <ImageSlideshowScreen 
         items={offers} title="Spezielle Angebote" icon={Tag} systemName="HANDYLAND" 
-        customLogo={customLogo} tickerText={tickerText} tickerSpeed={tickerSpeed} 
+        customLogo={customLogo || '/logo.png'} tickerText={tickerText} tickerSpeed={tickerSpeed} 
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
+        showHeader={true}
       />
     );
 
     if (view === 'alsafi-screen1') return (
       <ImageSlideshowScreen 
         items={alsafiMenu} title={alsafiTitle1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü')} icon={Utensils} systemName="ALSAFI" 
-        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
     if (view === 'alsafi-screen2') return (
       <ImageSlideshowScreen 
         items={alsafiDrinks} title={alsafiTitle2 || (lang === 'ar' ? 'المشروبات' : 'Getränke')} icon={Coffee} systemName="ALSAFI" 
-        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
     if (view === 'alsafi-screen3') return (
       <ImageSlideshowScreen 
         items={alsafiOffers} title={alsafiTitle3 || (lang === 'ar' ? 'العروض المميزة' : 'Sonderangebote')} icon={Percent} systemName="ALSAFI" 
-        customLogo={alsafiLogo} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
+        customLogo={alsafiLogo || '/logo.png'} tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} 
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
+        showHeader={true}
       />
     );
 
@@ -780,6 +890,7 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt1} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
@@ -790,6 +901,7 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt2} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
+        showHeader={true}
       />
     );
 
@@ -800,6 +912,18 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt3} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
+        showHeader={true}
+      />
+    );
+
+    if (view === 'hsp-screen1') return (
+      <ImageSlideshowScreen 
+        items={hspScreen1} title={hspTitle1 || (lang === 'ar' ? 'عروض وتصفيف الشعر والتجميل' : 'HSP Hair & Beauty Styling')} icon={Scissors} systemName="HSP" 
+        customLogo={hspLogo || '/hsp-logo.jpg'} tickerText={hspTicker} tickerSpeed={hspTickerSpeed} 
+        headerSubtitle={hspSubtitle} slideInterval={hspInt1} cityName={hspCity} 
+        onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
+        showNewsTicker={true}
+        showHeader={true}
       />
     );
 
@@ -809,6 +933,7 @@ export default function App() {
         setLang={handleSetLang} t={t}
         alsafiTitle1={alsafiTitle1} alsafiTitle2={alsafiTitle2} alsafiTitle3={alsafiTitle3}
         kankaTitle1={kankaTitle1} kankaTitle2={kankaTitle2} kankaTitle3={kankaTitle3}
+        hspTitle1={hspTitle1}
       />
     );
   };

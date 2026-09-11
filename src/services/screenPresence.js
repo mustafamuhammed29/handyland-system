@@ -28,6 +28,8 @@ const getScreenLabel = (view) => {
     case 'admin-handyland': return 'لوحة تحكم هانديلاند';
     case 'admin-alsafi': return 'لوحة تحكم مطعم الصافي';
     case 'admin-kanka': return 'لوحة تحكم كانكا أورينت ديلوكس';
+    case 'hsp-screen1': return 'شاشة 1 - عروض الصالون (HSP Hair & Beauty)';
+    case 'admin-hsp': return 'لوحة تحكم صالون HSP';
     case 'admin-gateway': return 'بوابة الإدارة المركزية';
     case 'admin-analytics':
     case 'analytics': return 'لوحة التحليلات والمراقبة';
@@ -83,7 +85,7 @@ export const screenPresence = {
         id: deviceId,
         view: currentView,
         label: getScreenLabel(currentView),
-        system: currentView.startsWith('alsafi') ? 'ALSAFI' : currentView.startsWith('kanka') ? 'KANKA' : 'HANDYLAND',
+        system: currentView.startsWith('alsafi') ? 'ALSAFI' : currentView.startsWith('kanka') ? 'KANKA' : currentView.startsWith('hsp') ? 'HSP' : 'HANDYLAND',
         deviceType: getDeviceType(),
         resolution: `${window.innerWidth}x${window.innerHeight}`,
         onlineSince: currentPayload?.onlineSince || Date.now(),

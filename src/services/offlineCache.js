@@ -16,6 +16,8 @@ const CACHE_KEYS = {
   KANKA_SCREEN2: 'kanka_cache_screen2',
   KANKA_SCREEN3: 'kanka_cache_screen3',
   KANKA_SETTINGS: 'kanka_cache_settings',
+  HSP_SCREEN1: 'hsp_cache_screen1',
+  HSP_SETTINGS: 'hsp_cache_settings',
 };
 
 // ذاكرة وصول عشوائي محلية سريعة جداً (RAM Cache) للوصول المتزامن
@@ -154,4 +156,10 @@ export const offlineCache = {
 
   saveKankaSettings: (data) => persistItem(CACHE_KEYS.KANKA_SETTINGS, data),
   getKankaSettings: () => memoryCache.get(CACHE_KEYS.KANKA_SETTINGS) || null,
+
+  saveHspScreen1: (data) => persistItem(CACHE_KEYS.HSP_SCREEN1, data),
+  getHspScreen1: () => memoryCache.get(CACHE_KEYS.HSP_SCREEN1) || [],
+
+  saveHspSettings: (data) => persistItem(CACHE_KEYS.HSP_SETTINGS, data),
+  getHspSettings: () => memoryCache.get(CACHE_KEYS.HSP_SETTINGS) || null,
 };

@@ -5,7 +5,7 @@ import {
   TrendingDown, Monitor, Tv, Cast, ExternalLink,
   Play, Coffee, Percent, Layers, Maximize, Minimize,
   Bot, CheckCircle2, Clock, Moon, Sun, RefreshCw,
-  Flame, Sparkles
+  Flame, Sparkles, Scissors
 } from 'lucide-react';
 import { networkTelemetry } from '../../services/networkTelemetry';
 import { offlineCache } from '../../services/offlineCache';
@@ -78,6 +78,7 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     kankaScreen1: offlineCache.getKankaScreen1().length,
     kankaScreen2: offlineCache.getKankaScreen2().length,
     kankaScreen3: offlineCache.getKankaScreen3().length,
+    hspScreen1: offlineCache.getHspScreen1().length,
   });
 
   const ALL_SYSTEM_SCREENS = [
@@ -89,7 +90,8 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
     { id: 'alsafi-screen3', system: 'ALSAFI', nameAr: 'شاشة 3 - العروض والخصومات', nameDe: 'Bildschirm 3 - Sonderangebote', icon: Percent, count: inventory.alsafiOffers },
     { id: 'kanka-screen1', system: 'KANKA', nameAr: 'شاشة 1 - الشيشة والتبغ الفاخر', nameDe: 'Bildschirm 1 - Shisha & Tabak', icon: Flame, count: inventory.kankaScreen1 },
     { id: 'kanka-screen2', system: 'KANKA', nameAr: 'شاشة 2 - المشروبات والكوكتيلات', nameDe: 'Bildschirm 2 - Getränke & Cocktails', icon: Coffee, count: inventory.kankaScreen2 },
-    { id: 'kanka-screen3', system: 'KANKA', nameAr: 'شاشة 3 - العروض والفعاليات', nameDe: 'Bildschirm 3 - Angebote & Events', icon: Sparkles, count: inventory.kankaScreen3 }
+    { id: 'kanka-screen3', system: 'KANKA', nameAr: 'شاشة 3 - العروض والفعاليات', nameDe: 'Bildschirm 3 - Angebote & Events', icon: Sparkles, count: inventory.kankaScreen3 },
+    { id: 'hsp-screen1', system: 'HSP', nameAr: 'شاشة 1 - عروض وتصفيف الصالون', nameDe: 'Bildschirm 1 - HSP Salon & Angebote', icon: Scissors, count: inventory.hspScreen1 }
   ];
 
   useEffect(() => {
@@ -387,6 +389,19 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {actuallyConnectedScreens.map((screen, idx) => {
               const isAlsafi = screen.system === 'ALSAFI' || (screen.view && screen.view.startsWith('alsafi'));
+              const isKanka = screen.system === 'KANKA' || (screen.view && screen.view.startsWith('kanka'));
+              const isHsp = screen.system === 'HSP' || (screen.view && screen.view.startsWith('hsp'));
+              
+              const systemBadgeColor = isHsp
+                ? 'bg-rose-500/20 text-rose-400'
+                : isKanka
+                ? 'bg-amber-500/20 text-amber-400'
+                : isAlsafi
+                ? 'bg-orange-500/20 text-orange-400'
+                : 'bg-yellow-500/20 text-yellow-400';
+
+              const systemLabel = isHsp ? 'HSP' : isKanka ? 'KANKA' : isAlsafi ? 'ALSAFI' : 'HANDYLAND';
+              const SystemIcon = isHsp ? Scissors : isKanka ? Flame : isAlsafi ? Utensils : Smartphone;
               
               return (
                 <div
@@ -396,12 +411,12 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-2">
-                        <div className={`p-2 rounded-xl ${isAlsafi ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                          {isAlsafi ? <Utensils className="w-5 h-5" /> : <Smartphone className="w-5 h-5" />}
+                        <div className={`p-2 rounded-xl ${systemBadgeColor}`}>
+                          <SystemIcon className="w-5 h-5" />
                         </div>
                         <div>
-                          <span className={`text-xs font-black uppercase tracking-wider block ${isAlsafi ? 'text-orange-400' : 'text-yellow-400'}`}>
-                            {isAlsafi ? 'ALSAFI' : 'HANDYLAND'}
+                          <span className={`text-xs font-black uppercase tracking-wider block ${systemBadgeColor.split(' ')[1]}`}>
+                            {systemLabel}
                           </span>
                           <span className="text-[11px] font-mono text-gray-400">{screen.view}</span>
                         </div>
@@ -479,34 +494,44 @@ export const SystemAnalyticsDashboard = ({ onBack, lang = 'de' }) => {
               onClick={() => setShowAllLinks(!showAllLinks)}
               className="text-xs bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-700 px-4 py-2 rounded-xl font-bold transition cursor-pointer"
             >
-              {showAllLinks ? (isAr ? 'إخفاء الروابط' : 'Ausblenden') : (isAr ? 'عرض جميع الروابط (6 شاشات)' : 'Alle 6 Links anzeigen')}
+              {showAllLinks ? (isAr ? 'إخفاء الروابط' : 'Ausblenden') : (isAr ? 'عرض جميع الروابط (10 شاشات)' : 'Alle 10 Links anzeigen')}
             </button>
           </div>
 
           {showAllLinks && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-800 animate-fadeIn">
-              {ALL_SYSTEM_SCREENS.map((scr) => (
-                <a
-                  key={scr.id}
-                  href={`?screen=${scr.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-black/50 hover:bg-yellow-500/10 border border-gray-800 hover:border-yellow-500/50 p-4 rounded-2xl flex items-center justify-between transition group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${scr.system === 'ALSAFI' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                      <scr.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-white group-hover:text-yellow-400 transition">
-                        {isAr ? scr.nameAr : scr.nameDe}
+              {ALL_SYSTEM_SCREENS.map((scr) => {
+                const scrColor = scr.system === 'HSP'
+                  ? 'bg-rose-500/20 text-rose-400'
+                  : scr.system === 'KANKA'
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : scr.system === 'ALSAFI'
+                  ? 'bg-orange-500/20 text-orange-400'
+                  : 'bg-yellow-500/20 text-yellow-400';
+
+                return (
+                  <a
+                    key={scr.id}
+                    href={`?screen=${scr.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-black/50 hover:bg-yellow-500/10 border border-gray-800 hover:border-yellow-500/50 p-4 rounded-2xl flex items-center justify-between transition group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-xl ${scrColor}`}>
+                        <scr.icon className="w-5 h-5" />
                       </div>
-                      <div className="text-[11px] text-gray-500 font-mono">{scr.count} {isAr ? 'عنصر' : 'Items'}</div>
+                      <div>
+                        <div className="text-sm font-bold text-white group-hover:text-yellow-400 transition">
+                          {isAr ? scr.nameAr : scr.nameDe}
+                        </div>
+                        <div className="text-[11px] text-gray-500 font-mono">{scr.count} {isAr ? 'عنصر' : 'Items'}</div>
+                      </div>
                     </div>
-                  </div>
-                  <Play className="w-4 h-4 text-gray-400 group-hover:text-yellow-400 transition" />
-                </a>
-              ))}
+                    <Play className="w-4 h-4 text-gray-400 group-hover:text-yellow-400 transition" />
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>

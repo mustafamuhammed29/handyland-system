@@ -11,7 +11,7 @@ const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-ye
 const darkBg = "bg-[#050505]";
 
 export const ImageSlideshowScreen = ({ 
-  items, title, icon, showNewsTicker = false, customLogo, 
+  items, title, icon, showNewsTicker = false, showHeader = true, customLogo, 
   tickerText, tickerSpeed = DEFAULT_TICKER_SPEED, headerSubtitle, 
   slideInterval = 6, cityName, onBack, t, lang, isOffline,
   systemName = "HANDYLAND" 
@@ -142,13 +142,65 @@ export const ImageSlideshowScreen = ({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-[#050505] text-white font-sans relative overflow-hidden" dir="ltr">
+      <div 
+        onDoubleClick={handleToggleFullscreen}
+        onTouchEnd={handleTouchEnd}
+        className="flex flex-col h-screen max-h-screen w-full bg-[#050505] text-white font-sans relative overflow-hidden select-none cursor-pointer" 
+        dir="ltr"
+        title={lang === 'ar' ? 'انقر نقراً مزدوجاً للتكبير ملء الشاشة' : 'Doppelklick für Vollbild'}
+      >
         <TVScreenControls />
         <TVBackControl onBack={onBack} t={t} />
-        <span className={`text-6xl lg:text-8xl font-black tracking-widest mb-6 ${goldTextGradient} animate-pulse`}>{systemName}</span>
-        <div className="text-2xl lg:text-4xl text-gray-400 font-light bg-black/60 px-10 py-5 rounded-3xl border border-yellow-500/20 backdrop-blur-md">
-          Warten auf Medien... (Keine Plakate/Videos hochgeladen)
+
+        {showHeader && (
+          <HandylandHeader 
+            title={title}
+            icon={icon}
+            customLogo={customLogo}
+            headerSubtitle={headerSubtitle}
+            cityName={cityName}
+            lang={lang}
+            isOffline={isOffline}
+            systemName={systemName}
+          />
+        )}
+
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10">
+          {customLogo ? (
+            <div className="w-32 h-32 lg:w-44 lg:h-44 rounded-full overflow-hidden border-4 border-yellow-400 p-2 bg-white flex items-center justify-center shadow-[0_0_50px_rgba(234,179,8,0.5)] mb-6 animate-pulse">
+              <img src={customLogo} alt={`${systemName} Logo`} className="w-full h-full object-contain rounded-full" />
+            </div>
+          ) : (
+            <span className={`text-6xl lg:text-8xl font-black tracking-widest mb-6 ${goldTextGradient} animate-pulse`}>
+              {systemName}
+            </span>
+          )}
+          <h2 className="text-3xl lg:text-5xl font-black text-white mb-4 tracking-wide drop-shadow-md">
+            {title || systemName}
+          </h2>
+          <div className="text-xl lg:text-2xl text-gray-300 font-medium bg-black/70 px-10 py-4 rounded-3xl border border-yellow-500/30 backdrop-blur-md max-w-2xl">
+            {lang === 'ar' 
+              ? 'جاهز للعرض • بانتظار رفع وسائط أو تصاميم جديدة عبر لوحة التحكم' 
+              : 'Bereit zur Anzeige • Warten auf Medien/Plakate über das Admin-Panel'}
+          </div>
         </div>
+
+        {showNewsTicker && (
+          <footer className="w-full bg-yellow-400 text-black py-3.5 shadow-2xl z-30 flex border-t-4 border-yellow-500 overflow-hidden relative shrink-0">
+            <div className="flex items-center px-8 bg-yellow-500 z-40 font-black text-2xl lg:text-3xl gap-4 whitespace-nowrap border-r-4 border-yellow-600 shadow-xl tracking-wider">
+              <Info className="w-8 h-8 animate-pulse" />
+              {systemName} NEWS
+            </div>
+            <div className="flex-1 relative overflow-hidden flex items-center">
+              <p 
+                className="absolute whitespace-nowrap text-3xl lg:text-4xl font-black animate-marquee w-full text-left tracking-wider"
+                style={{ animationDuration: `${parseInt(tickerSpeed) || DEFAULT_TICKER_SPEED}s` }}
+              >
+                {tickerText || DEFAULT_TICKER}
+              </p>
+            </div>
+          </footer>
+        )}
       </div>
     );
   }
@@ -157,6 +209,19 @@ export const ImageSlideshowScreen = ({
     <div className={`flex flex-col h-screen max-h-screen w-full ${darkBg} text-white overflow-hidden font-sans relative`} dir="ltr">
       <TVScreenControls />
       <TVBackControl onBack={onBack} t={t} />
+
+      {showHeader && (
+        <HandylandHeader 
+          title={title}
+          icon={icon}
+          customLogo={customLogo}
+          headerSubtitle={headerSubtitle}
+          cityName={cityName}
+          lang={lang}
+          isOffline={isOffline}
+          systemName={systemName}
+        />
+      )}
 
       {/* زر تأكيد التكبير عن بُعد إن تطلب المتصفح تفاعلاً */}
       {showRemoteFullscreenBadge && !document.fullscreenElement && (

@@ -8,6 +8,10 @@ export const KANKA_DEFAULT_TICKER = "*** Willkommen bei Kanka Orient Deluxe Heid
 export const KANKA_DEFAULT_SUBTITLE = "Shisha Lounge • Café • Heidelberg";
 export const KANKA_DEFAULT_PIN = "0000";
 
+export const HSP_DEFAULT_TICKER = "*** Willkommen bei HSP Hair & Beauty (Haar Studio Plöck)! *** Ihr exklusiver Friseur- & Beauty-Salon in Heidelberg *** Professionelle Stylings & Trends ***";
+export const HSP_DEFAULT_SUBTITLE = "Haar Studio Plöck • Hair & Beauty";
+export const HSP_DEFAULT_PIN = "0000";
+
 export const DEFAULT_PIN = "1234";
 export const DEFAULT_CITY = "Heidelberg";
 export const DEFAULT_TICKER_SPEED = 25; // ثواني لدورة الشريط الإخباري الكاملة
