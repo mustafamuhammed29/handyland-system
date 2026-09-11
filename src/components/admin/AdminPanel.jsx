@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Settings, Smartphone, Wrench, Tag, Plus, Trash2,
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
-  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut, Activity, Bot, Maximize, RefreshCw
+  Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut, Activity, Bot, Maximize, RefreshCw,
+  Clock, Eye, EyeOff
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -32,6 +33,7 @@ const DEFAULT_HANDYLAND_PHRASES_DE = [
 export const AdminPanel = ({
   devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
   fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
+  showClock = true,
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t,
   showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting,
   customMascotFace = '', setCustomMascotFace, customMascotPhrases = [], setCustomMascotPhrases
@@ -61,6 +63,7 @@ export const AdminPanel = ({
   const [editableTimer3, setEditableTimer3] = useState(intervalScreen3 || 6);
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
+  const [editableShowClock, setEditableShowClock] = useState(showClock !== false);
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
   const [timerDuration, setTimerDuration] = useState('none');
@@ -89,6 +92,7 @@ export const AdminPanel = ({
   useEffect(() => { setEditableTimer3(intervalScreen3 || 6); }, [intervalScreen3]);
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
+  useEffect(() => { setEditableShowClock(showClock !== false); }, [showClock]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
   useEffect(() => { setEditableShowMascot(showMascotRobot !== false); }, [showMascotRobot]);
@@ -456,6 +460,19 @@ export const AdminPanel = ({
     try {
       const { error } = await supabase.from('shop_settings').upsert({ id: 'config', cityName: editableCity });
       if (error) throw error;
+      alert(t.saveSuccess);
+      onRefresh();
+    } catch (err) { console.error(err); alert(t.uploadError); }
+    setLoading(false);
+  };
+
+  const handleToggleShowClock = async () => {
+    const nextVal = !editableShowClock;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('shop_settings').upsert({ id: 'config', showClock: nextVal });
+      if (error) throw error;
+      setEditableShowClock(nextVal);
       alert(t.saveSuccess);
       onRefresh();
     } catch (err) { console.error(err); alert(t.uploadError); }
@@ -1119,8 +1136,8 @@ export const AdminPanel = ({
                 </form>
               </div>
 
-              {/* قسم التحكم بحجم الخط وسرعة الشريط الإخباري وحماية PIN والطقس */}
-              <div className="grid lg:grid-cols-4 gap-6">
+              {/* قسم التحكم بحجم الخط وسرعة الشريط الإخباري وحماية PIN والطقس والشريط العلوي */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {/* 1. حجم الخط */}
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>
@@ -1219,6 +1236,52 @@ export const AdminPanel = ({
                       </button>
                     </form>
                   </div>
+                </div>
+
+                {/* 5. التحكم بالشريط العلوي (الساعة والطقس) */}
+                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-lg font-black mb-3 text-gray-800 border-b pb-3 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-yellow-600" />
+                      {t.topBarControlTitle}
+                    </h4>
+                    <p className="text-gray-600 text-xs mb-3 font-semibold">{t.topBarControlDesc}</p>
+                    
+                    <div className={`p-3 rounded-xl border flex items-center justify-between mb-3 ${
+                      editableShowClock 
+                        ? 'bg-green-50 border-green-300 text-green-800' 
+                        : 'bg-red-50 border-red-300 text-red-800'
+                    }`}>
+                      <span className="text-xs font-black flex items-center gap-1.5">
+                        <span className={`w-2.5 h-2.5 rounded-full ${editableShowClock ? 'bg-green-500 animate-ping' : 'bg-red-500'}`} />
+                        {editableShowClock ? t.topBarVisible : t.topBarHidden}
+                      </span>
+                      {editableShowClock ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-red-600" />}
+                    </div>
+                  </div>
+
+                  <button 
+                    type="button"
+                    onClick={handleToggleShowClock}
+                    disabled={loading}
+                    className={`w-full py-3 font-bold rounded-xl cursor-pointer text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                      editableShowClock 
+                        ? 'bg-red-600 hover:bg-red-700 text-white shadow-md' 
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
+                    }`}
+                  >
+                    {editableShowClock ? (
+                      <>
+                        <EyeOff className="w-4 h-4" />
+                        {lang === 'ar' ? 'إخفاء الشريط العلوي' : 'Leiste ausblenden'}
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4" />
+                        {lang === 'ar' ? 'إظهار الشريط العلوي' : 'Leiste anzeigen'}
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 

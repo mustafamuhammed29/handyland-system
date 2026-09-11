@@ -102,6 +102,11 @@ export const translations = {
     disableMaintenanceBtn: "Wartungsmodus deaktivieren",
     forceReloadBtn: "Alle Bildschirme aktualisieren (Force Reload)",
     systemControlTitle: "Systemsteuerung (Wartung & Reload)",
+    topBarControlTitle: "Oberste Leiste (Uhr & Wetter)",
+    topBarControlDesc: "Steuert die Anzeige der oberen Leiste mit Uhrzeit, Live-Wetter und Logo auf den Bildschirmen.",
+    topBarVisible: "Leiste anzeigen (Aktiv)",
+    topBarHidden: "Leiste ausblenden (Vollbild)",
+    topBarToggleBtn: "Status umschalten",
   },
   ar: {
     systemTitle: "نظام JansaTech الشامل لإدارة الشاشات",
@@ -206,5 +211,10 @@ export const translations = {
     disableMaintenanceBtn: "إيقاف وضع الصيانة",
     forceReloadBtn: "إجبار جميع الشاشات على التحديث (إعادة تحميل)",
     systemControlTitle: "التحكم بالنظام (الصيانة والتحديث)",
+    topBarControlTitle: "الشريط العلوي (شريط الساعة والطقس)",
+    topBarControlDesc: "التحكم في إظهار أو إخفاء الشريط العلوي بالكامل (الساعة، الطقس المباشر، الشعار) على شاشات التلفزيون.",
+    topBarVisible: "الشريط ظاهر (مفعّل)",
+    topBarHidden: "الشريط مخفي (ملء الشاشة)",
+    topBarToggleBtn: "تبديل حالة الشريط",
   }
 };

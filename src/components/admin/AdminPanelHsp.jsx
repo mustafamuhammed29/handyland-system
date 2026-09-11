@@ -4,7 +4,8 @@ import {
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
   Layout, Type, Timer, Key, CloudSun, Gauge, LogOut,
   Activity, Bot, Maximize, RefreshCw, AlertTriangle, CheckCircle2,
-  Sliders, Star
+  Sliders, Star,
+  Clock, Eye, EyeOff
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -22,6 +23,7 @@ export const AdminPanelHsp = ({
   intervalScreen1 = 6,
   adminPin, cityName,
   titleScreen1 = '',
+  showClock = true,
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '',
   onBack, onRefresh, lang, setLang, t
 }) => {
@@ -47,6 +49,7 @@ export const AdminPanelHsp = ({
   const [editableTitle1, setEditableTitle1] = useState(titleScreen1 || 'HSP Hair & Beauty');
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
+  const [editableShowClock, setEditableShowClock] = useState(showClock !== false);
   const [editableStoreStatusMode, setEditableStoreStatusMode] = useState(storeStatusMode || 'active');
   const [editableMaintenanceMsg, setEditableMaintenanceMsg] = useState(maintenanceMessage || '');
   const [timerDuration, setTimerDuration] = useState('none');
@@ -59,6 +62,7 @@ export const AdminPanelHsp = ({
   useEffect(() => { setEditableTitle1(titleScreen1 || 'HSP Hair & Beauty'); }, [titleScreen1]);
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
+  useEffect(() => { setEditableShowClock(showClock !== false); }, [showClock]);
   useEffect(() => { setEditableMaintenanceMsg(maintenanceMessage || ''); }, [maintenanceMessage]);
   useEffect(() => { setEditableStoreStatusMode(storeStatusMode || 'active'); }, [storeStatusMode]);
 
@@ -358,6 +362,22 @@ export const AdminPanelHsp = ({
       alert(t.saveSuccess || 'تم الحفظ');
       if (onRefresh) onRefresh();
     } catch (err) { console.error(err); }
+    setLoading(false);
+  };
+
+  const handleToggleShowClock = async () => {
+    const nextVal = !editableShowClock;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('hsp_settings').upsert({ id: 'config', showClock: nextVal });
+      if (error) throw error;
+      setEditableShowClock(nextVal);
+      alert(t.saveSuccess || (isAr ? 'تم حفظ التغيير بنجاح' : 'Erfolgreich gespeichert!'));
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(isAr ? 'حدث خطأ في الحفظ' : 'Fehler beim Speichern');
+    }
     setLoading(false);
   };
 
@@ -938,6 +958,34 @@ export const AdminPanelHsp = ({
                       className="bg-[#C49A6C] hover:bg-[#D2B48C] text-black px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
                       {isAr ? 'حفظ المدينة' : 'Stadt speichern'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10">
+                  <label className="text-xs text-gray-400 font-semibold block mb-1">
+                    {t.topBarControlTitle || (isAr ? 'الشريط العلوي (الساعة والطقس):' : 'Oberste Leiste (Uhr & Wetter):')}
+                  </label>
+                  <p className="text-gray-400 text-xs mb-2">
+                    {t.topBarControlDesc || (isAr ? 'التحكم في إظهار أو إخفاء الشريط العلوي بالكامل على شاشة الصالون.' : 'Steuert die Anzeige der gesamten oberen Kopfzeile.')}
+                  </p>
+                  <div className="flex items-center justify-between bg-neutral-900/90 border border-white/10 p-3 rounded-xl">
+                    <span className="text-xs font-bold flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${editableShowClock ? 'bg-emerald-500 animate-ping' : 'bg-red-500'}`} />
+                      {editableShowClock ? (t.topBarVisible || (isAr ? 'الشريط ظاهر (مفعّل)' : 'Sichtbar')) : (t.topBarHidden || (isAr ? 'الشريط مخفي (ملء الشاشة)' : 'Ausgeblendet'))}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleToggleShowClock}
+                      disabled={loading}
+                      className={`px-4 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 ${
+                        editableShowClock
+                          ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40'
+                          : 'bg-[#C49A6C]/20 text-[#D2B48C] hover:bg-[#C49A6C]/30 border border-[#C49A6C]/40'
+                      }`}
+                    >
+                      {editableShowClock ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {editableShowClock ? (isAr ? 'إخفاء الشريط' : 'Ausblenden') : (isAr ? 'إظهار الشريط' : 'Einblenden')}
                     </button>
                   </div>
                 </div>

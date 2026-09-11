@@ -78,6 +78,7 @@ export default function App() {
   // Handyland Settings
   const [customLogo, setCustomLogo] = useState(null);
   const [customFavicon, setCustomFavicon] = useState(null);
+  const [showClock, setShowClock] = useState(() => offlineCache.getSettings()?.showClock !== false);
   const [tickerText, setTickerText] = useState(DEFAULT_TICKER);
   const [tickerSpeed, setTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -106,6 +107,7 @@ export default function App() {
   // Alsafi Settings
   const [alsafiLogo, setAlsafiLogo] = useState(null);
   const [alsafiFavicon, setAlsafiFavicon] = useState(null);
+  const [alsafiShowClock, setAlsafiShowClock] = useState(() => offlineCache.getAlsafiSettings()?.showClock !== false);
   const [alsafiTicker, setAlsafiTicker] = useState(ALSAFI_DEFAULT_TICKER);
   const [alsafiTickerSpeed, setAlsafiTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [alsafiFontSize, setAlsafiFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -129,6 +131,7 @@ export default function App() {
   const [kankaScreen3, setKankaScreen3] = useState(() => offlineCache.getKankaScreen3());
   const [kankaLogo, setKankaLogo] = useState(null);
   const [kankaFavicon, setKankaFavicon] = useState(null);
+  const [kankaShowClock, setKankaShowClock] = useState(() => offlineCache.getKankaSettings()?.showClock !== false);
   const [kankaTicker, setKankaTicker] = useState(KANKA_DEFAULT_TICKER);
   const [kankaTickerSpeed, setKankaTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [kankaFontSize, setKankaFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -150,6 +153,7 @@ export default function App() {
   const [hspScreen1, setHspScreen1] = useState(() => offlineCache.getHspScreen1());
   const [hspLogo, setHspLogo] = useState(null);
   const [hspFavicon, setHspFavicon] = useState(null);
+  const [hspShowClock, setHspShowClock] = useState(() => offlineCache.getHspSettings()?.showClock !== false);
   const [hspTicker, setHspTicker] = useState(HSP_DEFAULT_TICKER);
   const [hspTickerSpeed, setHspTickerSpeed] = useState(DEFAULT_TICKER_SPEED);
   const [hspFontSize, setHspFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -275,6 +279,7 @@ export default function App() {
         setIntervalScreen3(data.intervalScreen3 || 6);
         setAdminPin(data.adminPin || DEFAULT_PIN);
         setCityName(data.cityName || DEFAULT_CITY);
+        if (data.showClock !== undefined) setShowClock(data.showClock !== false);
         setMaintenanceMode(data.maintenanceMode || false);
         setMaintenanceMessage(data.maintenanceMessage || '');
         setStoreStatusMode(data.storeStatusMode || 'active');
@@ -354,6 +359,7 @@ export default function App() {
         setAlsafiInt3(data.intervalScreen3 || 6);
         setAlsafiPin(data.adminPin || '0000');
         setAlsafiCity(data.cityName || DEFAULT_CITY);
+        if (data.showClock !== undefined) setAlsafiShowClock(data.showClock !== false);
         setAlsafiMaint(data.maintenanceMode || false);
         setAlsafiMaintMsg(data.maintenanceMessage || '');
         setAlsafiStatusMode(data.storeStatusMode || 'active');
@@ -424,6 +430,7 @@ export default function App() {
         setKankaInt3(data.intervalScreen3 || 6);
         setKankaPin(data.adminPin || KANKA_DEFAULT_PIN);
         setKankaCity(data.cityName || DEFAULT_CITY);
+        if (data.showClock !== undefined) setKankaShowClock(data.showClock !== false);
         setKankaMaint(data.maintenanceMode || false);
         setKankaMaintMsg(data.maintenanceMessage || '');
         setKankaStatusMode(data.storeStatusMode || 'active');
@@ -468,6 +475,7 @@ export default function App() {
         setHspInt1(data.intervalScreen1 || 6);
         setHspPin(data.adminPin || HSP_DEFAULT_PIN);
         setHspCity(data.cityName || DEFAULT_CITY);
+        if (data.showClock !== undefined) setHspShowClock(data.showClock !== false);
         setHspMaint(data.maintenanceMode || false);
         setHspMaintMsg(data.maintenanceMessage || '');
         setHspStatusMode(data.storeStatusMode || 'active');
@@ -737,6 +745,7 @@ export default function App() {
         devices={devices} repairs={repairs} offers={offers} customLogo={customLogo} customFavicon={customFavicon}
         tickerText={tickerText} tickerSpeed={tickerSpeed} fontSize={fontSize} headerSubtitle={headerSubtitle} intervalScreen1={intervalScreen1} 
         intervalScreen2={intervalScreen2} intervalScreen3={intervalScreen3} adminPin={adminPin} cityName={cityName}
+        showClock={showClock}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={maintenanceMode} maintenanceMessage={maintenanceMessage}
         storeStatusMode={storeStatusMode} statusTimerTarget={statusTimerTarget}
@@ -753,6 +762,7 @@ export default function App() {
         tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} fontSize={alsafiFontSize} headerSubtitle={alsafiSubtitle} intervalScreen1={alsafiInt1} 
         intervalScreen2={alsafiInt2} intervalScreen3={alsafiInt3} adminPin={alsafiPin} cityName={alsafiCity}
         titleScreen1={alsafiTitle1} titleScreen2={alsafiTitle2} titleScreen3={alsafiTitle3}
+        showClock={alsafiShowClock}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={alsafiMaint} maintenanceMessage={alsafiMaintMsg}
         storeStatusMode={alsafiStatusMode} statusTimerTarget={alsafiTimerTarget}
@@ -771,6 +781,7 @@ export default function App() {
         intervalScreen1={kankaInt1} intervalScreen2={kankaInt2} intervalScreen3={kankaInt3}
         adminPin={kankaPin} cityName={kankaCity}
         titleScreen1={kankaTitle1} titleScreen2={kankaTitle2} titleScreen3={kankaTitle3}
+        showClock={kankaShowClock}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMessage={kankaMaintMsg} storeStatusMode={kankaStatusMode} statusTimerTarget={kankaTimerTarget}
         showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
@@ -788,6 +799,7 @@ export default function App() {
         intervalScreen1={hspInt1}
         adminPin={hspPin} cityName={hspCity}
         titleScreen1={hspTitle1}
+        showClock={hspShowClock}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMessage={hspMaintMsg} storeStatusMode={hspStatusMode} statusTimerTarget={hspTimerTarget}
         showMascotRobot={showMascotRobot} setShowMascotRobot={setShowMascotRobot}
@@ -824,7 +836,7 @@ export default function App() {
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen1} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={showClock}
       />
     );
 
@@ -835,7 +847,7 @@ export default function App() {
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen2} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={showClock}
       />
     );
 
@@ -846,7 +858,7 @@ export default function App() {
         headerSubtitle={headerSubtitle} slideInterval={intervalScreen3} cityName={cityName} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
-        showHeader={true}
+        showHeader={showClock}
       />
     );
 
@@ -857,7 +869,7 @@ export default function App() {
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt1} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={alsafiShowClock}
       />
     );
 
@@ -868,7 +880,7 @@ export default function App() {
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt2} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={alsafiShowClock}
       />
     );
 
@@ -879,7 +891,7 @@ export default function App() {
         headerSubtitle={alsafiSubtitle} slideInterval={alsafiInt3} cityName={alsafiCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
-        showHeader={true}
+        showHeader={alsafiShowClock}
       />
     );
 
@@ -890,7 +902,7 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt1} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={kankaShowClock}
       />
     );
 
@@ -901,7 +913,7 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt2} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={false}
-        showHeader={true}
+        showHeader={kankaShowClock}
       />
     );
 
@@ -912,7 +924,7 @@ export default function App() {
         headerSubtitle={kankaSubtitle} slideInterval={kankaInt3} cityName={kankaCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
-        showHeader={true}
+        showHeader={kankaShowClock}
       />
     );
 
@@ -923,7 +935,7 @@ export default function App() {
         headerSubtitle={hspSubtitle} slideInterval={hspInt1} cityName={hspCity} 
         onBack={navigateBack} t={t} lang={lang} isOffline={isOffline} 
         showNewsTicker={true}
-        showHeader={true}
+        showHeader={hspShowClock}
       />
     );
 
