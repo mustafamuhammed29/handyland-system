@@ -14,6 +14,7 @@ import { offlineCache, hydrateCacheFromIndexedDB } from './services/offlineCache
 
 import { MainMenu } from './components/screens/MainMenu';
 import { ImageSlideshowScreen } from './components/screens/ImageSlideshowScreen';
+import { RestaurantShowcaseScreen } from './components/screens/RestaurantShowcaseScreen';
 import { AdminGateway } from './components/admin/AdminGateway';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AdminPanelAlsafi } from './components/admin/AdminPanelAlsafi';
@@ -35,7 +36,7 @@ export default function App() {
     const screenParam = urlParams.get('screen');
     const validViews = [
       'screen1', 'screen2', 'screen3', 
-      'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 
+      'alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'alsafi-screen4',
       'kanka-screen1', 'kanka-screen2', 'kanka-screen3', 
       'hsp-screen1',
       'admin-gateway', 'admin-handyland', 'admin-alsafi', 'admin-kanka', 'admin-hsp',
@@ -75,6 +76,7 @@ export default function App() {
   const [alsafiMenu, setAlsafiMenu] = useState(() => offlineCache.getAlsafiMenu());
   const [alsafiDrinks, setAlsafiDrinks] = useState(() => offlineCache.getAlsafiDrinks());
   const [alsafiOffers, setAlsafiOffers] = useState(() => offlineCache.getAlsafiOffers());
+  const [alsafiShowcase, setAlsafiShowcase] = useState(() => offlineCache.getAlsafiShowcase());
 
   // Handyland Settings
   const [customLogo, setCustomLogo] = useState(null);
@@ -116,6 +118,7 @@ export default function App() {
   const [alsafiInt1, setAlsafiInt1] = useState(6);
   const [alsafiInt2, setAlsafiInt2] = useState(6);
   const [alsafiInt3, setAlsafiInt3] = useState(6);
+  const [alsafiInt4, setAlsafiInt4] = useState(10);
   const [alsafiPin, setAlsafiPin] = useState('0000');
   const [alsafiCity, setAlsafiCity] = useState(DEFAULT_CITY);
   const [alsafiMaint, setAlsafiMaint] = useState(false);
@@ -125,6 +128,7 @@ export default function App() {
   const [alsafiTitle1, setAlsafiTitle1] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen1 || '');
   const [alsafiTitle2, setAlsafiTitle2] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen2 || '');
   const [alsafiTitle3, setAlsafiTitle3] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen3 || '');
+  const [alsafiTitle4, setAlsafiTitle4] = useState(() => offlineCache.getAlsafiSettings()?.titleScreen4 || '');
 
   // Kanka Orient Deluxe Settings & Data
   const [kankaScreen1, setKankaScreen1] = useState(() => offlineCache.getKankaScreen1());
@@ -351,6 +355,18 @@ export default function App() {
     }
   }, []);
 
+  const fetchAlsafiShowcase = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('alsafi_showcase').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        setAlsafiShowcase(data);
+        offlineCache.saveAlsafiShowcase(data);
+      }
+    } catch (e) {
+      console.warn("Fetch alsafi_showcase notice:", e);
+    }
+  }, []);
+
   const fetchAlsafiSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('alsafi_settings').select('*').eq('id', 'config').single();
@@ -366,6 +382,7 @@ export default function App() {
         setAlsafiInt1(data.intervalScreen1 || 6);
         setAlsafiInt2(data.intervalScreen2 || 6);
         setAlsafiInt3(data.intervalScreen3 || 6);
+        setAlsafiInt4(data.intervalScreen4 || 10);
         setAlsafiPin(data.adminPin || '0000');
         setAlsafiCity(data.cityName || DEFAULT_CITY);
         if (data.showClock !== undefined) setAlsafiShowClock(data.showClock !== false);
@@ -376,6 +393,7 @@ export default function App() {
         setAlsafiTitle1(data.titleScreen1 || '');
         setAlsafiTitle2(data.titleScreen2 || '');
         setAlsafiTitle3(data.titleScreen3 || '');
+        setAlsafiTitle4(data.titleScreen4 || '');
 
         if (data.forceReload && data.forceReload > initialLoadTime && !view.startsWith('admin')) {
           hardReloadScreen();
@@ -525,6 +543,7 @@ export default function App() {
         fetchAlsafiMenu(),
         fetchAlsafiDrinks(),
         fetchAlsafiOffers(),
+        fetchAlsafiShowcase(),
         fetchKankaScreen1(),
         fetchKankaScreen2(),
         fetchKankaScreen3(),
@@ -618,6 +637,8 @@ export default function App() {
       if (cachedDrinks?.length) setAlsafiDrinks(cachedDrinks);
       const cachedAlsOff = offlineCache.getAlsafiOffers();
       if (cachedAlsOff?.length) setAlsafiOffers(cachedAlsOff);
+      const cachedShowcase = offlineCache.getAlsafiShowcase();
+      if (cachedShowcase?.length) setAlsafiShowcase(cachedShowcase);
 
       const cachedKanka1 = offlineCache.getKankaScreen1();
       if (cachedKanka1?.length) setKankaScreen1(cachedKanka1);
@@ -697,6 +718,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_menu' }, fetchAlsafiMenu)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_drinks' }, fetchAlsafiDrinks)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_offers' }, fetchAlsafiOffers)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_showcase' }, fetchAlsafiShowcase)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alsafi_settings' }, fetchAlsafiSettings)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen1' }, fetchKankaScreen1)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kanka_screen2' }, fetchKankaScreen2)
@@ -796,10 +818,10 @@ export default function App() {
 
     if (view === 'admin-alsafi') return (
       <AdminPanelAlsafi 
-        devices={alsafiMenu} repairs={alsafiDrinks} offers={alsafiOffers} customLogo={alsafiLogo} customFavicon={alsafiFavicon}
+        devices={alsafiMenu} repairs={alsafiDrinks} offers={alsafiOffers} showcase={alsafiShowcase} customLogo={alsafiLogo} customFavicon={alsafiFavicon}
         tickerText={alsafiTicker} tickerSpeed={alsafiTickerSpeed} fontSize={alsafiFontSize} headerSubtitle={alsafiSubtitle} intervalScreen1={alsafiInt1} 
-        intervalScreen2={alsafiInt2} intervalScreen3={alsafiInt3} adminPin={alsafiPin} cityName={alsafiCity}
-        titleScreen1={alsafiTitle1} titleScreen2={alsafiTitle2} titleScreen3={alsafiTitle3}
+        intervalScreen2={alsafiInt2} intervalScreen3={alsafiInt3} intervalScreen4={alsafiInt4} adminPin={alsafiPin} cityName={alsafiCity}
+        titleScreen1={alsafiTitle1} titleScreen2={alsafiTitle2} titleScreen3={alsafiTitle3} titleScreen4={alsafiTitle4}
         showClock={alsafiShowClock}
         onBack={() => navigateTo('admin-gateway')} onRefresh={fetchAllData} lang={lang} setLang={handleSetLang} t={t} 
         maintenanceMode={alsafiMaint} maintenanceMessage={alsafiMaintMsg}
@@ -849,7 +871,7 @@ export default function App() {
     );
 
     const isHandylandView = ['screen1', 'screen2', 'screen3'].includes(view);
-    const isAlsafiView = ['alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3'].includes(view);
+    const isAlsafiView = ['alsafi-screen1', 'alsafi-screen2', 'alsafi-screen3', 'alsafi-screen4'].includes(view);
     const isKankaView = ['kanka-screen1', 'kanka-screen2', 'kanka-screen3'].includes(view);
     const isHspView = ['hsp-screen1'].includes(view);
 
@@ -934,6 +956,27 @@ export default function App() {
       />
     );
 
+    if (view === 'alsafi-screen4') return (
+      <RestaurantShowcaseScreen 
+        items={alsafiShowcase} 
+        title={alsafiTitle4 || (lang === 'ar' ? 'استعراض الأطباق والمكونات' : 'Showcase & Zutaten')} 
+        icon={Sparkles} 
+        systemName="ALSAFI" 
+        customLogo={alsafiLogo || DEFAULT_LOGO} 
+        tickerText={alsafiTicker} 
+        tickerSpeed={alsafiTickerSpeed} 
+        headerSubtitle={alsafiSubtitle} 
+        slideInterval={alsafiInt4} 
+        cityName={alsafiCity} 
+        onBack={navigateBack} 
+        t={t} 
+        lang={lang} 
+        isOffline={isOffline} 
+        showNewsTicker={false}
+        showHeader={alsafiShowClock}
+      />
+    );
+
     if (view === 'kanka-screen1') return (
       <ImageSlideshowScreen 
         items={kankaScreen1} title={kankaTitle1 || (lang === 'ar' ? 'قائمة الشيشة والمعسل' : 'Shisha & Tabak Menü')} icon={Flame} systemName="KANKA" 
@@ -985,7 +1028,7 @@ export default function App() {
       <MainMenu 
         navigateTo={navigateTo} customLogo={customLogo} lang={lang} 
         setLang={handleSetLang} t={t}
-        alsafiTitle1={alsafiTitle1} alsafiTitle2={alsafiTitle2} alsafiTitle3={alsafiTitle3}
+        alsafiTitle1={alsafiTitle1} alsafiTitle2={alsafiTitle2} alsafiTitle3={alsafiTitle3} alsafiTitle4={alsafiTitle4}
         kankaTitle1={kankaTitle1} kankaTitle2={kankaTitle2} kankaTitle3={kankaTitle3}
         hspTitle1={hspTitle1}
       />

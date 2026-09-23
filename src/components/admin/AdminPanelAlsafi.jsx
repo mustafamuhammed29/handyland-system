@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowLeft, Image as ImageIcon, Video, Save, Globe,
   Layout, Type, Timer, Key, CloudSun, Gauge, Type as TypeIcon, LogOut,
   Utensils, Coffee, Percent, Activity, Bot, Maximize, RefreshCw,
-  Clock, Eye, EyeOff
+  Clock, Eye, EyeOff, Sparkles, Flame, CheckCircle2, Layers, X, Pencil
 } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
@@ -31,9 +31,9 @@ const DEFAULT_ALSAFI_PHRASES_DE = [
 ];
 
 export const AdminPanelAlsafi = ({
-  devices, repairs, offers, customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
-  fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, adminPin, cityName,
-  titleScreen1 = '', titleScreen2 = '', titleScreen3 = '',
+  devices, repairs, offers, showcase = [], customLogo, customFavicon, tickerText, tickerSpeed = DEFAULT_TICKER_SPEED,
+  fontSize = DEFAULT_FONT_SIZE, headerSubtitle, intervalScreen1, intervalScreen2, intervalScreen3, intervalScreen4 = 10, adminPin, cityName,
+  titleScreen1 = '', titleScreen2 = '', titleScreen3 = '', titleScreen4 = '',
   showClock = true,
   maintenanceMessage = '', storeStatusMode = 'active', statusTimerTarget = '', onBack, onRefresh, lang, setLang, t,
   showMascotRobot = true, setShowMascotRobot, customMascotGreeting = '', setCustomMascotGreeting,
@@ -44,6 +44,9 @@ export const AdminPanelAlsafi = ({
 
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [imageDimensions, setImageDimensions] = useState(null);
+  const [autoCrop169, setAutoCrop169] = useState(false);
+  const [isPreviewVideo, setIsPreviewVideo] = useState(false);
 
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -58,9 +61,11 @@ export const AdminPanelAlsafi = ({
   const [editableTimer1, setEditableTimer1] = useState(intervalScreen1 || 6);
   const [editableTimer2, setEditableTimer2] = useState(intervalScreen2 || 6);
   const [editableTimer3, setEditableTimer3] = useState(intervalScreen3 || 6);
+  const [editableTimer4, setEditableTimer4] = useState(intervalScreen4 || 10);
   const [editableTitle1, setEditableTitle1] = useState(titleScreen1 || '');
   const [editableTitle2, setEditableTitle2] = useState(titleScreen2 || '');
   const [editableTitle3, setEditableTitle3] = useState(titleScreen3 || '');
+  const [editableTitle4, setEditableTitle4] = useState(titleScreen4 || '');
   const [editablePin, setEditablePin] = useState(adminPin || DEFAULT_PIN);
   const [editableCity, setEditableCity] = useState(cityName || DEFAULT_CITY);
   const [editableShowClock, setEditableShowClock] = useState(showClock !== false);
@@ -90,9 +95,155 @@ export const AdminPanelAlsafi = ({
   useEffect(() => { setEditableTimer1(intervalScreen1 || 6); }, [intervalScreen1]);
   useEffect(() => { setEditableTimer2(intervalScreen2 || 6); }, [intervalScreen2]);
   useEffect(() => { setEditableTimer3(intervalScreen3 || 6); }, [intervalScreen3]);
+  useEffect(() => { setEditableTimer4(intervalScreen4 || 10); }, [intervalScreen4]);
   useEffect(() => { setEditableTitle1(titleScreen1 || ''); }, [titleScreen1]);
   useEffect(() => { setEditableTitle2(titleScreen2 || ''); }, [titleScreen2]);
   useEffect(() => { setEditableTitle3(titleScreen3 || ''); }, [titleScreen3]);
+  useEffect(() => { setEditableTitle4(titleScreen4 || ''); }, [titleScreen4]);
+
+  // حالة شاشة استعراض الأطباق والمكونات
+  const BADGE_PRESETS_AR = ['الأكثر طلباً ⭐', 'طبق اليوم 👨‍🍳', 'حار 🌶️', 'جديد ✨', 'مشوي على الفحم 🔥', 'نباتي 🌱', 'منزلي 🥣'];
+  const BADGE_PRESETS_DE = ['Bestseller ⭐', 'Tagesgericht 👨‍🍳', 'Scharf 🌶️', 'Neu ✨', 'Vom Grill 🔥', 'Vegetarisch 🌱', 'Hausgemacht 🥣'];
+  const currentBadgePresets = lang === 'ar' ? BADGE_PRESETS_AR : BADGE_PRESETS_DE;
+
+  const [showcaseImage, setShowcaseImage] = useState(null);
+  const [showcasePreview, setShowcasePreview] = useState(null);
+  const [showcaseTitle, setShowcaseTitle] = useState('');
+  const [showcasePrice, setShowcasePrice] = useState('');
+  const [showcaseBadge, setShowcaseBadge] = useState(() => (lang === 'ar' ? 'الأكثر طلباً ⭐' : 'Bestseller ⭐'));
+  const [showcaseDescription, setShowcaseDescription] = useState('');
+  const [showcaseCalories, setShowcaseCalories] = useState('');
+  const [showcaseIngredients, setShowcaseIngredients] = useState([]);
+  const [ingredientInput, setIngredientInput] = useState('');
+  const [editingShowcaseId, setEditingShowcaseId] = useState(null);
+
+  // تحديث الشارة الافتراضية تلقائياً عند تغيير اللغة إن كانت الشارة افتراضية
+  useEffect(() => {
+    if (!showcaseBadge || showcaseBadge === 'الأكثر طلباً ⭐' || showcaseBadge === 'Bestseller ⭐') {
+      setShowcaseBadge(lang === 'ar' ? 'الأكثر طلباً ⭐' : 'Bestseller ⭐');
+    }
+  }, [lang]);
+
+  const handleStartEditShowcase = (item) => {
+    setEditingShowcaseId(item.id);
+    setShowcaseTitle(item.title || '');
+    setShowcasePrice(item.price || '');
+    setShowcaseBadge(item.badge || (lang === 'ar' ? 'الأكثر طلباً ⭐' : 'Bestseller ⭐'));
+    setShowcaseDescription(item.description || '');
+    setShowcaseCalories(item.calories || '');
+
+    let ings = [];
+    if (Array.isArray(item.ingredients)) ings = item.ingredients;
+    else if (typeof item.ingredients === 'string') {
+      try { ings = JSON.parse(item.ingredients); } catch (e) { ings = item.ingredients.split(/[,،]+/).map(s => s.trim()).filter(Boolean); }
+    }
+    setShowcaseIngredients(ings);
+    setShowcasePreview(getMediaSrc(item.imageData));
+    setShowcaseImage(null);
+
+    const formEl = document.getElementById('showcase-form-card');
+    if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleCancelEditShowcase = () => {
+    setEditingShowcaseId(null);
+    setShowcaseImage(null);
+    setShowcasePreview(null);
+    setShowcaseTitle('');
+    setShowcasePrice('');
+    setShowcaseBadge(lang === 'ar' ? 'الأكثر طلباً ⭐' : 'Bestseller ⭐');
+    setShowcaseDescription('');
+    setShowcaseCalories('');
+    setShowcaseIngredients([]);
+    setIngredientInput('');
+    const inputEl = document.getElementById('showcasePosterUpload');
+    if (inputEl) inputEl.value = '';
+  };
+
+  const handleAddIngredient = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = ingredientInput.trim();
+    if (!trimmed) return;
+    if (!showcaseIngredients.includes(trimmed)) {
+      setShowcaseIngredients([...showcaseIngredients, trimmed]);
+    }
+    setIngredientInput('');
+  };
+
+  const handleRemoveIngredient = (indexToRemove) => {
+    setShowcaseIngredients(showcaseIngredients.filter((_, i) => i !== indexToRemove));
+  };
+
+  const handleShowcaseImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setShowcaseImage(file);
+    const previewUrl = URL.createObjectURL(file);
+    setShowcasePreview(previewUrl);
+  };
+
+  const handleUploadShowcase = async (e) => {
+    e.preventDefault();
+    if (!editingShowcaseId && !showcaseImage) {
+      alert(lang === 'ar' ? 'يرجى اختيار صورة للطبق أولاً' : 'Bitte wählen Sie zuerst ein Bild für das Gericht');
+      return;
+    }
+    if (!showcaseTitle.trim()) {
+      alert(lang === 'ar' ? 'يرجى كتابة اسم الوجبة' : 'Bitte geben Sie den Namen des Gerichts ein');
+      return;
+    }
+    setLoading(true);
+    try {
+      let base64Image = null;
+      if (showcaseImage) {
+        const compressedFile = await compressImage(showcaseImage, 1920, 1080, 0.85, false);
+        base64Image = await convertToBase64(compressedFile);
+      }
+
+      if (editingShowcaseId) {
+        const updatePayload = {
+          title: showcaseTitle.trim(),
+          price: showcasePrice.trim(),
+          badge: showcaseBadge.trim(),
+          description: showcaseDescription.trim(),
+          calories: showcaseCalories.trim(),
+          ingredients: showcaseIngredients
+        };
+        if (base64Image) {
+          updatePayload.imageData = base64Image;
+        }
+
+        const { error } = await supabase
+          .from('alsafi_showcase')
+          .update(updatePayload)
+          .eq('id', editingShowcaseId);
+
+        if (error) throw error;
+        alert(lang === 'ar' ? 'تم حفظ تعديلات الطبق بنجاح! ✏️🎉' : 'Gericht erfolgreich aktualisiert! ✏️🎉');
+      } else {
+        const newRow = {
+          imageData: base64Image,
+          title: showcaseTitle.trim(),
+          price: showcasePrice.trim(),
+          badge: showcaseBadge.trim(),
+          description: showcaseDescription.trim(),
+          calories: showcaseCalories.trim(),
+          ingredients: showcaseIngredients
+        };
+
+        const { error } = await supabase.from('alsafi_showcase').insert([newRow]);
+        if (error) throw error;
+        alert(lang === 'ar' ? 'تمت إضافة طبق العرض الفاخر بنجاح! 🎉' : 'Gericht erfolgreich hinzugefügt!');
+      }
+
+      handleCancelEditShowcase();
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert(t.uploadError || 'حدث خطأ أثناء الحفظ');
+    }
+    setLoading(false);
+  };
   useEffect(() => { setEditablePin(adminPin || DEFAULT_PIN); }, [adminPin]);
   useEffect(() => { setEditableCity(cityName || DEFAULT_CITY); }, [cityName]);
   useEffect(() => { setEditableShowClock(showClock !== false); }, [showClock]);
@@ -439,7 +590,8 @@ export const AdminPanelAlsafi = ({
         id: 'config',
         intervalScreen1: parseInt(editableTimer1) || 6,
         intervalScreen2: parseInt(editableTimer2) || 6,
-        intervalScreen3: parseInt(editableTimer3) || 6
+        intervalScreen3: parseInt(editableTimer3) || 6,
+        intervalScreen4: parseInt(editableTimer4) || 10
       });
       if (error) throw error;
       alert(t.saveSuccess);
@@ -456,7 +608,8 @@ export const AdminPanelAlsafi = ({
         id: 'config',
         titleScreen1: editableTitle1,
         titleScreen2: editableTitle2,
-        titleScreen3: editableTitle3
+        titleScreen3: editableTitle3,
+        titleScreen4: editableTitle4
       });
       if (error) throw error;
       alert(t.saveSuccess);
@@ -476,11 +629,13 @@ export const AdminPanelAlsafi = ({
         id: 'config',
         titleScreen1: '',
         titleScreen2: '',
-        titleScreen3: ''
+        titleScreen3: '',
+        titleScreen4: ''
       });
       setEditableTitle1('');
       setEditableTitle2('');
       setEditableTitle3('');
+      setEditableTitle4('');
       alert(t.resetSuccess);
       onRefresh();
     } catch (err) { console.error(err); }
@@ -637,6 +792,7 @@ export const AdminPanelAlsafi = ({
     { id: 'menu', name: editableTitle1 || titleScreen1 || (lang === 'ar' ? 'المنيو الرئيسي' : 'Hauptmenü'), icon: Utensils, table: 'alsafi_menu', items: devices || [] },
     { id: 'drinks', name: editableTitle2 || titleScreen2 || (lang === 'ar' ? 'المشروبات' : 'Getränke'), icon: Coffee, table: 'alsafi_drinks', items: repairs || [] },
     { id: 'offers', name: editableTitle3 || titleScreen3 || (lang === 'ar' ? 'العروض' : 'Sonderangebote'), icon: Percent, table: 'alsafi_offers', items: offers || [] },
+    { id: 'showcase', name: editableTitle4 || titleScreen4 || (lang === 'ar' ? 'استعراض الأطباق' : 'Showcase'), icon: Sparkles, table: 'alsafi_showcase', items: showcase || [] },
     { id: 'settings', name: t.settingsTab, icon: Settings, table: null, items: [] }
   ];
 
@@ -707,7 +863,393 @@ export const AdminPanelAlsafi = ({
         </div>
 
         <div className="p-8 md:p-10">
-          {activeTab !== 'settings' ? (
+          {activeTab === 'showcase' ? (
+            /* تبويب إدارة شاشة استعراض الأطباق والمكونات الفاخرة */
+            <div className="space-y-12">
+              <div className="grid lg:grid-cols-12 gap-8">
+
+                {/* نموذج رفع أو تعديل طبق مع تفاصيله ومكوناته */}
+                <div id="showcase-form-card" className={`lg:col-span-6 p-8 rounded-3xl border-2 shadow-md transition-all ${editingShowcaseId ? 'bg-gradient-to-br from-blue-500/10 via-white to-blue-500/5 border-blue-500 ring-4 ring-blue-500/20' : 'bg-gradient-to-br from-amber-500/5 via-white to-amber-500/10 border-amber-500/30'}`}>
+                  
+                  {editingShowcaseId && (
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3.5 rounded-2xl flex items-center justify-between shadow-lg mb-5 animate-pulse">
+                      <div className="flex items-center gap-2 font-black text-sm">
+                        <Pencil className="w-5 h-5 text-yellow-300" />
+                        <span>
+                          {lang === 'ar' ? `جاري تعديل الطبق: ${showcaseTitle || ''}` : `Gericht wird bearbeitet: ${showcaseTitle || ''}`}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditShowcase}
+                        className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer"
+                      >
+                        ✕ {lang === 'ar' ? 'إلغاء التعديل' : 'Abbrechen'}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 border-b border-amber-500/20 pb-4 mb-6">
+                    <div className={`p-3 rounded-2xl shadow-lg ${editingShowcaseId ? 'bg-blue-600 text-white' : 'bg-amber-500 text-black'}`}>
+                      {editingShowcaseId ? <Pencil className="w-6 h-6 animate-bounce" /> : <Sparkles className="w-6 h-6 animate-pulse" />}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black text-gray-900">
+                        {editingShowcaseId 
+                          ? (lang === 'ar' ? 'تعديل بيانات طبق العرض الفاخر' : 'Showcase-Gericht bearbeiten')
+                          : (lang === 'ar' ? 'إضافة طبق جديد لشاشة العرض الفاخرة' : 'Neues Gericht zum Showcase hinzufügen')}
+                      </h3>
+                      <p className="text-xs text-gray-500 font-bold mt-0.5">
+                        {editingShowcaseId
+                          ? (lang === 'ar' ? 'عدّل الاسم، السعر، الشارة، أو المكونات واضغط حفظ' : 'Passen Sie Daten an und speichern Sie die Änderungen')
+                          : (lang === 'ar' ? 'ارفع صورة الطبق وأدخل اسمه ومكوناته المتسلسلة' : 'Laden Sie ein Foto hoch und tragen Sie Zutaten ein')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleUploadShowcase} className="space-y-5">
+                    
+                    {/* حقل رفع الصورة */}
+                    <div>
+                      <label className="block text-sm font-black text-gray-800 mb-2">
+                        {lang === 'ar' ? 'صورة الطبق عالية الدقة:' : 'Gerichtsbild (HD):'} {editingShowcaseId ? (lang === 'ar' ? '(اختياري عند التعديل)' : '(optional bei Bearbeitung)') : '*'}
+                      </label>
+                      <div className="border-3 border-dashed border-amber-500/60 bg-amber-50/60 p-6 rounded-2xl text-center relative hover:bg-amber-100/50 transition cursor-pointer">
+                        <input
+                          type="file"
+                          id="showcasePosterUpload"
+                          accept="image/*"
+                          onChange={handleShowcaseImageSelect}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        {!showcasePreview ? (
+                          <div className="flex flex-col items-center pointer-events-none py-4">
+                            <ImageIcon className="w-12 h-12 text-amber-600 mb-2" />
+                            <p className="font-black text-gray-800 text-base">{lang === 'ar' ? 'انقر لاختيار صورة الوجبة' : 'Klicken, um Bild auszuwählen'}</p>
+                            <p className="text-xs text-gray-500 mt-1">{lang === 'ar' ? 'يفضل صورة واضحة ومشهية بدقة Full HD أو 4K' : 'Querformat empfohlen'}</p>
+                          </div>
+                        ) : (
+                          <div className="relative z-20 pointer-events-auto">
+                            <img src={showcasePreview} alt="Preview" className="h-44 mx-auto rounded-xl shadow-lg object-cover w-full max-w-sm" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowcaseImage(null);
+                                setShowcasePreview(null);
+                                const el = document.getElementById('showcasePosterUpload');
+                                if (el) el.value = '';
+                              }}
+                              className="absolute -top-3 -right-3 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg cursor-pointer"
+                              title={lang === 'ar' ? 'إلغاء الصورة' : 'Bild entfernen'}
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* اسم الوجبة والسعر */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-black text-gray-800 mb-1">
+                          {lang === 'ar' ? 'اسم الطبق / الوجبة:' : 'Name des Gerichts:'} *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder={lang === 'ar' ? 'مثال: برجر الصافي رويال ديلوكس' : 'z.B. Alsafi Royal Burger'}
+                          value={showcaseTitle}
+                          onChange={(e) => setShowcaseTitle(e.target.value)}
+                          className="w-full p-3.5 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-base font-bold text-gray-900 bg-white shadow-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-black text-gray-800 mb-1">
+                          {lang === 'ar' ? 'السعر (مع العملة):' : 'Preis (mit Währung):'}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={lang === 'ar' ? 'مثال: 12.90 €' : 'z.B. 12.90 €'}
+                          value={showcasePrice}
+                          onChange={(e) => setShowcasePrice(e.target.value)}
+                          className="w-full p-3.5 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-base font-bold text-gray-900 bg-white shadow-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* الشارة الترويجية والسعرات الحرارية */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-black text-gray-800 mb-1">
+                          {lang === 'ar' ? 'شارة التميز الترويجية:' : 'Werbe-Badge:'}
+                        </label>
+                        <div className="space-y-1.5">
+                          <input
+                            type="text"
+                            placeholder={lang === 'ar' ? 'مثال: الأكثر طلباً ⭐ أو حار 🌶️' : 'z.B. Bestseller ⭐ oder Scharf 🌶️'}
+                            value={showcaseBadge}
+                            onChange={(e) => setShowcaseBadge(e.target.value)}
+                            className="w-full p-3 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-sm font-bold text-gray-900 bg-white"
+                          />
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {currentBadgePresets.map(preset => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setShowcaseBadge(preset)}
+                                className={`text-xs px-2.5 py-1 rounded-lg border font-bold transition cursor-pointer ${showcaseBadge === preset ? 'bg-amber-500 text-black border-amber-600 shadow-sm' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200'}`}
+                              >
+                                {preset}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-black text-gray-800 mb-1">
+                          {lang === 'ar' ? 'السعرات / وقت التحضير (اختياري):' : 'Kalorien / Zubereitungszeit (optional):'}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={lang === 'ar' ? 'مثال: 🔥 650 kcal أو ⏱️ 10 دقائق' : 'z.B. 🔥 650 kcal oder ⏱️ 10 Min.'}
+                          value={showcaseCalories}
+                          onChange={(e) => setShowcaseCalories(e.target.value)}
+                          className="w-full p-3 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-sm font-bold text-gray-900 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* الوصف القصير */}
+                    <div>
+                      <label className="block text-sm font-black text-gray-800 mb-1">
+                        {lang === 'ar' ? 'وصف الوجبة التسويقي المشهي:' : 'Kurze Beschreibung:'}
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder={lang === 'ar' ? 'شريحة لحم بلاك أنجوس مشوية على اللهب مع جبنة الشيدر وصوص الصافي الخاص...' : 'Saftiges Black-Angus-Rindfleisch vom Grill mit geschmolzenem Cheddar und Spezialsauce...'}
+                        value={showcaseDescription}
+                        onChange={(e) => setShowcaseDescription(e.target.value)}
+                        className="w-full p-3 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-sm font-bold text-gray-900 bg-white"
+                      />
+                    </div>
+
+                    {/* المكونات: إدخال متسلسل سلس وسهل مع كبسولات قابلة للحذف */}
+                    <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/30 space-y-3">
+                      <label className="block text-sm font-black text-gray-900 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-amber-600" />
+                          {lang === 'ar' ? 'المكونات (تظهر متسلسلة على الشاشة):' : 'Zutaten (werden nacheinander animiert):'}
+                        </span>
+                        <span className="text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold">
+                          {showcaseIngredients.length} {lang === 'ar' ? 'مكونات مضافة' : 'Zutaten hinzugefügt'}
+                        </span>
+                      </label>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder={lang === 'ar' ? 'اكتب المكون واضغط إضافة (مثلاً: جبنة شيدر ذائبة)' : 'Zutat eingeben (z.B. Geschmolzener Cheddar-Käse)'}
+                          value={ingredientInput}
+                          onChange={(e) => setIngredientInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddIngredient(e); } }}
+                          className="flex-1 p-2.5 border-2 border-amber-300 rounded-xl text-sm font-bold text-gray-900 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddIngredient}
+                          className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-black text-sm rounded-xl transition cursor-pointer shadow"
+                        >
+                          + {lang === 'ar' ? 'إضافة' : 'Hinzufügen'}
+                        </button>
+                      </div>
+
+                      {showcaseIngredients.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 pt-1 max-h-36 overflow-y-auto">
+                          {showcaseIngredients.map((ing, i) => (
+                            <span 
+                              key={i} 
+                              className="inline-flex items-center gap-1.5 bg-white border border-amber-400 text-amber-950 font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
+                              <span>{ing}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveIngredient(i)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0.5 rounded-full cursor-pointer ml-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-amber-800/80 italic font-semibold">
+                          💡 {lang === 'ar' ? 'أضف المكونات مثل: لحم طازج، بصل مكرمل، صوص خاص... لتظهر واحدة تلو الأخرى بحركة متحركة سينمائية على التلفاز!' : 'Fügen Sie Zutaten wie frisches Fleisch, karamellisierte Zwiebeln oder Spezialsauce hinzu, um sie animiert auf dem TV anzuzeigen!'}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* زر الحفظ النهائي */}
+                    <button
+                      type="submit"
+                      disabled={loading || (!editingShowcaseId && !showcaseImage) || !showcaseTitle.trim()}
+                      className={`w-full py-4 rounded-2xl text-xl font-black flex justify-center items-center gap-2 shadow-xl transition-transform active:scale-95 border cursor-pointer ${
+                        loading || (!editingShowcaseId && !showcaseImage) || !showcaseTitle.trim()
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
+                          : editingShowcaseId
+                            ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white hover:opacity-95 border-blue-400'
+                            : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-black hover:opacity-95 border-amber-500/50'
+                      }`}
+                    >
+                      {loading ? t.uploading : editingShowcaseId ? (
+                        <><Save className="w-6 h-6 text-yellow-300" /> {lang === 'ar' ? 'حفظ تعديلات الطبق' : 'Änderungen speichern'}</>
+                      ) : (
+                        <><Sparkles className="w-6 h-6" /> {lang === 'ar' ? 'إضافة هذا الطبق لشاشة العرض' : 'Gericht zum TV-Showcase hinzufügen'}</>
+                      )}
+                    </button>
+
+                  </form>
+                </div>
+
+                {/* قائمة الأطباق المرفوعة حالياً في شاشة العرض الفاخرة */}
+                <div className="lg:col-span-6 space-y-6">
+                  
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-4">
+                    <div>
+                      <h3 className="text-2xl font-black text-gray-800 flex items-center gap-2">
+                        <Utensils className="w-6 h-6 text-amber-500" />
+                        <span>{lang === 'ar' ? 'أطباق شاشة العرض الحالية' : 'Aktuelle Showcase-Gerichte'}</span>
+                        <span className="text-sm font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+                          ({showcase.length})
+                        </span>
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {lang === 'ar' ? 'تُعرض هذه الأطباق بالتتابع على شاشة التلفاز مع مكوناتها' : 'Werden nacheinander auf dem TV präsentiert'}
+                      </p>
+                    </div>
+
+                    {showcase.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAll('alsafi_showcase')}
+                        className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow flex items-center gap-2 cursor-pointer border border-red-500"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {lang === 'ar' ? 'حذف جميع الأطباق' : 'Alle Gerichte löschen'}
+                      </button>
+                    )}
+                  </div>
+
+                  {showcase.length === 0 ? (
+                    <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-300 p-8">
+                      <Sparkles className="w-16 h-16 text-amber-400 mx-auto mb-3 opacity-60" />
+                      <p className="text-gray-600 font-bold text-lg mb-1">
+                        {lang === 'ar' ? 'لا توجد أطباق مضافة في شاشة العرض حتى الآن' : 'Noch keine Gerichte im Showcase vorhanden'}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {lang === 'ar' ? 'استخدم النموذج على اليسار لإضافة أول طبق ومكوناته الفاخرة!' : 'Nutzen Sie das Formular links, um das erste Gericht hinzuzufügen.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[750px] overflow-y-auto pr-1">
+                      {showcase.map((item, index) => {
+                        const mediaSrc = getMediaSrc(item.imageData);
+                        let ingredients = [];
+                        if (Array.isArray(item.ingredients)) ingredients = item.ingredients;
+                        else if (typeof item.ingredients === 'string') {
+                          try { ingredients = JSON.parse(item.ingredients); } catch (e) { ingredients = item.ingredients.split(/[,،]+/).map(s => s.trim()).filter(Boolean); }
+                        }
+
+                        return (
+                          <div 
+                            key={item.id} 
+                            className={`bg-white border-2 rounded-3xl p-4 shadow-sm hover:shadow-lg transition flex flex-col justify-between relative group ${
+                              editingShowcaseId === item.id ? 'border-blue-500 ring-4 ring-blue-500/30' : 'border-gray-200 hover:border-amber-400'
+                            }`}
+                          >
+                            <div className="absolute top-3 left-3 flex items-center gap-1.5 z-20">
+                              <button
+                                type="button"
+                                onClick={() => handleDelete('alsafi_showcase', item.id)}
+                                className="text-white bg-red-600 hover:bg-red-700 active:scale-95 p-2.5 rounded-xl transition shadow-md cursor-pointer"
+                                title={lang === 'ar' ? 'حذف هذا الطبق' : 'Gericht löschen'}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditShowcase(item)}
+                                className={`text-white active:scale-95 p-2.5 rounded-xl transition shadow-md cursor-pointer flex items-center gap-1 ${
+                                  editingShowcaseId === item.id ? 'bg-amber-500 ring-2 ring-white shadow-amber-500/50' : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                                title={lang === 'ar' ? 'تعديل هذا الطبق' : 'Gericht bearbeiten'}
+                              >
+                                <Pencil className="w-4 h-4" />
+                                <span className="text-xs font-black hidden group-hover:inline pr-1">
+                                  {lang === 'ar' ? 'تعديل' : 'Bearbeiten'}
+                                </span>
+                              </button>
+                            </div>
+
+                            {/* صورة الوجبة والشارة */}
+                            <div className="relative h-44 rounded-2xl overflow-hidden bg-gray-100 mb-3">
+                              <img src={mediaSrc} alt={item.title} className="w-full h-full object-cover" />
+                              {item.badge && (
+                                <span className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">
+                                  {item.badge}
+                                </span>
+                              )}
+                              {item.price && (
+                                <span className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md text-amber-400 font-black text-sm px-3 py-1 rounded-xl shadow border border-amber-500/40">
+                                  {item.price}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* التفاصيل والمكونات */}
+                            <div className="space-y-2">
+                              <h4 className="font-black text-lg text-gray-900 leading-snug line-clamp-1">
+                                {item.title || (lang === 'ar' ? 'طبق الصافي' : 'Gericht')}
+                              </h4>
+
+                              {item.description && (
+                                <p className="text-xs text-gray-500 line-clamp-2">
+                                  {item.description}
+                                </p>
+                              )}
+
+                              {ingredients.length > 0 && (
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                  {ingredients.slice(0, 4).map((ing, i) => (
+                                    <span key={i} className="text-[11px] bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-md border border-amber-200">
+                                      • {ing}
+                                    </span>
+                                  ))}
+                                  {ingredients.length > 4 && (
+                                    <span className="text-[10px] text-gray-400 font-bold self-center">
+                                      +{ingredients.length - 4}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+            </div>
+          ) : activeTab !== 'settings' ? (
             <div className="space-y-12">
               <div className="grid lg:grid-cols-5 gap-12">
 
@@ -1187,6 +1729,23 @@ export const AdminPanelAlsafi = ({
                       </div>
                     </div>
 
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-600" /> {lang === 'ar' ? 'شاشة 4 (استعراض الأطباق):' : 'Bildschirm 4 (Showcase):'}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={4}
+                          max={120}
+                          value={editableTimer4}
+                          onChange={(e) => setEditableTimer4(e.target.value)}
+                          className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-2xl font-black text-center text-gray-900 bg-yellow-50/50"
+                        />
+                        <span className="font-bold text-gray-500">{lang === 'ar' ? 'ثانية' : 'Sek'}</span>
+                      </div>
+                    </div>
+
                   </div>
 
                   <button type="submit" className="w-full py-4 bg-black text-yellow-400 font-black text-xl rounded-2xl hover:bg-gray-900 shadow-lg flex justify-center items-center gap-2 cursor-pointer">
@@ -1245,13 +1804,26 @@ export const AdminPanelAlsafi = ({
                       />
                     </div>
 
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-600" /> {lang === 'ar' ? 'عنوان شاشة 4 (استعراض الأطباق)' : 'Titel Bildschirm 4 (Showcase)'}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={lang === 'ar' ? 'استعراض الأطباق والمكونات (افتراضي)' : 'Gerichte-Showcase (Standard)'}
+                        value={editableTitle4}
+                        onChange={(e) => setEditableTitle4(e.target.value)}
+                        className="w-full p-3 border-2 border-yellow-500/60 rounded-xl text-lg font-bold text-gray-900 bg-white"
+                      />
+                    </div>
+
                   </div>
 
                   <div className="flex gap-4">
                     <button type="submit" className="flex-1 py-4 bg-black text-yellow-400 font-black text-xl rounded-2xl hover:bg-gray-900 shadow-lg flex justify-center items-center gap-2 cursor-pointer">
                       <Save className="w-6 h-6" /> {t.saveScreenTitlesBtn}
                     </button>
-                    {(editableTitle1 || editableTitle2 || editableTitle3) && (
+                    {(editableTitle1 || editableTitle2 || editableTitle3 || editableTitle4) && (
                       <button type="button" onClick={handleResetScreenTitles} className="px-6 py-4 bg-gray-200 text-gray-700 font-bold text-sm rounded-2xl hover:bg-gray-300 transition cursor-pointer">
                         {t.resetScreenTitlesBtn}
                       </button>

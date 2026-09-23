@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent, Flame, Scissors } from 'lucide-react';
+import { Smartphone, Wrench, Tag, Settings, Lock, Globe, Utensils, Coffee, Percent, Flame, Scissors, Sparkles } from 'lucide-react';
 import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 
@@ -8,7 +8,7 @@ const goldTextGradient = "text-transparent bg-clip-text bg-gradient-to-r from-ye
 export const MainMenu = ({ 
   navigateTo, customLogo, lang, setLang, t, 
   showPinModal, setShowPinModal, handleVerifyPin,
-  alsafiTitle1, alsafiTitle2, alsafiTitle3,
+  alsafiTitle1, alsafiTitle2, alsafiTitle3, alsafiTitle4,
   kankaTitle1, kankaTitle2, kankaTitle3,
   hspTitle1
 }) => {
@@ -86,7 +86,7 @@ export const MainMenu = ({
             <Utensils className="w-8 h-8" />
             {lang === 'ar' ? 'شاشات عرض المطعم (Alsafi)' : 'Alsafi Restaurant Bildschirme'}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <button onClick={() => navigateTo('alsafi-screen1')} className="group bg-black/90 hover:bg-black border-2 border-orange-500/40 hover:border-orange-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
               <div className="bg-orange-500/10 group-hover:bg-orange-500 p-6 rounded-full mb-6 transition-colors border border-orange-500/20 shadow-inner">
                  <Utensils className="w-12 h-12 text-orange-400 group-hover:text-black" />
@@ -109,6 +109,14 @@ export const MainMenu = ({
               </div>
               <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{alsafiTitle3 ? alsafiTitle3 : (lang === 'ar' ? 'عروض المطعم' : 'Restaurant Angebote')}</h2>
               <p className="text-orange-400 font-bold tracking-wider uppercase text-sm lg:text-base">{alsafiTitle3 || (lang === 'ar' ? 'خصومات وعروض مميزة' : 'Sonderangebote')}</p>
+            </button>
+
+            <button onClick={() => navigateTo('alsafi-screen4')} className="group bg-black/90 hover:bg-black border-2 border-amber-500/40 hover:border-amber-400 rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-2xl backdrop-blur-xl cursor-pointer">
+              <div className="bg-amber-500/10 group-hover:bg-amber-500 p-6 rounded-full mb-6 transition-colors border border-amber-500/20 shadow-inner">
+                <Sparkles className="w-12 h-12 text-amber-400 group-hover:text-black" />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-black mb-2 text-white leading-tight px-2 break-words w-full text-center">{alsafiTitle4 || (lang === 'ar' ? 'استعراض الأطباق والمكونات' : 'Showcase & Zutaten')}</h2>
+              <p className="text-amber-400 font-bold tracking-wider uppercase text-sm lg:text-base">{lang === 'ar' ? 'عرض فخم وسينمائي' : 'Premium TV Showcase'}</p>
             </button>
           </div>
         </div>

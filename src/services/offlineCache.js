@@ -11,6 +11,7 @@ const CACHE_KEYS = {
   ALSAFI_MENU: 'alsafi_cache_menu',
   ALSAFI_DRINKS: 'alsafi_cache_drinks',
   ALSAFI_OFFERS: 'alsafi_cache_offers',
+  ALSAFI_SHOWCASE: 'alsafi_cache_showcase',
   ALSAFI_SETTINGS: 'alsafi_cache_settings',
   KANKA_SCREEN1: 'kanka_cache_screen1',
   KANKA_SCREEN2: 'kanka_cache_screen2',
@@ -141,6 +142,9 @@ export const offlineCache = {
 
   saveAlsafiOffers: (data) => persistItem(CACHE_KEYS.ALSAFI_OFFERS, data),
   getAlsafiOffers: () => memoryCache.get(CACHE_KEYS.ALSAFI_OFFERS) || [],
+
+  saveAlsafiShowcase: (data) => persistItem(CACHE_KEYS.ALSAFI_SHOWCASE, data),
+  getAlsafiShowcase: () => memoryCache.get(CACHE_KEYS.ALSAFI_SHOWCASE) || [],
 
   saveAlsafiSettings: (data) => persistItem(CACHE_KEYS.ALSAFI_SETTINGS, data),
   getAlsafiSettings: () => memoryCache.get(CACHE_KEYS.ALSAFI_SETTINGS) || null,
