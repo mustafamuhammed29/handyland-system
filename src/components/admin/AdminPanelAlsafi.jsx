@@ -10,6 +10,7 @@ import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
+import { uploadToCloudinary } from '../../utils/cloudinary';
 import {
   DEFAULT_TICKER, DEFAULT_SUBTITLE, DEFAULT_PIN,
   DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
@@ -194,10 +195,10 @@ export const AdminPanelAlsafi = ({
     }
     setLoading(true);
     try {
-      let base64Image = null;
+      let imageUrl = null;
       if (showcaseImage) {
         const compressedFile = await compressImage(showcaseImage, 1920, 1080, 0.85, false);
-        base64Image = await convertToBase64(compressedFile);
+        imageUrl = await uploadToCloudinary(compressedFile);
       }
 
       if (editingShowcaseId) {
@@ -209,8 +210,8 @@ export const AdminPanelAlsafi = ({
           calories: showcaseCalories.trim(),
           ingredients: showcaseIngredients
         };
-        if (base64Image) {
-          updatePayload.imageData = base64Image;
+        if (imageUrl) {
+          updatePayload.imageData = imageUrl;
         }
 
         const { error } = await supabase
@@ -222,7 +223,7 @@ export const AdminPanelAlsafi = ({
         alert(lang === 'ar' ? 'تم حفظ تعديلات الطبق بنجاح! ✏️🎉' : 'Gericht erfolgreich aktualisiert! ✏️🎉');
       } else {
         const newRow = {
-          imageData: base64Image,
+          imageData: imageUrl,
           title: showcaseTitle.trim(),
           price: showcasePrice.trim(),
           badge: showcaseBadge.trim(),
@@ -412,8 +413,8 @@ export const AdminPanelAlsafi = ({
     try {
       const uploadPromises = imageFiles.map(async (file) => {
         const compressedFile = await compressImage(file, 1920, 1080, 0.82, autoCrop169);
-        const base64Image = await convertToBase64(compressedFile);
-        return { imageData: base64Image };
+        const imageUrl = await uploadToCloudinary(compressedFile);
+        return { imageData: imageUrl };
       });
 
       const newRows = await Promise.all(uploadPromises);
@@ -443,8 +444,8 @@ export const AdminPanelAlsafi = ({
     setLoading(true);
     try {
       const compressedLogo = await compressImage(logoFile, 500, 500, 0.85);
-      const base64Logo = await convertToBase64(compressedLogo);
-      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', logoData: base64Logo });
+      const logoUrl = await uploadToCloudinary(compressedLogo);
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', logoData: logoUrl });
       if (error) throw error;
       setLogoFile(null);
       alert(t.saveSuccess);
@@ -472,8 +473,8 @@ export const AdminPanelAlsafi = ({
     setLoading(true);
     try {
       const compressedFavicon = await compressImage(faviconFile, 200, 200, 0.9);
-      const base64Favicon = await convertToBase64(compressedFavicon);
-      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', faviconData: base64Favicon });
+      const faviconUrl = await uploadToCloudinary(compressedFavicon);
+      const { error } = await supabase.from('alsafi_settings').upsert({ id: 'config', faviconData: faviconUrl });
       if (error) throw error;
       setFaviconFile(null);
       alert(t.saveSuccess);

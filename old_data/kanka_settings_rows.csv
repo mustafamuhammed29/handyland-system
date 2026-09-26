@@ -1,0 +1,2 @@
+id,logoData,faviconData,tickerText,headerSubtitle,intervalScreen1,intervalScreen2,intervalScreen3,titleScreen1,titleScreen2,titleScreen3,adminPin,cityName,tickerSpeed,fontSize,showClock,smokeIntensity,maintenanceMode,maintenanceMessage,storeStatusMode,statusTimerTarget,forceReload,created_at
+config,,,,,6,6,6,,,,0000,Heidelberg,25,smoke_20,false,50,false,,active,,0,2026-09-11 21:37:18.50829+00

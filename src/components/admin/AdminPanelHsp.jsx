@@ -11,6 +11,7 @@ import { TVScreenControls } from '../common/TVScreenControls';
 import { LanguageToggle } from '../common/LanguageToggle';
 import { supabase } from '../../services/supabase';
 import { convertToBase64, isVideoMedia, getMediaSrc, compressImage } from '../../utils/mediaHelpers';
+import { uploadToCloudinary } from '../../utils/cloudinary';
 import {
   DEFAULT_PIN, DEFAULT_CITY, DEFAULT_TICKER_SPEED, DEFAULT_FONT_SIZE,
   HSP_DEFAULT_TICKER, HSP_DEFAULT_SUBTITLE, DEFAULT_LOGO, HSP_DEFAULT_LOGO
@@ -138,8 +139,8 @@ export const AdminPanelHsp = ({
     try {
       const uploadPromises = imageFiles.map(async (file) => {
         const compressedFile = await compressImage(file, 1920, 1080, 0.82, autoCrop169);
-        const base64Image = await convertToBase64(compressedFile);
-        return { imageData: base64Image };
+        const imageUrl = await uploadToCloudinary(compressedFile);
+        return { imageData: imageUrl };
       });
 
       const newRows = await Promise.all(uploadPromises);
@@ -197,8 +198,8 @@ export const AdminPanelHsp = ({
     setLoading(true);
     try {
       const compressed = await compressImage(logoFile, 500, 500, 0.85);
-      const base64 = await convertToBase64(compressed);
-      const { error } = await supabase.from('hsp_settings').upsert({ id: 'config', logoData: base64 });
+      const logoUrl = await uploadToCloudinary(compressed);
+      const { error } = await supabase.from('hsp_settings').upsert({ id: 'config', logoData: logoUrl });
       if (error) throw error;
       setLogoFile(null);
       setLogoPreview(null);
@@ -242,8 +243,8 @@ export const AdminPanelHsp = ({
     setLoading(true);
     try {
       const compressed = await compressImage(faviconFile, 200, 200, 0.9);
-      const base64 = await convertToBase64(compressed);
-      const { error } = await supabase.from('hsp_settings').upsert({ id: 'config', faviconData: base64 });
+      const faviconUrl = await uploadToCloudinary(compressed);
+      const { error } = await supabase.from('hsp_settings').upsert({ id: 'config', faviconData: faviconUrl });
       if (error) throw error;
       setFaviconFile(null);
       setFaviconPreview(null);

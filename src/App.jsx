@@ -529,26 +529,28 @@ export default function App() {
     }
   }, [view, initialLoadTime, hardReloadScreen]);
 
-  // جلب البيانات بالكامل بشكل متسلسل وذكي
+  // جلب البيانات بالكامل بشكل متسلسل وذكي (تم تحسينه لتقليل استهلاك الباقة)
   const fetchAllData = useCallback(async () => {
     try {
-      await Promise.allSettled([
-        fetchShopSettings(),
-        fetchAlsafiSettings(),
-        fetchKankaSettings(),
-        fetchHspSettings(),
-        fetchShopDevices(),
-        fetchShopRepairs(),
-        fetchShopOffers(),
-        fetchAlsafiMenu(),
-        fetchAlsafiDrinks(),
-        fetchAlsafiOffers(),
-        fetchAlsafiShowcase(),
-        fetchKankaScreen1(),
-        fetchKankaScreen2(),
-        fetchKankaScreen3(),
-        fetchHspScreen1(),
-      ]);
+      const promises = [fetchShopSettings()];
+
+      if (view.startsWith('alsafi') || view === 'admin-alsafi') {
+        promises.push(fetchAlsafiSettings(), fetchAlsafiMenu(), fetchAlsafiDrinks(), fetchAlsafiOffers(), fetchAlsafiShowcase());
+      } else if (view.startsWith('kanka') || view === 'admin-kanka') {
+        promises.push(fetchKankaSettings(), fetchKankaScreen1(), fetchKankaScreen2(), fetchKankaScreen3());
+      } else if (view.startsWith('hsp') || view === 'admin-hsp') {
+        promises.push(fetchHspSettings(), fetchHspScreen1());
+      } else if (view.startsWith('screen') || view === 'admin-handyland') {
+        promises.push(fetchShopDevices(), fetchShopRepairs(), fetchShopOffers());
+      } else {
+        // للصفحة الرئيسية وصفحة الأدمن العامة
+        promises.push(
+          fetchAlsafiSettings(), fetchKankaSettings(), fetchHspSettings(),
+          fetchAlsafiShowcase(), fetchKankaScreen1(), fetchHspScreen1()
+        );
+      }
+
+      await Promise.allSettled(promises);
       setIsOffline(false);
     } catch (err) {
       console.warn("Error in fetchAllData:", err);
@@ -614,9 +616,10 @@ export default function App() {
       }
     }
   }, [
+    view,
     fetchShopSettings, fetchAlsafiSettings, fetchKankaSettings, fetchHspSettings,
     fetchShopDevices, fetchShopRepairs, fetchShopOffers,
-    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers,
+    fetchAlsafiMenu, fetchAlsafiDrinks, fetchAlsafiOffers, fetchAlsafiShowcase,
     fetchKankaScreen1, fetchKankaScreen2, fetchKankaScreen3,
     fetchHspScreen1
   ]);
@@ -744,7 +747,7 @@ export default function App() {
           hardReloadScreen();
         }
       }).catch(() => {});
-    }, 15000);
+    }, 900000); // تم تعديل الوقت إلى 15 دقيقة لتقليل استهلاك الـ Log Ingestion بشكل جذري
 
     return () => {
       clearInterval(tvPollerInterval);
