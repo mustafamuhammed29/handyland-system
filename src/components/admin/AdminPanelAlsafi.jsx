@@ -969,11 +969,11 @@ export const AdminPanelAlsafi = ({
 
                       <div>
                         <label className="block text-sm font-black text-gray-800 mb-1">
-                          {lang === 'ar' ? 'السعر (مع العملة):' : 'Preis (mit Währung):'}
+                          {lang === 'ar' ? 'السعر:' : 'Preis:'}
                         </label>
                         <input
                           type="text"
-                          placeholder={lang === 'ar' ? 'مثال: 12.90 €' : 'z.B. 12.90 €'}
+                          placeholder={lang === 'ar' ? 'مثال: 12.90' : 'z.B. 12.90'}
                           value={showcasePrice}
                           onChange={(e) => setShowcasePrice(e.target.value)}
                           className="w-full p-3.5 border-2 border-gray-300 focus:border-amber-500 rounded-xl text-base font-bold text-gray-900 bg-white shadow-sm"

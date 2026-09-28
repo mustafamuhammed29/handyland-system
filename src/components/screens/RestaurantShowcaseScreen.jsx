@@ -546,7 +546,9 @@ export const RestaurantShowcaseScreen = ({
               {currentItem.price && (
                 <div className="shrink-0">
                   <div className="relative overflow-hidden bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-black font-black text-2xl lg:text-3xl xl:text-4xl px-5 py-2 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.6)] border-2 border-white/60 tracking-tight transform hover:scale-105 transition">
-                    <span className="relative z-10">{currentItem.price}</span>
+                    <span className="relative z-10">
+                      {String(currentItem.price).includes('€') ? currentItem.price : `${currentItem.price} €`}
+                    </span>
                     {/* لمعان ضوئي متحرك Sweep Shimmer */}
                     <div 
                       className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/60 to-transparent pointer-events-none"
@@ -650,7 +652,7 @@ export const RestaurantShowcaseScreen = ({
                 </div>
                 {nextItem.price && (
                   <div className="text-amber-400 font-black text-xs px-2.5 py-1 bg-amber-500/10 rounded-xl border border-amber-500/30 shrink-0">
-                    {nextItem.price}
+                    {String(nextItem.price).includes('€') ? nextItem.price : `${nextItem.price} €`}
                   </div>
                 )}
               </div>
