@@ -607,12 +607,12 @@ export const RestaurantShowcaseScreen = ({
                       {/* خط نيون عمودي يسار كل بطاقة يعطي رونقاً حياً */}
                       <div className="absolute left-0 inset-y-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 opacity-75" />
 
-                      <div className="flex items-center gap-3.5 lg:gap-4 min-w-0 pl-1">
+                      <div className="flex items-center gap-3.5 lg:gap-4 min-w-0 pl-1 flex-1">
                         <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black text-xs lg:text-sm flex items-center justify-center shadow shrink-0">
                           {(idx + 1).toString().padStart(2, '0')}
                         </span>
                         <span className="text-xl lg:text-2xl shrink-0">{icon}</span>
-                        <span className="text-base lg:text-lg xl:text-xl font-black text-white tracking-wide truncate">
+                        <span className="text-base lg:text-lg xl:text-xl font-black text-white tracking-wide break-words whitespace-normal leading-snug">
                           {ingredient}
                         </span>
                       </div>
