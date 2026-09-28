@@ -550,7 +550,7 @@ export default function App() {
         );
       }
 
-      await Promise.allSettled(promises);
+      await Promise.all(promises.map(p => p.catch(e => e)));
       setIsOffline(false);
     } catch (err) {
       console.warn("Error in fetchAllData:", err);
