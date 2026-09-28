@@ -587,7 +587,7 @@ export const RestaurantShowcaseScreen = ({
               </div>
             ) : (
               /* تخطيط عمودي: المكونات تحت بعض بشكل جذاب مع أيقونات وأرقام ولمعان خفيف */
-              <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-3 lg:gap-4 overflow-y-auto pr-1 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {ingredientsList.map((ingredient, idx) => {
                   const isVisible = idx < revealedCount;
                   const icon = getIngredientIcon(ingredient);
@@ -595,31 +595,29 @@ export const RestaurantShowcaseScreen = ({
                   return (
                     <div
                       key={idx}
-                      className={`relative overflow-hidden flex items-center justify-between p-2.5 lg:p-3 rounded-xl border transition-all duration-400 transform ${
+                      className={`relative overflow-hidden flex items-center justify-between p-3.5 lg:p-4 rounded-xl border transition-all duration-400 transform ${
                         isVisible 
                           ? 'opacity-100 translate-x-0 bg-gradient-to-r from-amber-500/15 via-white/[0.04] to-transparent border-amber-500/40 shadow-md scale-100 hover:border-amber-400' 
                           : 'opacity-0 translate-x-6 scale-95 border-transparent pointer-events-none'
                       }`}
                       style={{ 
-                        transitionDelay: `${idx * 40}ms`,
-                        animation: isVisible ? `cardAmbientPulse ${4 + (idx % 3)}s ease-in-out infinite` : 'none',
-                        animationDelay: `${idx * 0.35}s`
+                        transitionDelay: `${idx * 40}ms`
                       }}
                     >
                       {/* خط نيون عمودي يسار كل بطاقة يعطي رونقاً حياً */}
                       <div className="absolute left-0 inset-y-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 opacity-75" />
 
-                      <div className="flex items-center gap-2.5 min-w-0 pl-1">
-                        <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black text-[11px] flex items-center justify-center shadow shrink-0">
+                      <div className="flex items-center gap-3.5 lg:gap-4 min-w-0 pl-1">
+                        <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black text-xs lg:text-sm flex items-center justify-center shadow shrink-0">
                           {(idx + 1).toString().padStart(2, '0')}
                         </span>
-                        <span className="text-base shrink-0">{icon}</span>
-                        <span className="text-xs lg:text-sm font-black text-white tracking-wide truncate">
+                        <span className="text-xl lg:text-2xl shrink-0">{icon}</span>
+                        <span className="text-base lg:text-lg xl:text-xl font-black text-white tracking-wide truncate">
                           {ingredient}
                         </span>
                       </div>
 
-                      <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 ml-1.5" />
+                      <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-amber-400 shrink-0 ml-1.5" />
                     </div>
                   );
                 })}
@@ -782,17 +780,7 @@ export const RestaurantShowcaseScreen = ({
             <path
               fill="url(#panelSideFillGrad)"
               d="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080 L 1920 1080 L 1920 0 Z"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080 L 1920 1080 L 1920 0 Z; M 1272 0 C 1296 110, 1316 210, 1298 390 C 1272 500, 1258 590, 1282 710 C 1314 800, 1312 920, 1262 1080 L 1920 1080 L 1920 0 Z; M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080 L 1920 1080 L 1920 0 Z"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
+            />
 
             {/* 2. هالة التوهج الذهبي العميقة المتنفسة خلف الفاصل */}
             <path
@@ -801,19 +789,8 @@ export const RestaurantShowcaseScreen = ({
               strokeWidth="11"
               strokeOpacity="0.45"
               filter="url(#neonDeepAura)"
-              style={{ animation: 'laserAuraBreathe 3.5s ease-in-out infinite' }}
               d="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080; M 1272 0 C 1296 110, 1316 210, 1298 390 C 1272 500, 1258 590, 1282 710 C 1314 800, 1312 920, 1262 1080; M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
+            />
 
             {/* 3. مسار شعاع الليزر الذهبي الرئيسي المتموج المورفينغ */}
             <path
@@ -822,17 +799,7 @@ export const RestaurantShowcaseScreen = ({
               strokeWidth="3.5"
               filter="url(#neonBeamGlow)"
               d="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080; M 1272 0 C 1296 110, 1316 210, 1298 390 C 1272 500, 1258 590, 1282 710 C 1314 800, 1312 920, 1262 1080; M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
+            />
 
             {/* 4. خيط الطاقة الأبيض فائق النقاء في قلب الشعاع الذهبي */}
             <path
@@ -841,17 +808,7 @@ export const RestaurantShowcaseScreen = ({
               strokeWidth="1.2"
               strokeOpacity="0.8"
               d="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080; M 1272 0 C 1296 110, 1316 210, 1298 390 C 1272 500, 1258 590, 1282 710 C 1314 800, 1312 920, 1262 1080; M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
+            />
 
             {/* 5. ومضات نبضية فائقة السرعة تتدفق عبر الخط بشكل دوري بانسيابية مبهرة */}
             <path
@@ -862,17 +819,7 @@ export const RestaurantShowcaseScreen = ({
               filter="url(#neonBeamGlow)"
               style={{ animation: 'pulseStreakRun 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
               d="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080; M 1272 0 C 1296 110, 1316 210, 1298 390 C 1272 500, 1258 590, 1282 710 C 1314 800, 1312 920, 1262 1080; M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
+            />
 
             {/* 6. خط الطاقة الرقمي المرافق (Cyber-Luxe Dashed Energy Stream) المتدفق بحركة مستمرة */}
             <path
@@ -883,33 +830,7 @@ export const RestaurantShowcaseScreen = ({
               strokeDasharray="6 14"
               style={{ animation: 'dashStreamFlow 2.2s linear infinite' }}
               d="M 1270 0 C 1290 100, 1332 220, 1316 380 C 1293 480, 1260 570, 1282 720 C 1312 820, 1326 930, 1278 1080"
-            >
-              <animate
-                attributeName="d"
-                dur="7s"
-                repeatCount="indefinite"
-                values="M 1270 0 C 1290 100, 1332 220, 1316 380 C 1293 480, 1260 570, 1282 720 C 1312 820, 1326 930, 1278 1080; M 1280 0 C 1304 110, 1324 210, 1306 390 C 1280 500, 1266 590, 1290 710 C 1322 800, 1320 920, 1270 1080; M 1270 0 C 1290 100, 1332 220, 1316 380 C 1293 480, 1260 570, 1282 720 C 1312 820, 1326 930, 1278 1080"
-                calcMode="spline"
-                keyTimes="0; 0.5; 1"
-                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
-              />
-            </path>
-
-            {/* 7. خرزة الطاقة الذهبية المشعة المتنقلة بمرونة سلايدر على مسار المنحنى */}
-            <g>
-              <circle r="4" fill="#ffffff" filter="url(#neonBeamGlow)" />
-              <circle r="8" fill="#fbbf24" opacity="0.8" filter="url(#neonBeamGlow)" />
-              <circle r="16" fill="#ea580c" opacity="0.35" filter="url(#neonDeepAura)" />
-              <animateMotion
-                path="M 1262 0 C 1282 100, 1324 220, 1308 380 C 1285 480, 1252 570, 1274 720 C 1304 820, 1318 930, 1270 1080"
-                dur="5s"
-                repeatCount="indefinite"
-                keyPoints="0;1;0"
-                keyTimes="0;0.5;1"
-                calcMode="spline"
-                keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
-              />
-            </g>
+            />
           </svg>
         </div>
 
