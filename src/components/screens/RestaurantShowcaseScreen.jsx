@@ -220,7 +220,7 @@ export const RestaurantShowcaseScreen = ({
       <div 
         onDoubleClick={handleToggleFullscreen}
         onTouchEnd={handleTouchEnd}
-        className="flex flex-col h-screen max-h-screen w-full bg-[#070709] text-white font-sans relative overflow-hidden select-none cursor-pointer" 
+        className="flex flex-col h-screen max-h-screen w-full bg-[#8cc63f] text-white font-sans relative overflow-hidden select-none cursor-pointer"
         dir={dir}
         title={lang === 'ar' ? 'انقر نقراً مزدوجاً للتكبير ملء الشاشة' : 'Doppelklick für Vollbild'}
       >
@@ -280,7 +280,7 @@ export const RestaurantShowcaseScreen = ({
     <div 
       onDoubleClick={handleToggleFullscreen}
       onTouchEnd={handleTouchEnd}
-      className="flex flex-col h-screen max-h-screen w-full bg-[#070709] text-white overflow-hidden font-sans relative select-none" 
+      className="flex flex-col h-screen max-h-screen w-full bg-[#8cc63f] text-white overflow-hidden font-sans relative select-none" 
       dir={dir}
       title={lang === 'ar' ? 'انقر نقراً مزدوجاً للتكبير ملء الشاشة' : 'Doppelklick für Vollbild'}
     >
@@ -294,7 +294,7 @@ export const RestaurantShowcaseScreen = ({
           alt="" 
           className="w-full h-full object-cover blur-3xl opacity-25 scale-125 transform-gpu transition-all duration-1000"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070709] via-[#070709]/85 to-[#070709]/75" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#8cc63f] via-[#8cc63f]/85 to-[#8cc63f]/75" />
         <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-amber-500/15 rounded-full blur-[140px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-orange-600/15 rounded-full blur-[140px]" />
       </div>
@@ -344,7 +344,7 @@ export const RestaurantShowcaseScreen = ({
         {/* ------------------------------------------------------------- */}
         {/* الجانب الأول: مسرح صورة الوجبة العملاقة فائق الوضوح (67% + امتداد تحت الفاصل) */}
         {/* ------------------------------------------------------------- */}
-        <div className="relative w-full lg:w-[67%] h-full flex flex-col justify-between overflow-hidden lg:overflow-visible bg-black shrink-0 border-b lg:border-b-0 z-10">
+        <div className="relative w-full lg:w-[67%] h-full flex flex-col justify-between overflow-hidden lg:overflow-visible bg-[#8cc63f] shrink-0 border-b lg:border-b-0 z-10">
           
           {/* أنماط الحركات البصرية الفاخرة للفاصل التموجي والجزيئات السابحة */}
           <style>{`
@@ -423,7 +423,7 @@ export const RestaurantShowcaseScreen = ({
             )}
 
             {/* تدرج سفلي طفيف وناعم جداً فقط خلف شارات الجودة دون حجب الطبق */}
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#8cc63f]/70 to-transparent pointer-events-none" />
           </div>
 
           {/* شارة التميز العائمة الفاخرة ثلاثية الأبعاد (Badge) في الزاوية العلوية */}
@@ -491,7 +491,7 @@ export const RestaurantShowcaseScreen = ({
         {/* ------------------------------------------------------------- */}
         {/* الجانب الثاني: جناح المعلومات والمكونات تحت بعض (33% من الشاشة) */}
         {/* ------------------------------------------------------------- */}
-        <div className="relative w-full lg:w-[33%] lg:flex-1 h-full flex flex-col justify-between p-5 lg:py-7 lg:pr-7 lg:pl-14 xl:py-8 xl:pr-8 xl:pl-16 bg-gradient-to-br from-[#121319] via-[#0c0d12] to-[#070709] lg:bg-transparent overflow-hidden z-30 shadow-2xl">
+        <div className="relative w-full lg:w-[33%] lg:flex-1 h-full flex flex-col justify-between p-5 lg:py-7 lg:pr-7 lg:pl-14 xl:py-8 xl:pr-8 xl:pl-16 bg-transparent lg:bg-transparent overflow-hidden z-30">
           
           {/* إضاءات خلفية داخلية ناعمة */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -508,8 +508,8 @@ export const RestaurantShowcaseScreen = ({
                   height: `${(i % 3) * 2 + 2}px`,
                   left: `${(i * 17 + 8) % 92}%`,
                   bottom: '-20px',
-                  backgroundColor: i % 2 === 0 ? '#fbbf24' : '#f59e0b',
-                  boxShadow: '0 0 10px rgba(245, 158, 11, 0.8)',
+                  backgroundColor: '#ffffff',
+                  boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
                   animation: `floatParticle ${5 + (i % 4) * 2.2}s ease-in-out infinite`,
                   animationDelay: `${i * 0.45}s`
                 }}
@@ -524,7 +524,7 @@ export const RestaurantShowcaseScreen = ({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-                <span className="text-amber-400 font-black uppercase tracking-widest text-xs">
+                <span className="text-white font-black uppercase tracking-widest text-xs">
                   {lang === 'ar' ? '✦ طبق الصافي المميز ✦' : '✦ ALSAFI SPEZIALITÄT ✦'}
                 </span>
               </div>
@@ -539,13 +539,13 @@ export const RestaurantShowcaseScreen = ({
 
             {/* عنوان الوجبة + كبسولة السعر الذهبية البراقة مع شريط لمعان ليزري */}
             <div className="flex items-center justify-between gap-3 pt-0.5">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-[#0a2913] leading-tight tracking-tight flex-1 min-w-0">
                 {currentItem.title || (lang === 'ar' ? 'وجبة شهية ومميزة' : 'Köstliches Menü')}
               </h1>
 
               {currentItem.price && (
                 <div className="shrink-0">
-                  <div className="relative overflow-hidden bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-black font-black text-2xl lg:text-3xl xl:text-4xl px-5 py-2 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.6)] border-2 border-white/60 tracking-tight transform hover:scale-105 transition">
+                  <div className="relative overflow-hidden bg-white text-[#8cc63f] font-black text-2xl lg:text-3xl xl:text-4xl px-5 py-2 rounded-2xl shadow-lg border-2 border-white/80 tracking-tight transform hover:scale-105 transition">
                     <span className="relative z-10">
                       {String(currentItem.price).includes('€') ? currentItem.price : `${currentItem.price} €`}
                     </span>
@@ -574,11 +574,11 @@ export const RestaurantShowcaseScreen = ({
           <div className="flex-1 flex flex-col justify-center my-2 relative min-h-0 overflow-hidden z-10">
             
             <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 shrink-0">
-              <span className="text-xs font-black uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-white" />
                 {lang === 'ar' ? 'المكونات وتفاصيل الطبق:' : 'Zutaten & Details:'}
               </span>
-              <span className="text-[11px] font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-black text-[#8cc63f] bg-white border border-white/50 px-2.5 py-0.5 rounded-full">
                 {ingredientsList.length} {lang === 'ar' ? 'مكونات' : 'Zutaten'}
               </span>
             </div>
@@ -599,7 +599,7 @@ export const RestaurantShowcaseScreen = ({
                       key={idx}
                       className={`relative overflow-hidden flex items-center justify-between p-3.5 lg:p-4 rounded-xl border transition-all duration-400 transform ${
                         isVisible 
-                          ? 'opacity-100 translate-x-0 bg-gradient-to-r from-amber-500/15 via-white/[0.04] to-transparent border-amber-500/40 shadow-md scale-100 hover:border-amber-400' 
+                          ? 'opacity-100 translate-x-0 bg-white/20 backdrop-blur-md border-white/50 shadow-md scale-100 hover:border-white' 
                           : 'opacity-0 translate-x-6 scale-95 border-transparent pointer-events-none'
                       }`}
                       style={{ 
@@ -607,19 +607,19 @@ export const RestaurantShowcaseScreen = ({
                       }}
                     >
                       {/* خط نيون عمودي يسار كل بطاقة يعطي رونقاً حياً */}
-                      <div className="absolute left-0 inset-y-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 opacity-75" />
+                      <div className="absolute left-0 inset-y-0 w-1 bg-white opacity-75" />
 
                       <div className="flex items-center gap-3.5 lg:gap-4 min-w-0 pl-1 flex-1">
-                        <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black text-xs lg:text-sm flex items-center justify-center shadow shrink-0">
+                        <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-white text-[#8cc63f] font-black text-xs lg:text-sm flex items-center justify-center shadow shrink-0">
                           {(idx + 1).toString().padStart(2, '0')}
                         </span>
                         <span className="text-xl lg:text-2xl shrink-0">{icon}</span>
-                        <span className="text-base lg:text-lg xl:text-xl font-black text-white tracking-wide break-words whitespace-normal leading-snug">
+                        <span className="text-base lg:text-lg xl:text-xl font-black text-[#0a2913] tracking-wide break-words whitespace-normal leading-snug">
                           {ingredient}
                         </span>
                       </div>
 
-                      <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-amber-400 shrink-0 ml-1.5" />
+                      <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-white shrink-0 ml-1.5" />
                     </div>
                   );
                 })}
@@ -675,20 +675,20 @@ export const RestaurantShowcaseScreen = ({
             )}
 
             {/* شريط العداد مع مؤشر زمني دائري وأزرار الإيقاف/الاستئناف */}
-            <div className="flex items-center justify-between text-xs text-gray-400 pt-0.5">
+            <div className="flex items-center justify-between text-xs text-white/70 pt-0.5">
               <div className="flex items-center gap-2 font-mono font-bold text-xs lg:text-sm">
                 {/* مؤشر زمني دائري صغير للتبديل */}
                 <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                     <path
-                      className="text-white/10"
+                      className="text-white/40"
                       strokeWidth="5"
                       stroke="currentColor"
                       fill="none"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     <path
-                      className="text-amber-400 transition-all duration-100"
+                      className="text-white transition-all duration-100"
                       strokeDasharray={`${progress}, 100`}
                       strokeWidth="5"
                       strokeLinecap="round"
@@ -698,14 +698,14 @@ export const RestaurantShowcaseScreen = ({
                     />
                   </svg>
                 </div>
-                <span className="text-amber-400 text-base font-black">
+                <span className="text-white text-base font-black">
                   {((currentIndex % items.length) + 1).toString().padStart(2, '0')}
                 </span>
                 <span>/</span>
-                <span className="text-gray-400">
+                <span className="text-white/70">
                   {items.length.toString().padStart(2, '0')}
                 </span>
-                <span className="text-[11px] text-gray-400 ml-1 font-sans">
+                <span className="text-[11px] text-white/70 ml-1 font-sans">
                   {lang === 'ar' ? 'أطباق' : 'Gerichte'}
                 </span>
               </div>
@@ -736,27 +736,27 @@ export const RestaurantShowcaseScreen = ({
             <defs>
               {/* تدرج لوني فخم لكامل خلفية الجناح الأيمن يبدأ من خط المنحنى ويمتد حتى حافة الشاشة اليمنى */}
               <linearGradient id="panelSideFillGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#121319" />
-                <stop offset="50%" stopColor="#0c0d12" />
-                <stop offset="100%" stopColor="#070709" />
+                <stop offset="0%" stopColor="#8cc63f" />
+                <stop offset="50%" stopColor="#8cc63f" />
+                <stop offset="100%" stopColor="#8cc63f" />
               </linearGradient>
 
               {/* التدرج اللوني الذهبي المتوهج لشعاع الليزر المتموج الرئيسي */}
               <linearGradient id="laserWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.5" />
-                <stop offset="25%" stopColor="#fbbf24" stopOpacity="1" />
-                <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.95" />
-                <stop offset="75%" stopColor="#ea580c" stopOpacity="1" />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.5" />
+                <stop offset="0%" stopColor="#0a2913" stopOpacity="0.5" />
+                <stop offset="25%" stopColor="#12351c" stopOpacity="1" />
+                <stop offset="50%" stopColor="#0a2913" stopOpacity="0.95" />
+                <stop offset="75%" stopColor="#1a4a2a" stopOpacity="1" />
+                <stop offset="100%" stopColor="#0a2913" stopOpacity="0.5" />
               </linearGradient>
 
               {/* تدرج ومضة الليزر فائقة السرعة المتدفقة عبر الخط */}
               <linearGradient id="laserPulseGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-                <stop offset="35%" stopColor="#fbbf24" stopOpacity="0.9" />
+                <stop offset="35%" stopColor="#1a4a2a" stopOpacity="0.9" />
                 <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
-                <stop offset="65%" stopColor="#fbbf24" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+                <stop offset="65%" stopColor="#1a4a2a" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#1a4a2a" stopOpacity="0" />
               </linearGradient>
 
               {/* توهج النيون الفاخر للشعاع والخرزة المتحركة */}
@@ -787,7 +787,7 @@ export const RestaurantShowcaseScreen = ({
             {/* 2. هالة التوهج الذهبي العميقة المتنفسة خلف الفاصل */}
             <path
               fill="none"
-              stroke="#f59e0b"
+              stroke="#0a2913"
               strokeWidth="11"
               strokeOpacity="0.45"
               filter="url(#neonDeepAura)"
@@ -826,7 +826,7 @@ export const RestaurantShowcaseScreen = ({
             {/* 6. خط الطاقة الرقمي المرافق (Cyber-Luxe Dashed Energy Stream) المتدفق بحركة مستمرة */}
             <path
               fill="none"
-              stroke="#fbbf24"
+              stroke="#12351c"
               strokeWidth="1.2"
               strokeOpacity="0.4"
               strokeDasharray="6 14"

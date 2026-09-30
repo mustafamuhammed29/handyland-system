@@ -101,7 +101,7 @@ export const TVScreenControls = () => {
         className={`fixed top-4 right-4 z-[99999] p-3 rounded-2xl border-2 transition-all duration-300 flex items-center justify-center cursor-pointer shadow-xl ${
           isFullscreen
             ? 'bg-gray-950/40 hover:bg-gray-900 border-gray-700/50 text-gray-400 hover:text-white opacity-40 hover:opacity-100'
-            : 'bg-yellow-500 text-black border-white shadow-[0_0_25px_rgba(250,204,21,0.8)] opacity-95 hover:scale-110 animate-pulse'
+            : 'bg-white text-[#8cc63f] border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.6)] opacity-95 hover:scale-110 animate-pulse'
         }`}
       >
         {isFullscreen ? (
