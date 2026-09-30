@@ -635,23 +635,23 @@ export const RestaurantShowcaseScreen = ({
             {items.length > 1 && nextItem ? (
               <div 
                 onClick={handleNextSlide}
-                className="flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-2 backdrop-blur-md transition cursor-pointer group"
+                className="flex items-center gap-4 bg-white/90 hover:bg-white border border-white rounded-2xl p-3 shadow-lg backdrop-blur-md transition cursor-pointer group"
                 title={lang === 'ar' ? 'انقر للانتقال للطبق القادم فوراً' : 'Klicken für nächstes Gericht'}
               >
-                <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-amber-500/40 group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-gray-200 group-hover:scale-105 transition-transform">
                   <img src={getMediaSrc(nextItem.imageData)} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#8cc63f] flex items-center gap-1.5">
                     <span>{lang === 'ar' ? 'الطبق القادم' : 'Als Nächstes'}</span>
-                    {dir === 'rtl' ? <ArrowLeft className="w-3 h-3" /> : <ArrowRight className="w-3 h-3" />}
+                    {dir === 'rtl' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
                   </span>
-                  <h4 className="text-xs lg:text-sm font-black text-white truncate">
+                  <h4 className="text-base lg:text-lg font-black text-[#0a2913] truncate">
                     {nextItem.title || (lang === 'ar' ? 'طبق الصافي' : 'Gericht')}
                   </h4>
                 </div>
                 {nextItem.price && (
-                  <div className="text-amber-400 font-black text-xs px-2.5 py-1 bg-amber-500/10 rounded-xl border border-amber-500/30 shrink-0">
+                  <div className="text-white font-black text-sm px-3 py-1.5 bg-[#8cc63f] rounded-xl shadow-md shrink-0">
                     {String(nextItem.price).includes('€') ? nextItem.price : `${nextItem.price} €`}
                   </div>
                 )}
@@ -676,9 +676,9 @@ export const RestaurantShowcaseScreen = ({
 
             {/* شريط العداد مع مؤشر زمني دائري وأزرار الإيقاف/الاستئناف */}
             <div className="flex items-center justify-between text-xs text-white/70 pt-0.5">
-              <div className="flex items-center gap-2 font-mono font-bold text-xs lg:text-sm">
+              <div className="flex items-center gap-2.5 font-mono font-bold text-sm lg:text-base">
                 {/* مؤشر زمني دائري صغير للتبديل */}
-                <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
+                <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                     <path
                       className="text-white/40"
@@ -698,14 +698,14 @@ export const RestaurantShowcaseScreen = ({
                     />
                   </svg>
                 </div>
-                <span className="text-white text-base font-black">
+                <span className="text-white text-lg font-black">
                   {((currentIndex % items.length) + 1).toString().padStart(2, '0')}
                 </span>
-                <span>/</span>
-                <span className="text-white/70">
+                <span className="text-white/60">/</span>
+                <span className="text-white/80">
                   {items.length.toString().padStart(2, '0')}
                 </span>
-                <span className="text-[11px] text-white/70 ml-1 font-sans">
+                <span className="text-xs text-white/80 ml-1 font-sans">
                   {lang === 'ar' ? 'أطباق' : 'Gerichte'}
                 </span>
               </div>
@@ -714,9 +714,9 @@ export const RestaurantShowcaseScreen = ({
                 <button 
                   type="button" 
                   onClick={(e) => { e.stopPropagation(); setIsPaused(p => !p); }} 
-                  className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl text-white font-bold transition text-xs cursor-pointer border border-white/10 active:scale-95"
+                  className="flex items-center gap-2 bg-white text-[#0a2913] hover:bg-gray-100 px-4 py-2 rounded-xl font-bold transition text-sm cursor-pointer shadow-md active:scale-95"
                 >
-                  {isPaused ? <Play className="w-3.5 h-3.5 text-emerald-400" /> : <Pause className="w-3.5 h-3.5 text-yellow-400" />}
+                  {isPaused ? <Play className="w-4 h-4 text-[#8cc63f]" /> : <Pause className="w-4 h-4 text-[#0a2913]" />}
                   <span>{isPaused ? (lang === 'ar' ? 'استئناف' : 'Fortsetzen') : (lang === 'ar' ? 'إيقاف مؤقت' : 'Pausieren')}</span>
                 </button>
               </div>
