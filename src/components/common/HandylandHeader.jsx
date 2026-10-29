@@ -46,8 +46,8 @@ export const HandylandHeader = ({
     : "border-yellow-500/30 bg-yellow-500/10 text-yellow-400/90";
 
   return (
-    <header className={`relative w-full px-6 lg:px-10 py-3.5 bg-black/85 border-b ${borderColor} flex justify-between items-center z-40 backdrop-blur-md pl-16 lg:pl-20 pr-16 lg:pr-24 shadow-2xl h-20 lg:h-24 shrink-0`}>
-      <div className="flex items-center gap-3 lg:gap-5 z-10 min-w-0 flex-1">
+    <header className={`relative w-full px-6 lg:px-10 py-3.5 bg-black/85 border-b ${borderColor} flex justify-between items-center z-40 backdrop-blur-md pl-16 2xl:pl-20 pr-16 2xl:pr-24 shadow-2xl h-20 lg:h-24 shrink-0`}>
+      <div className="flex items-center gap-3 lg:gap-5 z-10 min-w-0 flex-1 overflow-hidden mr-4">
         <div className="flex items-center gap-2 lg:gap-3 shrink-0">
           {customLogo ? (
             <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 p-0.5 bg-white flex items-center justify-center ${logoBorder}`}>
@@ -64,7 +64,7 @@ export const HandylandHeader = ({
           <span className={`text-2xl lg:text-4xl font-black tracking-widest ${brandGradient} drop-shadow-md`}>{systemName}</span>
         </div>
         <div className={`h-8 w-0.5 ${borderColor} shrink-0`} />
-        <h1 className="text-base lg:text-xl font-extrabold text-white flex items-center gap-2 tracking-wide truncate shrink-0">
+        <h1 className="text-base lg:text-xl font-extrabold text-white flex items-center gap-2 tracking-wide min-w-0 truncate">
           {Icon && <Icon className={`w-5 h-5 lg:w-7 lg:h-7 ${iconColor} shrink-0`} />}
           <span className="truncate">{title}</span>
         </h1>
@@ -78,7 +78,7 @@ export const HandylandHeader = ({
           </div>
         )}
         <LiveClockWeatherWidget cityName={cityName} lang={lang} isOffline={isOffline} />
-        <div className={`hidden lg:flex text-sm lg:text-lg font-semibold tracking-wider z-10 uppercase items-center gap-2.5 px-5 py-2 rounded-xl border ${subtitleBadge}`}>
+        <div className={`hidden 2xl:flex text-sm lg:text-lg font-semibold tracking-wider z-10 uppercase items-center gap-2.5 px-5 py-2 rounded-xl border ${subtitleBadge}`}>
           <span className="w-3 h-3 rounded-full bg-green-500 animate-ping" />
           {headerSubtitle || DEFAULT_SUBTITLE}
         </div>
